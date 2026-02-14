@@ -8,7 +8,7 @@ node_modules/
 /dist
 /backend/dist/
 /.next/
-/out/
+ /out/
 
 # Environment variables
 .env
@@ -35,7 +35,11 @@ lerna-debug.log*
 *.swp
 *.swo
 *~
-.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 # TypeScript
 *.tsbuildinfo
@@ -57,8 +61,9 @@ pnpm-lock.yaml
 
 # Uploads (if using local storage for development)
 /uploads/
-/public/uploads/
+ /public/uploads/
 
 # OS files
 Thumbs.db
 .DS_Store
+Incoming
