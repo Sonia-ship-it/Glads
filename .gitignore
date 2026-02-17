@@ -3,7 +3,7 @@ node_modules/
 .pnp
 .pnp.js
 
-# Production builds
+# Builds
 /build
 /dist
 /backend/dist/
@@ -29,13 +29,16 @@ lerna-debug.log*
 /coverage
 /.nyc_output
 
-# IDE
+# IDE / Editors
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 
 # TypeScript
 *.tsbuildinfo
@@ -55,7 +58,7 @@ pnpm-lock.yaml
 # Supabase
 .supabase/
 
-# Uploads (if using local storage for development)
+# Uploads
 /uploads/
 /public/uploads/
 
