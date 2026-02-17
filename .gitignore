@@ -6,6 +6,7 @@ node_modules/
 # Production builds
 /build
 /dist
+/backend/dist/
 /.next/
 /out/
 

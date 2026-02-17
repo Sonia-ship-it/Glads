@@ -17,7 +17,7 @@ A comprehensive hotel management platform for managing multiple branches with bo
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **Next.js 14+** (App Router)
+- **Next.js 16+** (App Router)
 - **React 19+** with TypeScript
 - **Tailwind CSS** for styling
 - **Zustand** for state management
