@@ -1,8 +1,8 @@
 
 export enum Branch {
   NDERA = 'Ndera',
-  KANOMBE = 'Kanombe',
-  KABEZA = 'Kabeza'
+  NYARUGUNGA = 'Nyarugunga',
+  KANOMBE = 'Kanombe'
 }
 
 export interface RoomType {

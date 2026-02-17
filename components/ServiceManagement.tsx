@@ -9,9 +9,9 @@ interface ServiceManagementProps {
   revenue: ServiceRevenue[];
 }
 
-export const ServiceManagement: React.FC<ServiceManagementProps> = ({ 
-  branch, 
-  services, 
+export const ServiceManagement: React.FC<ServiceManagementProps> = ({
+  branch,
+  services,
   isSuperAdmin,
   bookings,
   revenue
@@ -51,9 +51,8 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
-              activeTab === tab ? 'bg-white dark:bg-neutral-700 text-black dark:text-white shadow-lg' : 'opacity-40'
-            }`}
+            className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === tab ? 'bg-white dark:bg-neutral-700 text-black dark:text-white shadow-lg' : 'opacity-40'
+              }`}
           >
             {tab}
           </button>
@@ -73,7 +72,7 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
                 </div>
                 <div className="bg-white/20 p-3 rounded-full">
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                   </svg>
                 </div>
               </div>
@@ -88,7 +87,7 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
                 </div>
                 <div className="bg-white/20 p-3 rounded-full">
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
                   </svg>
                 </div>
               </div>
@@ -103,7 +102,7 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
                 </div>
                 <div className="bg-white/20 p-3 rounded-full">
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                    <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
                   </svg>
                 </div>
               </div>
@@ -118,7 +117,7 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
                 </div>
                 <div className="bg-white/20 p-3 rounded-full">
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                   </svg>
                 </div>
               </div>
@@ -148,8 +147,8 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
                       <span className="font-bold">{service.popularityScore}%</span>
                     </div>
                     <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
-                      <div 
-                        className="bg-burgundy h-2 rounded-full transition-all" 
+                      <div
+                        className="bg-burgundy h-2 rounded-full transition-all"
                         style={{ width: `${service.popularityScore}%` }}
                       ></div>
                     </div>
@@ -167,7 +166,7 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
           {/* Filters */}
           <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-100 dark:border-neutral-800 flex flex-wrap gap-4 items-center">
             <span className="text-xs font-black uppercase tracking-widest opacity-40">Filters:</span>
-            <select 
+            <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as any)}
               className="bg-neutral-100 dark:bg-neutral-800 px-4 py-2 rounded-xl text-xs font-bold border-none outline-none"
@@ -178,7 +177,7 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
-            <select 
+            <select
               value={selectedService?.id || ''}
               onChange={(e) => setSelectedService(services.find(s => s.id === e.target.value) || null)}
               className="bg-neutral-100 dark:bg-neutral-800 px-4 py-2 rounded-xl text-xs font-bold border-none outline-none"
@@ -231,12 +230,11 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
                       </td>
                       <td className="py-6 font-black text-lg">${booking.amount}</td>
                       <td className="py-6">
-                        <span className={`px-4 py-2 rounded-full text-[10px] font-black uppercase ${
-                          booking.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
+                        <span className={`px-4 py-2 rounded-full text-[10px] font-black uppercase ${booking.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
                           booking.status === 'confirmed' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
-                          booking.status === 'pending' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400' :
-                          'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
-                        }`}>
+                            booking.status === 'pending' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400' :
+                              'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                          }`}>
                           {booking.status}
                         </span>
                       </td>
@@ -244,18 +242,18 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
                         <div className="flex gap-2">
                           <button className="bg-neutral-100 dark:bg-neutral-800 p-2 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all" title="View Details">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
                           </button>
                           <button className="bg-green-100 dark:bg-green-900/30 text-green-600 p-2 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-all" title="Confirm">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                             </svg>
                           </button>
                           <button className="bg-red-100 dark:bg-red-900/30 text-red-600 p-2 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-all" title="Cancel">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                           </button>
                         </div>
@@ -284,18 +282,18 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
               <p className="text-5xl font-black mb-4">${totalServiceRevenue}</p>
               <div className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-green-300" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M7 14l5-5 5 5z"/>
+                  <path d="M7 14l5-5 5 5z" />
                 </svg>
                 <span className="text-xs font-bold">+18% vs last month</span>
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-br from-cyan-600 to-cyan-800 text-white rounded-[2rem] p-8">
               <p className="text-xs font-bold uppercase tracking-widest opacity-80 mb-2">Average per Service</p>
               <p className="text-5xl font-black mb-4">${revenue.length > 0 ? Math.round(totalServiceRevenue / revenue.length) : 0}</p>
               <div className="flex items-center gap-2">
                 <svg className="w-4 h-4 text-cyan-300" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M7 14l5-5 5 5z"/>
+                  <path d="M7 14l5-5 5 5z" />
                 </svg>
                 <span className="text-xs font-bold">+12% growth</span>
               </div>
@@ -322,8 +320,8 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
                     {isSuperAdmin && (
                       <>
                         <th className="pb-6">Ndera</th>
+                        <th className="pb-6">Nyarugunga</th>
                         <th className="pb-6">Kanombe</th>
-                        <th className="pb-6">Kabeza</th>
                       </>
                     )}
                     <th className="pb-6">Trend</th>
@@ -339,14 +337,14 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
                       {isSuperAdmin && (
                         <>
                           <td className="py-6 opacity-60">${service.branchRevenue[Branch.NDERA] || 0}</td>
+                          <td className="py-6 opacity-60">${service.branchRevenue[Branch.NYARUGUNGA] || 0}</td>
                           <td className="py-6 opacity-60">${service.branchRevenue[Branch.KANOMBE] || 0}</td>
-                          <td className="py-6 opacity-60">${service.branchRevenue[Branch.KABEZA] || 0}</td>
                         </>
                       )}
                       <td className="py-6">
                         <div className="flex items-center gap-2">
                           <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M7 14l5-5 5 5z"/>
+                            <path d="M7 14l5-5 5 5z" />
                           </svg>
                           <span className="text-green-600 dark:text-green-400 font-bold text-xs">+{Math.round(Math.random() * 20 + 5)}%</span>
                         </div>
@@ -365,8 +363,8 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
               {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map((month, i) => (
                 <div key={month} className="text-center">
                   <div className="bg-neutral-100 dark:bg-neutral-800 rounded-2xl p-6 mb-4 h-40 flex items-end justify-center">
-                    <div 
-                      className="bg-gradient-to-t from-burgundy to-red-500 rounded-lg w-full" 
+                    <div
+                      className="bg-gradient-to-t from-burgundy to-red-500 rounded-lg w-full"
                       style={{ height: `${60 + Math.random() * 40}%` }}
                     ></div>
                   </div>
@@ -400,12 +398,12 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 p-2 rounded-lg hover:bg-blue-200 transition-all" title="Edit">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                           </button>
                           <button className="bg-red-100 dark:bg-red-900/30 text-red-600 p-2 rounded-lg hover:bg-red-200 transition-all" title="Delete">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                           </button>
                         </div>

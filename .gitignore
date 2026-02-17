@@ -3,12 +3,12 @@ node_modules/
 .pnp
 .pnp.js
 
-# Production builds
+# Builds
 /build
 /dist
 /backend/dist/
 /.next/
- /out/
+/out/
 
 # Environment variables
 .env
@@ -29,7 +29,7 @@ lerna-debug.log*
 /coverage
 /.nyc_output
 
-# IDE
+# IDE / Editors
 .vscode/
 .idea/
 *.swp
@@ -39,7 +39,6 @@ lerna-debug.log*
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
 
 # TypeScript
 *.tsbuildinfo
@@ -59,11 +58,10 @@ pnpm-lock.yaml
 # Supabase
 .supabase/
 
-# Uploads (if using local storage for development)
+# Uploads
 /uploads/
- /public/uploads/
+/public/uploads/
 
 # OS files
 Thumbs.db
 .DS_Store
-Incoming
