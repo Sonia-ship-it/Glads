@@ -27,6 +27,41 @@ export const SPORT_PRICES = [
     { product: "MASSAGE", price: "10,000 and Above" }
 ];
 
+export const RESTAURANT_MENU = {
+    breakfast: [
+        { name: "Full English Breakfast", description: "Eggs, bacon, sausage, toast, beans & grilled tomato", price: "8,000 Frw" },
+        { name: "Continental Platter", description: "Croissants, fresh fruit, yogurt & orange juice", price: "6,000 Frw" },
+        { name: "Rwandan Breakfast", description: "Uji, sweet potatoes, avocado & fresh milk", price: "4,500 Frw" },
+        { name: "Omelette Station", description: "Made-to-order omelette with your choice of fillings", price: "5,000 Frw" },
+        { name: "Pancakes & Waffles", description: "Served with maple syrup, fresh berries & cream", price: "5,500 Frw" },
+    ],
+    lunch: [
+        { name: "Grilled Tilapia", description: "Fresh Lake Victoria tilapia with ugali & kachumbari", price: "12,000 Frw" },
+        { name: "Club Sandwich", description: "Triple-decker with chicken, bacon, lettuce & fries", price: "9,000 Frw" },
+        { name: "Caesar Salad", description: "Romaine, parmesan, croutons & house Caesar dressing", price: "7,500 Frw" },
+        { name: "Beef Brochette", description: "Marinated beef skewers with chips & coleslaw", price: "13,000 Frw" },
+        { name: "Pasta Primavera", description: "Penne with seasonal vegetables in tomato-basil sauce", price: "10,000 Frw" },
+        { name: "Isombe & Ibirayi", description: "Traditional cassava leaves with sweet potatoes", price: "5,000 Frw" },
+    ],
+    dinner: [
+        { name: "Grilled Beef Tenderloin", description: "200g prime beef with roasted vegetables & red wine jus", price: "22,000 Frw" },
+        { name: "Whole Grilled Chicken", description: "Herb-marinated chicken with roasted potatoes & salad", price: "18,000 Frw" },
+        { name: "Seafood Platter", description: "Prawns, calamari & fish fillet with garlic butter sauce", price: "25,000 Frw" },
+        { name: "Vegetarian Curry", description: "Rich coconut curry with seasonal vegetables & basmati rice", price: "11,000 Frw" },
+        { name: "Lamb Chops", description: "Rosemary-crusted lamb with mashed potatoes & mint sauce", price: "24,000 Frw" },
+        { name: "Grilled Nile Perch", description: "Lake Victoria perch with lemon butter & steamed rice", price: "16,000 Frw" },
+    ],
+    drinks: [
+        { name: "Fresh Juice", description: "Mango, passion fruit, pineapple or mixed tropical", price: "2,500 Frw" },
+        { name: "Rwandan Coffee", description: "Single-origin Rwandan arabica, brewed to perfection", price: "2,000 Frw" },
+        { name: "Smoothies", description: "Avocado, banana, or mixed berry smoothie", price: "3,500 Frw" },
+        { name: "Soft Drinks", description: "Coca-Cola, Fanta, Sprite, Tonic Water", price: "1,500 Frw" },
+        { name: "Primus / Mutzig Beer", description: "Chilled Rwandan lager", price: "2,500 Frw" },
+        { name: "House Wine", description: "Red or white wine, glass or bottle", price: "5,000 Frw / glass" },
+        { name: "Cocktails", description: "Mojito, Gin & Tonic, Whiskey Sour & more", price: "8,000 Frw" },
+    ]
+};
+
 export const BRANCH_DATA: Record<Branch, BranchData> = {
     [Branch.NDERA]: {
         id: Branch.NDERA,
@@ -124,9 +159,10 @@ export const BRANCH_DATA: Record<Branch, BranchData> = {
                 icon: 'restaurant.jpeg',
                 description: 'Full-service restaurant with local and international cuisine.',
                 fullDescription: 'Our restaurant offers an exquisite menu blending international techniques with local ingredients. Enjoy breakfast, lunch, and dinner in a sophisticated setting.',
-                hours: 'Daily',
-                pricing: 'Menu based'
-            },
+                hours: 'Daily | Breakfast 6:30–10:00 | Lunch 12:00–15:00 | Dinner 18:00–22:00',
+                pricing: 'Menu based',
+                menu: RESTAURANT_MENU
+            } as any,
             {
                 id: 'bar_bbq',
                 name: 'Bar and Barbecue',
@@ -144,7 +180,7 @@ export const BRANCH_DATA: Record<Branch, BranchData> = {
                 icon: 'coffee.jpeg',
                 description: 'Freshly brewed coffee, pastries, and snacks.',
                 fullDescription: 'Our coffee shop provides a relaxing atmosphere for meetings and leisure, serving premium coffee and light meals.',
-                hours: 'Daily',
+                hours: 'Daily | 6:00 AM – 9:00 PM',
                 pricing: 'Menu based'
             },
             {
@@ -198,17 +234,17 @@ export const BRANCH_DATA: Record<Branch, BranchData> = {
             email: 'info@gladsapartment.rw'
         }
     },
-    [Branch.NYARUGUNGA]: {
-        id: Branch.NYARUGUNGA,
-        fullName: 'Glads Company – Nyarugunga (KMH)',
+    [Branch.KANOMBE]: {
+        id: Branch.KANOMBE,
+        fullName: 'Glads Company – Kanombe (KMH)',
         tagline: 'Vibrant Lifestyle Complex',
-        location: { lat: -2.0000, lng: 30.1394, address: 'Nyarugunga (KMH), Kicukiro', distance: 'Vibrant Complex' },
+        location: { lat: -2.0000, lng: 30.1394, address: 'Kanombe (KMH), Kicukiro', distance: 'Vibrant Complex' },
         rooms: [
             {
                 id: 'kn-1br',
                 name: 'Furnished Apartment',
                 description: 'Comfortable furnished apartments for short and long stays.',
-                longDescription: 'Our Nyarugunga furnished apartments offer a perfect blend of comfort and convenience. Ideal for travelers and residents looking for a vibrant community atmosphere.',
+                longDescription: 'Our Kanombe furnished apartments offer a perfect blend of comfort and convenience. Ideal for travelers and residents looking for a vibrant community atmosphere.',
                 price: 95,
                 image: '/OKK_5908-1-720x520.jpg.jpeg',
                 features: ['High-Speed WiFi', 'Furnished', 'Smart TV'],
@@ -250,9 +286,10 @@ export const BRANCH_DATA: Record<Branch, BranchData> = {
                 category: 'Food & Entertainment',
                 icon: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
                 description: 'Dining options for every taste.',
-                hours: 'Daily',
-                pricing: 'Menu based'
-            },
+                hours: 'Daily | Breakfast 6:30–10:00 | Lunch 12:00–15:00 | Dinner 18:00–22:00',
+                pricing: 'Menu based',
+                menu: RESTAURANT_MENU
+            } as any,
             {
                 id: 'supermarket',
                 name: 'Supermarket',
@@ -293,22 +330,22 @@ export const BRANCH_DATA: Record<Branch, BranchData> = {
             '/PXL_20221227_1735115792-scaled.jpg.jpeg',
         ],
         contact: {
-            address: 'Nyarugunga, Kicukiro, Rwanda',
+            address: 'Kanombe, Kicukiro, Rwanda',
             phone: '+250 788 300 269',
             email: 'info@gladsapartment.rw'
         }
     },
-    [Branch.KANOMBE]: {
-        id: Branch.KANOMBE,
-        fullName: 'Glads Apartment – Kanombe',
+    [Branch.KABEZA]: {
+        id: Branch.KABEZA,
+        fullName: 'Glads Apartment – Kabeza',
         tagline: 'Quiet Residential Living',
-        location: { lat: -1.9706, lng: 30.1044, address: 'Kanombe (Rubirizi), Kicukiro', distance: 'Quiet Residential Area' },
+        location: { lat: -1.9706, lng: 30.1044, address: 'Kabeza (Rubirizi), Kicukiro', distance: 'Quiet Residential Area' },
         rooms: [
             {
                 id: 'kb-1br',
                 name: 'Standard Furnished Apartment',
                 description: 'Clean, quiet, and perfectly designed for peaceful living.',
-                longDescription: 'Our Kanombe apartments offer fully furnished living spaces ideal for guests seeking simplicity and affordability. Located in a quiet residential area, it provides a peaceful environment for relaxation.',
+                longDescription: 'Our Kabeza apartments offer fully furnished living spaces ideal for guests seeking simplicity and affordability. Located in a quiet residential area, it provides a peaceful environment for relaxation.',
                 price: 55,
                 image: '/DSC_0996-1-720x470.jpg.jpeg',
                 features: ['High-Speed WiFi', 'Furnished', 'Quiet Location'],
@@ -327,7 +364,7 @@ export const BRANCH_DATA: Record<Branch, BranchData> = {
             '/blog_post3-150x150.jpg.jpeg',
         ],
         contact: {
-            address: 'Kanombe (Rubirizi), Kicukiro, Rwanda',
+            address: 'Kabeza (Rubirizi), Kicukiro, Rwanda',
             phone: '+250 788 300 269',
             email: 'info@gladsapartment.rw'
         }

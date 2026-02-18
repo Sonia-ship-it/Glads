@@ -38,6 +38,7 @@ import { Counter } from './common/Counter';
 import { ImmersivePhotoViewer } from './ImmersivePhotoViewer';
 import { ChatAssistant, ChatFloatingButton } from './ChatAssistant';
 import ServiceMiniPage from './ServiceMiniPage';
+import { Coffee, Dumbbell, Leaf, MapPin, Presentation, ShoppingBag, Trophy, Users, UtensilsCrossed, Waves } from 'lucide-react';
 import { Logo } from './Logo';
 import { BranchSelector } from './BranchSelector';
 import { ThemeToggle } from './ThemeToggle';
@@ -137,7 +138,7 @@ const App: React.FC = () => {
 
   const availableTabs = useMemo(() => {
     const tabs: ('Home' | 'About' | 'Rooms' | 'Services' | 'Gallery' | 'Contact' | 'Admin')[] = ['Home', 'About', 'Rooms', 'Services', 'Gallery', 'Contact'];
-    if (activeBranch === Branch.KANOMBE) { // Kanombe is now the Residential one (no services)
+    if (activeBranch === Branch.KABEZA) { // Kabeza is the residential-only branch (no services)
       return tabs.filter(t => t !== 'Services');
     }
     return tabs;
@@ -549,22 +550,22 @@ const App: React.FC = () => {
       )}
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 p-4 md:p-6 flex justify-center pointer-events-none">
-        <div className="w-full max-w-7xl glass-nav rounded-full px-6 md:px-10 h-20 md:h-24 flex items-center justify-between pointer-events-auto border border-neutral-200/50 dark:border-white/10 shadow-2xl transition-all duration-500">
+      <header className="fixed top-0 left-0 right-0 z-50 p-4 md:p-6 flex justify-center pointer-events-none font-sans font-[var(--font-outfit)]">
+        <div className="w-full max-w-7xl glass-nav rounded-full px-4 md:px-7 h-20 md:h-22 flex items-center justify-between pointer-events-auto border border-neutral-200/70 dark:border-white/10 shadow-2xl transition-all duration-500">
           <div className="flex items-center gap-6 xl:gap-8">
             <div className="cursor-pointer transition-transform hover:scale-105 active:scale-95 shrink-0" onClick={() => setCurrentTab('Home')}>
               <Logo className="scale-75 md:scale-90" />
             </div>
-            <nav className="hidden xl:flex items-center space-x-4 2xl:space-x-8">
+            <nav className="hidden xl:flex items-center gap-1 2xl:gap-1.5" style={{ fontFamily: 'var(--font-outfit)' }}>
               {availableTabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setCurrentTab(tab as any)}
-                  className={`text-[10px] xl:text-[11px] font-black tracking-[0.3em] uppercase transition-all duration-500 relative py-2 ${currentTab === tab ? 'text-burgundy dark:text-white' : 'text-neutral-400 hover:text-black dark:hover:text-white'
+                  className={`text-[8px] xl:text-[9px] font-black tracking-normal uppercase transition-all duration-300 relative py-1.5 px-2.5 rounded-full border ${currentTab === tab ? 'text-burgundy dark:text-white bg-white/90 dark:bg-white/20 border-neutral-200/80 dark:border-white/20 shadow-sm' : 'text-neutral-900 dark:text-neutral-100 border-transparent hover:text-burgundy dark:hover:text-burgundy hover:bg-white/65 dark:hover:bg-white/10'
                     }`}
                 >
                   {tab}
-                  <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] bg-burgundy dark:bg-white transition-all duration-500 rounded-full ${currentTab === tab ? 'w-full' : 'w-0'}`}></span>
+                  <span className={`absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-[3px] bg-burgundy dark:bg-white transition-all duration-300 rounded-full ${currentTab === tab ? 'w-full' : 'w-0'}`}></span>
                 </button>
               ))}
             </nav>
@@ -578,11 +579,11 @@ const App: React.FC = () => {
               <ThemeToggle isDark={isDark} onToggle={() => setIsDark(!isDark)} />
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="xl:hidden p-3 rounded-full bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white border border-neutral-200 dark:border-neutral-800"
+                className="xl:hidden p-3 rounded-full bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-800"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16m-7 6h7"} /></svg>
               </button>
-              <button onClick={() => setCurrentTab('Rooms')} className="hidden md:block bg-burgundy text-white px-8 py-4 rounded-full text-[10px] font-black tracking-widest uppercase hover:brightness-125 transition-all shadow-lg active:scale-95">
+              <button onClick={() => setCurrentTab('Rooms')} className="hidden md:block bg-burgundy text-white px-6 py-3 rounded-full text-[9px] font-black tracking-[0.1em] uppercase hover:brightness-110 transition-all shadow-lg active:scale-95 font-sans">
                 Book Now
               </button>
             </div>
@@ -590,7 +591,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Mobile Nav Drawer */}
-        <div className={`xl:hidden fixed inset-0 z-[100] bg-white/98 dark:bg-black/98 backdrop-blur-2xl flex flex-col items-center justify-center space-y-12 transition-all duration-500 ${isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}`}>
+        <div className={`xl:hidden fixed inset-0 z-[100] bg-white/98 dark:bg-black/98 backdrop-blur-2xl flex flex-col items-center justify-center space-y-10 transition-all duration-500 ${isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}`}>
           <button
             onClick={() => setIsMobileMenuOpen(false)}
             className="absolute top-10 right-10 text-neutral-400"
@@ -607,7 +608,7 @@ const App: React.FC = () => {
                 setCurrentTab(tab as any);
                 setIsMobileMenuOpen(false);
               }}
-              className={`text-4xl font-black tracking-[0.1em] uppercase transition-colors ${currentTab === tab ? 'text-burgundy' : 'text-neutral-300 dark:text-neutral-700'
+              className={`text-[1.65rem] font-[900] tracking-[0.04em] uppercase transition-colors font-sans ${currentTab === tab ? 'text-burgundy' : 'text-neutral-900 dark:text-neutral-100'
                 }`}
             >
               {tab}
@@ -620,67 +621,66 @@ const App: React.FC = () => {
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
           {currentTab === 'Home' && (
             <div className="reveal">
-              <section className="relative min-h-[85vh] flex items-center px-4 md:px-16 overflow-hidden">
-                <div className="absolute top-0 right-0 w-full lg:w-[65%] h-full -z-10 rounded-bl-[15rem] overflow-hidden group">
+              {/* Hero Section — Full Width Video */}
+              <section className="relative min-h-screen flex items-center overflow-hidden -mt-32 md:-mt-44 bg-[#f3f3f3] dark:bg-neutral-950">
+                <div className="absolute inset-y-0 right-0 w-full md:w-[66%] h-full overflow-hidden z-0 md:[clip-path:ellipse(110%_130%_at_100%_50%)]">
                   <video
                     autoPlay
                     muted
                     loop
                     playsInline
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[8s] ease-out"
+                    className="w-full h-full object-cover"
                   >
                     <source src="/herovideo.mp4" type="video/mp4" />
                     <img src={data.gallery[0]} alt="Hero Fallback" className="w-full h-full object-cover" />
                   </video>
-                  <div className="absolute inset-0 bg-gradient-to-l from-transparent via-white/10 to-white dark:via-black/50 dark:to-black"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#f3f3f3] via-[#f3f3f3]/78 to-transparent dark:from-neutral-950 dark:via-neutral-950/72"></div>
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,rgba(255,255,255,0.55),transparent_52%)] dark:bg-[radial-gradient(circle_at_18%_50%,rgba(255,255,255,0.08),transparent_52%)]"></div>
                 </div>
-                <div className="max-w-7xl mx-auto w-full">
-                  <div className="max-w-3xl space-y-12">
-                    <div className="inline-block bg-neutral-100 dark:bg-neutral-900/80 px-8 py-3 rounded-full border border-neutral-200 dark:border-white/5">
-                      <span className="text-[11px] font-black tracking-[0.5em] uppercase text-burgundy dark:text-neutral-200">
+
+                <div className="relative z-20 max-w-7xl mx-auto w-full px-6 md:px-14 pt-40 md:pt-44 pb-24">
+                  <div className="max-w-2xl space-y-8">
+                    <div className="inline-flex items-center bg-neutral-100/90 dark:bg-neutral-900/80 backdrop-blur-sm px-8 py-3 rounded-full border border-neutral-200 dark:border-white/10">
+                      <span className="text-[11px] font-black tracking-[0.24em] uppercase text-burgundy">
                         {data.fullName}
                       </span>
                     </div>
-                    <h1 className="text-8xl md:text-[10rem] font-black uppercase tracking-tighter leading-[0.8] mb-8">
-                      <span className="inline-block overflow-hidden align-top">
-                        <span className="inline-block animate-reveal translate-y-[110%] [animation-fill-mode:forwards]" style={{ animationDelay: '0.2s' }}>Art of</span>
+                    <h1 className="font-display text-[4.2rem] md:text-[8.8rem] font-black tracking-tight leading-[0.84] text-[#7a0016] dark:text-[#a40d2b]">
+                      <span className="inline-block align-top">
+                        <span className="inline-block text-[#7a0016] dark:text-[#a40d2b]">Art of</span>
                       </span>
                       <br />
-                      <span className="inline-block overflow-hidden align-top">
-                        <span className="text-burgundy inline-block animate-reveal translate-y-[110%] [animation-fill-mode:forwards]" style={{ animationDelay: '0.4s' }}>Living.</span>
+                      <span className="inline-block align-top">
+                        <span className="inline-block text-[#7a0016] dark:text-[#a40d2b]">Living.</span>
                       </span>
                     </h1>
-                    <p className="text-xl md:text-3xl text-neutral-500 dark:text-neutral-400 font-light leading-relaxed max-w-xl mb-12 animate-in fade-in slide-in-from-left duration-1000 delay-700">
-                      {data.tagline}. Discover hospitality redefined through silence, space, and sophisticated materials.
+                    <p className="text-[1.05rem] md:text-[1.22rem] text-neutral-700 dark:text-neutral-500 font-normal leading-relaxed max-w-xl animate-in fade-in slide-in-from-left duration-1000 delay-700">
+                      <span className="block mb-1 md:mb-2">Lifestyle Branch - Connectivity Meets Comfort.</span>
+                      Discover hospitality redefined through silence, space, and sophisticated materials.
                     </p>
-                    <div className="flex flex-col md:flex-row flex-wrap gap-6 items-start md:items-center">
-                      {/* Primary CTA */}
+                    <div className="flex flex-wrap gap-4 md:gap-5 items-center pt-6">
                       <button
                         onClick={() => setCurrentTab('Rooms')}
-                        className="bg-burgundy hover:bg-burgundy/90 text-white px-12 py-5 rounded-full text-[11px] font-black tracking-[0.4em] uppercase hover:scale-105 transition-all shadow-2xl shadow-burgundy/30"
+                        className="bg-burgundy hover:bg-burgundy/90 text-white px-14 py-5 rounded-full text-[11px] font-black tracking-[0.2em] uppercase transition-all shadow-xl"
                       >
                         The Residence
                       </button>
-
-                      {/* Secondary CTAs with solid backgrounds for better contrast */}
                       <button
                         onClick={() => { setCurrentTab('Services'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                        className="group flex items-center gap-4 bg-white dark:bg-neutral-900 px-8 py-4 rounded-full border-2 border-neutral-900 dark:border-white hover:bg-neutral-900 dark:hover:bg-white hover:shadow-xl transition-all"
+                        className="group flex items-center gap-6 text-[11px] font-black tracking-[0.24em] uppercase text-neutral-600 dark:text-neutral-300"
                       >
-                        <div className="w-10 h-10 rounded-full bg-neutral-900 dark:bg-white group-hover:bg-burgundy flex items-center justify-center transition-all">
-                          <svg className="w-5 h-5 text-white dark:text-black group-hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                        </div>
-                        <span className="text-[10px] font-black tracking-[0.3em] uppercase text-neutral-900 dark:text-white group-hover:text-white dark:group-hover:text-black transition-all">Choose Your Experience</span>
+                        <span className="flex h-16 w-16 items-center justify-center rounded-full border border-neutral-300 dark:border-neutral-700 bg-white/75 dark:bg-neutral-900/70">
+                          <svg className="h-5 w-5 text-neutral-600 dark:text-neutral-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </span>
+                        <span>3D View</span>
                       </button>
-
                       <button
                         onClick={() => { setBookingRoom(null); setShowBranchSelector(true); }}
-                        className="group flex items-center gap-4 bg-white dark:bg-neutral-900 px-8 py-4 rounded-full border-2 border-neutral-900 dark:border-white hover:bg-neutral-900 dark:hover:bg-white hover:shadow-xl transition-all"
+                        className="text-[10px] font-black tracking-[0.14em] uppercase text-neutral-700 dark:text-neutral-300 hover:text-burgundy transition-colors"
                       >
-                        <div className="w-10 h-10 rounded-full bg-neutral-900 dark:bg-white group-hover:bg-burgundy flex items-center justify-center transition-all">
-                          <svg className="w-5 h-5 text-white dark:text-black group-hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" /></svg>
-                        </div>
-                        <span className="text-[10px] font-black tracking-[0.3em] uppercase text-neutral-900 dark:text-white group-hover:text-white dark:group-hover:text-black transition-all">Where Can We Take You?</span>
+                        Our Locations
                       </button>
                     </div>
                   </div>
@@ -800,11 +800,181 @@ const App: React.FC = () => {
                 </div>
               </section>
 
+              {/* === SECTION: Featured Services === */}
+              <section className="reveal py-24 px-6 bg-neutral-50 dark:bg-neutral-950">
+                <div className="max-w-7xl mx-auto">
+                  <div className="text-center mb-16">
+                    <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-4 block">What We Offer</span>
+                    <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white">Curated Experiences.</h2>
+                    <p className="text-neutral-600 dark:text-neutral-400 text-lg mt-4 max-w-2xl mx-auto">From wellness to fine dining, every service is crafted to elevate your stay.</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {[
+                      { icon: Waves, title: 'Wellness & Pool', desc: 'Infinity pool, sauna, jacuzzi, and massage therapies for total rejuvenation.', tab: 'Services' },
+                      { icon: UtensilsCrossed, title: 'Fine Dining', desc: 'International and local cuisine crafted by expert chefs. Breakfast to dinner.', tab: 'Services' },
+                      { icon: Dumbbell, title: 'Fitness Center', desc: 'State-of-the-art gym with personal training and modern equipment.', tab: 'Services' },
+                      { icon: Coffee, title: 'Coffee Shop', desc: 'Premium Rwandan coffee and artisan pastries in a relaxed setting.', tab: 'Services' },
+                      { icon: Presentation, title: 'Conference Halls', desc: 'Modern meeting spaces for corporate events, workshops, and seminars.', tab: 'Services' },
+                      { icon: ShoppingBag, title: 'Supermarket', desc: 'On-site convenience store with fresh produce and daily essentials.', tab: 'Services' },
+                    ].map((svc, i) => (
+                      <div key={i} onClick={() => setCurrentTab(svc.tab as any)} className="group bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 border border-neutral-100 dark:border-white/5 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 cursor-pointer">
+                        <div className="w-14 h-14 mb-6 rounded-2xl bg-burgundy/10 text-burgundy flex items-center justify-center">
+                          <svc.icon className="w-7 h-7" strokeWidth={2.2} />
+                        </div>
+                        <h3 className="font-heading text-2xl font-bold text-neutral-900 dark:text-white mb-3">{svc.title}</h3>
+                        <p className="text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed mb-6">{svc.desc}</p>
+                        <div className="flex items-center gap-2 text-burgundy font-black text-[10px] uppercase tracking-widest group-hover:gap-4 transition-all">
+                          <span>Explore</span>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* === SECTION: Our Locations === */}
+              <section className="reveal py-24 px-6 bg-white dark:bg-black">
+                <div className="max-w-7xl mx-auto">
+                  <div className="text-center mb-16">
+                    <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-4 block">Find Us</span>
+                    <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white">Our Locations.</h2>
+                    <p className="text-neutral-600 dark:text-neutral-400 text-lg mt-4 max-w-2xl mx-auto">Three distinct branches across Kigali, each with its own character and offerings.</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {[
+                      { branch: Branch.NDERA, name: 'Ndera', subtitle: 'Flagship Location', address: 'Near 15 Road, Ndera, Gasabo', tag: 'Business & Relaxation', color: 'from-burgundy/90 to-red-900/90', img: '/hero.jpeg' },
+                      { branch: Branch.KANOMBE, name: 'Kanombe', subtitle: 'Vibrant Complex', address: 'Kanombe (KMH), Kicukiro', tag: 'Lifestyle & Wellness', color: 'from-neutral-800/90 to-neutral-900/90', img: '/OKK_5908-1-720x520.jpg.jpeg' },
+                      { branch: Branch.KABEZA, name: 'Kabeza', subtitle: 'Residential Living', address: 'Kabeza (Rubirizi), Kicukiro', tag: 'Quiet & Affordable', color: 'from-stone-700/90 to-stone-900/90', img: '/DSC_0996-1-720x470.jpg.jpeg' },
+                    ].map((loc, i) => (
+                      <div key={i} className="group relative rounded-[3rem] overflow-hidden h-[480px] shadow-2xl cursor-pointer" onClick={() => handleBranchSwitch(loc.branch)}>
+                        <img src={loc.img} alt={loc.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]" />
+                        <div className={`absolute inset-0 bg-gradient-to-t ${loc.color}`}></div>
+                        <div className="absolute inset-0 p-10 flex flex-col justify-end">
+                          <span className="text-white/60 text-[10px] font-black uppercase tracking-[0.4em] mb-2">{loc.subtitle}</span>
+                          <h3 className="font-display text-5xl font-bold text-white mb-2">Glads {loc.name}</h3>
+                          <p className="text-white/70 text-sm mb-4">📍 {loc.address}</p>
+                          <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-full border border-white/30">{loc.tag}</span>
+                          <button className="mt-6 bg-white text-neutral-900 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-wider hover:bg-burgundy hover:text-white transition-all opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 duration-500">
+                            Switch to This Branch
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* === SECTION: Why Choose Glads === */}
+              <section className="reveal py-24 px-6 bg-neutral-50 dark:bg-neutral-950">
+                <div className="max-w-7xl mx-auto">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    <div>
+                      <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-6 block">The Glads Difference</span>
+                      <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white mb-8">Why Choose Glads?</h2>
+                      <p className="text-neutral-600 dark:text-neutral-400 text-lg leading-relaxed mb-10">We don't just offer a room — we offer a complete lifestyle. Every detail is crafted to exceed expectations.</p>
+                      <div className="space-y-6">
+                        {[
+                          { icon: Trophy, title: 'All-in-One Destination', desc: 'Accommodation, dining, wellness, shopping — everything under one roof.' },
+                          { icon: Users, title: 'Professional Staff', desc: 'Customer-first approach with trained hospitality professionals.' },
+                          { icon: MapPin, title: 'Strategic Locations', desc: 'Three branches across Kigali for maximum convenience.' },
+                          { icon: Leaf, title: 'Sustainability Commitment', desc: 'Eco-conscious practices and community-driven initiatives.' },
+                        ].map((item, i) => (
+                          <div key={i} className="flex gap-5 items-start">
+                            <div className="w-14 h-14 rounded-2xl bg-burgundy/10 text-burgundy flex items-center justify-center shrink-0">
+                              <item.icon className="w-7 h-7" strokeWidth={2.2} />
+                            </div>
+                            <div>
+                              <h4 className="font-heading font-bold text-lg text-neutral-900 dark:text-white mb-1">{item.title}</h4>
+                              <p className="text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed">{item.desc}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="relative h-[600px] hidden lg:block">
+                      <div className="absolute top-0 right-0 w-[80%] h-[75%] rounded-[3rem] overflow-hidden shadow-2xl">
+                        <img src="/OKK_5838-1-scaled.jpg.jpeg" alt="Glads Experience" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="absolute bottom-0 left-0 w-[55%] h-[50%] rounded-[3rem] overflow-hidden shadow-2xl border-8 border-neutral-50 dark:border-neutral-950">
+                        <img src="/food.jpeg" alt="Glads Dining" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-burgundy rounded-full flex items-center justify-center shadow-2xl z-10">
+                        <div className="text-center text-white">
+                          <p className="text-3xl font-black">3+</p>
+                          <p className="text-[9px] font-bold uppercase tracking-wider">Branches</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* === SECTION: Photo Highlights === */}
+              <section className="reveal py-24 px-6 bg-white dark:bg-black overflow-hidden">
+                <div className="max-w-7xl mx-auto">
+                  <div className="text-center mb-16">
+                    <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-4 block">Visual Journey</span>
+                    <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white">A Glimpse Inside.</h2>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {data.gallery.slice(0, 6).map((img, i) => (
+                      <div
+                        key={i}
+                        className={`relative rounded-[2rem] overflow-hidden cursor-pointer group shadow-xl ${i === 0 ? 'md:col-span-2 md:row-span-2 h-64 md:h-full' : 'h-48 md:h-56'
+                          }`}
+                        onClick={() => openImmersive(img, `${activeBranch} — Highlight ${i + 1}`)}
+                        onMouseEnter={() => setCursorLabel('View')}
+                        onMouseLeave={() => setCursorLabel(null)}
+                      >
+                        <img src={img} alt={`Highlight ${i + 1}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1.5s]" />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
+                          <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="text-center mt-10">
+                    <button onClick={() => setCurrentTab('Gallery')} className="bg-neutral-900 dark:bg-white text-white dark:text-black px-10 py-4 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-burgundy dark:hover:bg-burgundy dark:hover:text-white transition-all">
+                      View Full Gallery
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              {/* === SECTION: MoMo Pay Banner === */}
+              <section className="reveal py-20 px-6 bg-neutral-50 dark:bg-neutral-950">
+                <div className="max-w-5xl mx-auto">
+                  <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-[3rem] p-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl momo-badge">
+                    <div className="text-6xl shrink-0">📱</div>
+                    <div className="flex-1 text-center md:text-left">
+                      <h3 className="text-3xl md:text-4xl font-black text-neutral-900 mb-3">Pay with MoMo Pay</h3>
+                      <p className="text-neutral-800 text-lg font-medium leading-relaxed">
+                        We accept <strong>MTN Mobile Money (MoMo Pay)</strong> for all services and room bookings. Fast, secure, and convenient — pay directly from your phone.
+                      </p>
+                      <div className="flex flex-wrap gap-3 mt-4 justify-center md:justify-start">
+                        <span className="bg-neutral-900/10 text-neutral-900 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full">✓ Room Bookings</span>
+                        <span className="bg-neutral-900/10 text-neutral-900 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full">✓ All Services</span>
+                        <span className="bg-neutral-900/10 text-neutral-900 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full">✓ Restaurant & Bar</span>
+                        <span className="bg-neutral-900/10 text-neutral-900 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full">✓ Wellness & Spa</span>
+                      </div>
+                    </div>
+                    <div className="shrink-0">
+                      <button onClick={() => setCurrentTab('Rooms')} className="bg-neutral-900 text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-wider hover:bg-burgundy transition-all shadow-xl">
+                        Book Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
               {/* Quick Contact CTA */}
               <section className="reveal max-w-5xl mx-auto px-6 py-20">
-                <div className="bg-gradient-to-br from-burgundy to-red-800 rounded-[4rem] p-16 text-center text-white shadow-2xl">
-                  <h3 className="text-5xl md:text-6xl font-black uppercase tracking-tighter mb-6">Ready to Experience GLADS?</h3>
-                  <p className="text-lg opacity-90 mb-10 max-w-2xl mx-auto">Book your stay today and discover why discerning travelers choose GLADS Apartment Hotel.</p>
+                <div className="bg-gradient-to-br from-burgundy to-red-900 rounded-[4rem] p-16 text-center text-white shadow-2xl">
+                  <h3 className="font-display text-5xl md:text-6xl font-bold tracking-tight mb-6">Ready to Experience GLADS?</h3>
+                  <p className="text-lg text-white/80 mb-10 max-w-2xl mx-auto">Book your stay today and discover why discerning travelers choose GLADS Apartment Hotel.</p>
                   <div className="flex flex-wrap gap-6 justify-center">
                     <button onClick={() => setCurrentTab('Contact')} className="bg-white text-burgundy px-12 py-5 rounded-full text-sm font-black uppercase tracking-wider hover:scale-105 transition-all shadow-xl">
                       Contact Us
@@ -1068,20 +1238,23 @@ const App: React.FC = () => {
             </section>
           )}
 
-          {currentTab === 'Services' && activeBranch !== Branch.KANOMBE && (
+          {currentTab === 'Services' && activeBranch !== Branch.KABEZA && (
             <section className="reveal max-w-7xl mx-auto px-6 py-20">
-              <div className="mb-24">
+              <div className="mb-16 bg-neutral-50 dark:bg-neutral-900/40 rounded-[2.5rem] p-8 md:p-12 border border-neutral-200 dark:border-white/10">
                 <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-6 block">Lifestyle Services</span>
-                <h2 className="text-7xl md:text-9xl font-black uppercase tracking-tighter mb-10 leading-[0.8]">Curated <br /> Experiences.</h2>
+                <h2 className="text-7xl md:text-9xl font-black uppercase tracking-tight mb-6 leading-[0.82]">Curated <br /> Experiences.</h2>
+                <p className="text-neutral-600 dark:text-neutral-400 text-lg max-w-2xl">
+                  Discover signature services designed for comfort, wellness, and memorable stays.
+                </p>
               </div>
 
               {/* Category Filter */}
-              <div className="mb-12 flex flex-wrap gap-4 justify-center">
+              <div className="mb-12 flex flex-wrap gap-3 justify-start">
                 <button
                   onClick={() => setServiceCategory('all')}
-                  className={`px-8 py-4 rounded-[2rem] text-[10px] font-black uppercase tracking-wider transition-all ${serviceCategory === 'all'
-                    ? 'bg-burgundy text-white shadow-xl scale-105'
-                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  className={`px-7 py-3.5 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.18em] transition-all border ${serviceCategory === 'all'
+                    ? 'bg-burgundy text-white border-burgundy shadow-xl scale-105'
+                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                     }`}
                 >
                   All Services
@@ -1090,9 +1263,9 @@ const App: React.FC = () => {
                   <button
                     key={category}
                     onClick={() => setServiceCategory(category)}
-                    className={`px-8 py-4 rounded-[2rem] text-[10px] font-black uppercase tracking-wider transition-all ${serviceCategory === category
-                      ? 'bg-burgundy text-white shadow-xl scale-105'
-                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                    className={`px-7 py-3.5 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.18em] transition-all border ${serviceCategory === category
+                      ? 'bg-burgundy text-white border-burgundy shadow-xl scale-105'
+                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                       }`}
                   >
                     {category}
@@ -1100,25 +1273,25 @@ const App: React.FC = () => {
                 ))}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {data.services
                   .filter(service => serviceCategory === 'all' || service.category === serviceCategory)
                   .map((service, i) => (
                     <div
                       key={service.id}
-                      className="relative group h-[500px] rounded-[4rem] overflow-hidden shadow-2xl cursor-none hover:scale-105 transition-all duration-500"
+                      className="relative group h-[440px] rounded-[2.25rem] overflow-hidden shadow-xl cursor-pointer hover:shadow-2xl transition-all duration-500 border border-neutral-200/60 dark:border-white/10"
                       onClick={() => setSelectedService(service)}
                       onMouseEnter={() => setCursorLabel('Explore Service')}
                       onMouseLeave={() => setCursorLabel(null)}
                     >
-                      <img src={service.icon} alt={service.name} className="absolute inset-0 w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-[2s]" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
-                      <div className="absolute bottom-12 left-12 right-12 z-10 transition-transform duration-700 group-hover:-translate-y-4">
-                        <span className="text-[10px] font-black tracking-[0.5em] uppercase text-white/50 mb-4 block">
+                      <img src={service.icon} alt={service.name} className="absolute inset-0 w-full h-full object-cover grayscale-[0.25] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-[1.2s]" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/86 via-black/30 to-black/8"></div>
+                      <div className="absolute bottom-8 left-8 right-8 z-10">
+                        <span className="text-[10px] font-black tracking-[0.2em] uppercase text-white/75 mb-3 block">
                           <Counter target={i + 1} zeroPad /> &bull; {service.category}
                         </span>
-                        <h4 className="text-4xl font-sans italic mb-6 text-white leading-tight">{service.name}</h4>
-                        <p className="text-sm text-white/60 font-light leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-700">{service.description}</p>
+                        <h4 className="text-3xl font-black mb-3 text-white leading-tight">{service.name}</h4>
+                        <p className="text-sm text-white/80 font-normal leading-relaxed line-clamp-3">{service.description}</p>
                       </div>
                       <div className="absolute top-6 right-6 bg-burgundy/80 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
@@ -1425,8 +1598,8 @@ const App: React.FC = () => {
             <div className="space-y-6">
               <p className="text-white mb-8 text-sm font-black opacity-100">Branches</p>
               <button onClick={() => handleBranchSwitch(Branch.NDERA)} className="block opacity-80 hover:opacity-100 transition-all uppercase text-left text-xs font-bold">Ndera Flagship</button>
-              <button onClick={() => handleBranchSwitch(Branch.NYARUGUNGA)} className="block opacity-80 hover:opacity-100 transition-all uppercase text-left text-xs font-bold">Lifestyle (Nyarugunga)</button>
-              <button onClick={() => handleBranchSwitch(Branch.KANOMBE)} className="block opacity-80 hover:opacity-100 transition-all uppercase text-left text-xs font-bold">Residences (Kanombe)</button>
+              <button onClick={() => handleBranchSwitch(Branch.KANOMBE)} className="block opacity-80 hover:opacity-100 transition-all uppercase text-left text-xs font-bold">Kanombe (KMH)</button>
+              <button onClick={() => handleBranchSwitch(Branch.KABEZA)} className="block opacity-80 hover:opacity-100 transition-all uppercase text-left text-xs font-bold">Kabeza (Rubirizi)</button>
             </div>
             <div className="space-y-6">
               <p className="text-white mb-8 text-sm font-black opacity-100">Legal</p>

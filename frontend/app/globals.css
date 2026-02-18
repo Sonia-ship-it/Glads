@@ -4,44 +4,105 @@
 
 @theme {
   --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-serif: var(--font-playfair), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-serif: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
 
-  --color-burgundy: #800020;
+  --color-burgundy: #8B0000;
+  --color-gold: #C9A84C;
   --color-ink-light: #ffffff;
   --color-ink-dark: #0a0a0a;
 }
 
 :root {
   --background: #ffffff;
-  --foreground: #0a0a0a;
+  --foreground: #1a1a1a;
 }
 
 .dark {
   --background: #0a0a0a;
-  --foreground: #ffffff;
+  --foreground: #f0f0f0;
 }
 
 body {
   font-family: var(--font-sans);
   color: var(--foreground);
   background: var(--background);
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
   transition: background-color 0.5s ease, color 0.5s ease;
   scroll-behavior: smooth;
-  cursor: none !important;
 }
 
-* {
-  cursor: none !important;
+html,
+body {
+  font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif !important;
+}
+
+*,
+*::before,
+*::after {
+  font-family: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/* Font utility classes */
+.font-display {
+  font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif !important;
+}
+
+.font-heading {
+  font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif !important;
+}
+
+.font-serif {
+  font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif !important;
+}
+
+/* Improved text contrast */
+p, li, span {
+  color: inherit;
+}
+
+.text-body {
+  color: #2d2d2d;
+}
+
+.dark .text-body {
+  color: #e0e0e0;
+}
+
+/* Stronger neutral text */
+.text-neutral-500 {
+  color: #5a5a5a !important;
+}
+
+.dark .text-neutral-500 {
+  color: #a0a0a0 !important;
+}
+
+.text-neutral-400 {
+  color: #6b6b6b !important;
+}
+
+.dark .text-neutral-400 {
+  color: #b0b0b0 !important;
 }
 
 .glass-nav {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
 
 .dark .glass-nav {
-  background: rgba(10, 10, 10, 0.85);
+  background: rgba(10, 10, 10, 0.92);
 }
 
 @keyframes revealUp {
@@ -118,10 +179,51 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #e5e5e5;
+  background: #d4af37;
   border-radius: 10px;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #262626;
+  background: #8B0000;
+}
+
+::selection {
+  background: rgba(201, 168, 76, 0.25);
+  color: var(--foreground);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) and (min-width: 1024px) {
+  body,
+  * {
+    cursor: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* MoMo Pay badge animation */
+@keyframes momo-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(255, 204, 0, 0); }
+}
+
+.momo-badge {
+  animation: momo-pulse 2s ease-in-out infinite;
 }

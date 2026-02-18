@@ -320,8 +320,8 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
                     {isSuperAdmin && (
                       <>
                         <th className="pb-6">Ndera</th>
-                        <th className="pb-6">Nyarugunga</th>
                         <th className="pb-6">Kanombe</th>
+                        <th className="pb-6">Kabeza</th>
                       </>
                     )}
                     <th className="pb-6">Trend</th>
@@ -337,8 +337,8 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
                       {isSuperAdmin && (
                         <>
                           <td className="py-6 opacity-60">${service.branchRevenue[Branch.NDERA] || 0}</td>
-                          <td className="py-6 opacity-60">${service.branchRevenue[Branch.NYARUGUNGA] || 0}</td>
                           <td className="py-6 opacity-60">${service.branchRevenue[Branch.KANOMBE] || 0}</td>
+                          <td className="py-6 opacity-60">${service.branchRevenue[Branch.KABEZA] || 0}</td>
                         </>
                       )}
                       <td className="py-6">

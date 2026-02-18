@@ -66,7 +66,7 @@ export const Counter: React.FC<CounterProps> = ({
     }, [hasStarted, target, count]);
 
     const formatCount = (num: number) => {
-        if (zeroPad && num < 10) return `0\${num}`;
+        if (zeroPad && num < 10) return `0${num}`;
         return num.toString();
     };
 

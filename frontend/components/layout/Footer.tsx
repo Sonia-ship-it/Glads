@@ -38,8 +38,8 @@ export const Footer: React.FC<FooterProps> = ({
                     <div className="space-y-6">
                         <p className="text-white mb-8 text-sm font-black opacity-100">Branches</p>
                         <button onClick={() => onBranchSwitch(Branch.NDERA)} className="block opacity-80 hover:opacity-100 transition-all uppercase text-left text-xs font-bold">Ndera Flagship</button>
-                        <button onClick={() => onBranchSwitch(Branch.NYARUGUNGA)} className="block opacity-80 hover:opacity-100 transition-all uppercase text-left text-xs font-bold">Lifestyle (Nyarugunga)</button>
-                        <button onClick={() => onBranchSwitch(Branch.KANOMBE)} className="block opacity-80 hover:opacity-100 transition-all uppercase text-left text-xs font-bold">Residences (Kanombe)</button>
+                        <button onClick={() => onBranchSwitch(Branch.KANOMBE)} className="block opacity-80 hover:opacity-100 transition-all uppercase text-left text-xs font-bold">Kanombe (KMH)</button>
+                        <button onClick={() => onBranchSwitch(Branch.KABEZA)} className="block opacity-80 hover:opacity-100 transition-all uppercase text-left text-xs font-bold">Kabeza (Rubirizi)</button>
                     </div>
                     <div className="space-y-6">
                         <p className="text-white mb-8 text-sm font-black opacity-100">Legal</p>
