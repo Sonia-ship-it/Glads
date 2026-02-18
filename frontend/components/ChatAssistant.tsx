@@ -1,0 +1,316 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import type { Branch, BranchData } from '../types';
+
+type Message = {
+  id: string;
+  role: 'assistant' | 'user';
+  text: string;
+  ts: number;
+};
+
+type Props = {
+  visible: boolean;
+  onClose: () => void;
+  activeBranch: Branch;
+  branches: Array<{ id: Branch; fullName: string; tagline: string }>;
+  branchData: BranchData;
+  onSelectBranch: (branch: Branch) => void;
+};
+
+function uid() {
+  return Math.random().toString(16).slice(2) + Date.now().toString(16);
+}
+
+function normalize(s: string) {
+  return s.toLowerCase().trim();
+}
+
+function buildAssistantReply(input: string, branchData: BranchData) {
+  const q = normalize(input);
+
+  const roomNames = branchData.rooms.map(r => r.name);
+  const serviceNames = branchData.services.map(s => s.name);
+
+  const wantsRooms = /room|rooms|suite|suites|stay|book|booking|price|rates|night/.test(q);
+  const wantsServices = /service|services|spa|pool|gym|sauna|massage|restaurant|bar|cinema|conference|meeting|salon|supermarket/.test(q);
+  const wantsLocation = /location|where|address|map|direction|directions|near|airport|distance|transport/.test(q);
+  const wantsContact = /contact|phone|email|call|whatsapp/.test(q);
+  const wantsHours = /hours|open|closing|close|time/.test(q);
+
+  if (wantsLocation) {
+    const loc = branchData.location;
+    return `GLADS ${branchData.fullName} is located at ${loc.address}. It’s about ${loc.distance}. If you want, open the Location Guide (footer link) for maps and directions.`;
+  }
+
+  if (wantsContact) {
+    const c = branchData.contact;
+    return `You can reach ${branchData.fullName} on ${c.phone} or email ${c.email}.`;
+  }
+
+  if (wantsHours) {
+    const serviceWithHours = branchData.services.filter(s => s.hours).slice(0, 6);
+    if (serviceWithHours.length === 0) return 'Some services have specific hours. Tell me which service you mean and I’ll share its times.';
+    return `Here are a few hours for ${branchData.fullName}:\n- ${serviceWithHours.map(s => `${s.name}: ${s.hours}`).join('\n- ')}`;
+  }
+
+  if (wantsRooms && !wantsServices) {
+    const cheapest = [...branchData.rooms].sort((a, b) => a.price - b.price)[0];
+    const priciest = [...branchData.rooms].sort((a, b) => b.price - a.price)[0];
+    return `For ${branchData.fullName}, rooms currently range from $${cheapest.price}/night (${cheapest.name}) up to $${priciest.price}/night (${priciest.name}). Want me to recommend a suite based on budget and guests?`;
+  }
+
+  if (wantsServices && !wantsRooms) {
+    const categories = Array.from(new Set(branchData.services.map(s => s.category)));
+    return `At ${branchData.fullName}, popular services include:\n- ${serviceNames.slice(0, 6).join(', ')}\nCategories available: ${categories.join(' • ')}. Which one do you want details for?`;
+  }
+
+  // Specific room/service name match (simple contains check)
+  const matchRoom = roomNames.find(n => q.includes(normalize(n)));
+  if (matchRoom) {
+    const room = branchData.rooms.find(r => r.name === matchRoom)!;
+    return `${room.name} is $${room.price}/night. Highlights: ${room.features.slice(0, 3).join(' • ')}. You can open Rooms tab and tap “Book Now” to reserve.`;
+  }
+
+  const matchService = serviceNames.find(n => q.includes(normalize(n)));
+  if (matchService) {
+    const svc = branchData.services.find(s => s.name === matchService)!;
+    const hours = svc.hours ? ` Hours: ${svc.hours}.` : '';
+    const pricing = svc.pricing ? ` Pricing: ${svc.pricing}.` : '';
+    return `${svc.name}: ${svc.fullDescription || svc.description || ''}${hours}${pricing}`.trim();
+  }
+
+  if (wantsRooms && wantsServices) {
+    return `Sure—are you planning to book a room, a service, or both at ${branchData.fullName}? Tell me your dates and preferences and I’ll guide you.`;
+  }
+
+  return `I can help with rooms, services, location, and contact info for ${branchData.fullName}. What do you want to know?`;
+}
+
+export function ChatAssistant({
+  visible,
+  onClose,
+  activeBranch,
+  branches,
+  branchData,
+  onSelectBranch,
+}: Props) {
+  const [step, setStep] = useState<'branch' | 'chat'>('branch');
+  const [pendingBranch, setPendingBranch] = useState<Branch>(activeBranch);
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const listRef = useRef<HTMLDivElement | null>(null);
+
+  const quickPrompts = useMemo(
+    () => [
+      'Show me room prices',
+      'What services do you have?',
+      'Where are you located?',
+      'How can I contact you?',
+    ],
+    []
+  );
+
+  useEffect(() => {
+    if (!visible) return;
+    setPendingBranch(activeBranch);
+    setStep('branch');
+  }, [visible, activeBranch]);
+
+  useEffect(() => {
+    if (!visible) return;
+    // Initialize greeting once per open
+    setMessages([
+      {
+        id: uid(),
+        role: 'assistant',
+        text: 'Hi! I’m GLADS Assistant. First, choose the branch you want to ask about.',
+        ts: Date.now(),
+      },
+    ]);
+    setInput('');
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible) return;
+    if (!listRef.current) return;
+    listRef.current.scrollTop = listRef.current.scrollHeight;
+  }, [messages, visible]);
+
+  const send = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    const userMsg: Message = { id: uid(), role: 'user', text: trimmed, ts: Date.now() };
+    const assistantText = buildAssistantReply(trimmed, branchData);
+    const assistantMsg: Message = { id: uid(), role: 'assistant', text: assistantText, ts: Date.now() + 1 };
+
+    setMessages(prev => [...prev, userMsg, assistantMsg]);
+    setInput('');
+  };
+
+  if (!visible) return null;
+
+  return (
+    <div className="fixed inset-0 z-[170]">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+
+      <div className="absolute bottom-6 right-6 left-6 md:left-auto md:w-[420px] bg-white dark:bg-neutral-950 rounded-[2rem] shadow-2xl border border-neutral-200 dark:border-white/10 overflow-hidden">
+        <div className="p-5 border-b border-neutral-200 dark:border-white/10 flex items-center justify-between gap-4">
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-[0.35em] text-burgundy">GLADS Assistant</div>
+            <div className="text-sm font-bold text-neutral-800 dark:text-white">Ask about rooms, services, and directions</div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 text-neutral-600 dark:text-white hover:brightness-95"
+            aria-label="Close chat"
+          >
+            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div ref={listRef} className="max-h-[55vh] md:max-h-[520px] overflow-y-auto p-5 space-y-3">
+          {messages.map(m => (
+            <div key={m.id} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
+              <div
+                className={
+                  m.role === 'user'
+                    ? 'max-w-[85%] bg-burgundy text-white rounded-2xl px-4 py-3 text-sm'
+                    : 'max-w-[85%] bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-white rounded-2xl px-4 py-3 text-sm border border-neutral-200 dark:border-white/10'
+                }
+                style={{ whiteSpace: 'pre-wrap' }}
+              >
+                {m.text}
+              </div>
+            </div>
+          ))}
+
+          {step === 'branch' && (
+            <div className="mt-2 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-white/10 rounded-2xl p-4">
+              <div className="text-[10px] font-black uppercase tracking-[0.35em] text-neutral-500 mb-3">Choose Branch</div>
+              <div className="grid grid-cols-1 gap-2">
+                {branches.map(b => (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={() => setPendingBranch(b.id)}
+                    className={`text-left px-4 py-3 rounded-2xl border transition-all ${
+                      pendingBranch === b.id
+                        ? 'bg-burgundy text-white border-burgundy'
+                        : 'bg-white dark:bg-neutral-950 text-neutral-700 dark:text-white border-neutral-200 dark:border-white/10 hover:bg-neutral-100 dark:hover:bg-neutral-900'
+                    }`}
+                  >
+                    <div className="font-bold text-sm">{b.fullName}</div>
+                    <div className={`text-xs ${pendingBranch === b.id ? 'text-white/80' : 'text-neutral-500'}`}>{b.tagline}</div>
+                  </button>
+                ))}
+              </div>
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectBranch(pendingBranch);
+                    setStep('chat');
+                    setMessages(prev => [
+                      ...prev,
+                      {
+                        id: uid(),
+                        role: 'assistant',
+                        text: `Great. You’re asking about ${pendingBranch}. What can I help you with?`,
+                        ts: Date.now(),
+                      },
+                    ]);
+                  }}
+                  className="flex-1 bg-black dark:bg-white text-white dark:text-black rounded-full py-3 text-[11px] font-black uppercase tracking-[0.35em]"
+                >
+                  Continue
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMessages(prev => [
+                      ...prev,
+                      {
+                        id: uid(),
+                        role: 'assistant',
+                        text: 'You can also ask general questions, but branch helps me answer better.',
+                        ts: Date.now(),
+                      },
+                    ]);
+                    setStep('chat');
+                  }}
+                  className="px-5 rounded-full py-3 text-[11px] font-black uppercase tracking-[0.35em] border border-neutral-200 dark:border-white/10"
+                >
+                  Skip
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 'chat' && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {quickPrompts.map(p => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => send(p)}
+                  className="px-4 py-2 rounded-full text-[11px] font-bold bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 text-neutral-700 dark:text-white hover:brightness-95"
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 border-t border-neutral-200 dark:border-white/10">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (step !== 'chat') return;
+              send(input);
+            }}
+            className="flex items-center gap-3"
+          >
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={step === 'chat' ? 'Type your question...' : 'Select branch to start'}
+              disabled={step !== 'chat'}
+              className="flex-1 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 rounded-full px-5 py-3 text-sm outline-none focus:ring-2 ring-burgundy/40"
+            />
+            <button
+              type="submit"
+              disabled={step !== 'chat' || !input.trim()}
+              className="w-12 h-12 rounded-full bg-burgundy text-white disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
+              aria-label="Send"
+            >
+              <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M13 5l7 7-7 7" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ChatFloatingButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="fixed bottom-6 right-6 z-[165] w-16 h-16 rounded-full bg-burgundy shadow-2xl shadow-burgundy/30 border border-burgundy/30 hover:brightness-110 hover:scale-[1.03] active:scale-[0.98] transition-all"
+      aria-label="Open chat assistant"
+    >
+      <div className="w-full h-full grid place-items-center">
+        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h8M8 14h5m9-2c0 4.418-4.03 8-9 8a10.98 10.98 0 01-4-.73L3 20l1.23-3.38A7.94 7.94 0 012 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      </div>
+    </button>
+  );
+}
