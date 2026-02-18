@@ -47,7 +47,7 @@ export const CustomCursor: React.FC<CustomCursorProps> = ({ cursorActive, cursor
                 style={{
                     left: trailPos.x,
                     top: trailPos.y,
-                    transform: `translate(-50%, -50%) \${cursorActive ? 'scale(1.3)' : 'scale(1)'}`,
+                    transform: `translate(-50%, -50%) ${cursorActive ? 'scale(1.3)' : 'scale(1)'}`,
                     width: '60px',
                     height: '60px',
                     border: '2px solid rgba(128, 0, 32, 0.12)',

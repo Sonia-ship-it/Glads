@@ -1,20 +1,19 @@
 import type { Metadata } from "next";
-import { Outfit, Playfair_Display } from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 
 const outfit = Outfit({
     subsets: ["latin"],
     variable: "--font-outfit",
-});
-
-const playfair = Playfair_Display({
-    subsets: ["latin"],
-    variable: "--font-playfair",
+    weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
     title: "Glads Apartment Hotel | Luxury Living",
     description: "Experience luxury living with Glads Apartment Hotel.",
+      icons: {
+    icon: '/logo.png', 
+  },
 };
 
 export default function RootLayout({
@@ -24,7 +23,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={`${outfit.variable} ${playfair.variable} antialiased`}>
+            <body className={`${outfit.variable} antialiased`}>
                 {children}
             </body>
         </html>

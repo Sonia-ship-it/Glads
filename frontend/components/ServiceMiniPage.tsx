@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type { Service, Branch } from '../types';
 
 type ServiceVideo = {
@@ -97,7 +97,18 @@ export default function ServiceMiniPage({
   onBook,
   onOpenImage,
 }: Props) {
-  const [tab, setTab] = useState<'overview' | 'gallery' | 'videos' | 'faq'>('overview');
+  const [tab, setTab] = useState<'overview' | 'menu' | 'gallery' | 'videos' | 'faq'>('overview');
+  const [menuTab, setMenuTab] = useState<'breakfast' | 'lunch' | 'dinner' | 'drinks'>('breakfast');
+
+  useEffect(() => {
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onEsc);
+    return () => window.removeEventListener('keydown', onEsc);
+  }, [onClose]);
+
+  const hasMenu = !!(service as any).menu;
 
   const galleryImages = useMemo(() => {
     const fromService = service.gallery?.filter(Boolean) ?? [];
@@ -134,8 +145,8 @@ export default function ServiceMiniPage({
 
       <button
         type="button"
-        onClick={onClose} //
-        className="absolute top-6 right-6 z-[120] w-12 h-12 rounded-full bg-white/10 border border-white/15 text-white hover:bg-white/15 transition-all"
+        onClick={onClose}
+        className="absolute top-6 right-6 z-[120] w-12 h-12 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all"
         aria-label="Close"
       >
         <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,8 +154,8 @@ export default function ServiceMiniPage({
         </svg>
       </button>
 
-      <div className="relative h-full w-full flex flex-col">
-        <div className="px-6 md:px-10 pt-8 pb-6 flex items-start justify-between gap-6">
+      <div className="relative h-full w-full max-w-[1500px] mx-auto flex flex-col">
+        <div className="px-6 md:px-10 pt-8 pb-6 flex flex-col lg:flex-row items-start justify-between gap-6">
           <div className="max-w-3xl">
             <div className="flex items-center gap-3 mb-4">
               <span className="text-[10px] font-black tracking-[0.45em] uppercase text-white/60">{activeBranch}</span>
@@ -152,13 +163,13 @@ export default function ServiceMiniPage({
               <span className="text-[10px] font-black tracking-[0.45em] uppercase text-burgundy">{service.category}</span>
             </div>
             <h2 className="text-4xl md:text-6xl font-black tracking-tight text-white leading-[0.95]">{service.name}</h2>
-            <p className="mt-4 text-white/70 text-base md:text-lg font-light leading-relaxed max-w-2xl">
+            <p className="mt-4 text-white/80 text-base md:text-lg font-normal leading-relaxed max-w-2xl">
               {service.fullDescription || service.description || 'Discover this experience at GLADS.'}
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
               {service.hours && (
-                <span className="px-4 py-2 rounded-full text-[11px] font-bold bg-white/10 text-white border border-white/10">
+                <span className="px-4 py-2 rounded-full text-[11px] font-bold bg-white/10 text-white border border-white/20">
                   {service.hours}
                 </span>
               )}
@@ -168,55 +179,68 @@ export default function ServiceMiniPage({
                 </span>
               )}
             </div>
+            {/* MoMo Pay Banner */}
+            <div className="mt-5 flex items-center gap-3 bg-yellow-400/15 border border-yellow-400/40 rounded-2xl px-5 py-3">
+              <span className="text-2xl">📱</span>
+              <div>
+                <p className="text-yellow-300 font-black text-[11px] uppercase tracking-wider">MoMo Pay Accepted</p>
+                <p className="text-white/70 text-xs mt-0.5">Pay with MTN Mobile Money for this service. Fast &amp; secure.</p>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => onBook(service)}
-              className="bg-burgundy text-white px-6 md:px-8 py-3.5 rounded-full text-[11px] font-black uppercase tracking-[0.35em] shadow-2xl hover:brightness-125 transition-all"
+              className="bg-burgundy text-white px-6 md:px-8 py-3.5 rounded-full text-[11px] font-black uppercase tracking-[0.22em] shadow-2xl hover:brightness-125 transition-all"
             >
               Book Now
             </button>
             <button
               onClick={onClose}
-              className="bg-white/10 text-white px-5 py-3.5 rounded-full text-[11px] font-black uppercase tracking-[0.35em] border border-white/15 hover:bg-white/15 transition-all"
+              className="bg-white/10 text-white px-5 py-3.5 rounded-full text-[11px] font-black uppercase tracking-[0.2em] border border-white/20 hover:bg-white/15 transition-all"
             >
               Close
             </button>
           </div>
         </div>
 
-        <div className="px-6 md:px-10">
-          <div className="flex flex-wrap gap-3">
+        <div className="px-6 md:px-10 sticky top-0 z-20">
+          <div className="flex flex-wrap gap-3 bg-black/35 backdrop-blur-md border border-white/10 rounded-2xl p-3">
             <button
               onClick={() => setTab('overview')}
-              className={`px-5 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.35em] border transition-all ${
-                tab === 'overview' ? 'bg-white text-black border-white' : 'bg-white/10 text-white border-white/15 hover:bg-white/15'
-              }`}
+              className={`px-4 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border transition-all ${tab === 'overview' ? 'bg-white text-black border-white' : 'bg-white/10 text-white border-white/20 hover:bg-white/15'
+                }`}
             >
               Overview
             </button>
+            {hasMenu && (
+              <button
+                onClick={() => setTab('menu')}
+                className={`px-4 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border transition-all ${tab === 'menu' ? 'bg-yellow-400 text-black border-yellow-400' : 'bg-white/10 text-white border-white/20 hover:bg-white/15'
+                  }`}
+              >
+                Menu
+              </button>
+            )}
             <button
               onClick={() => setTab('gallery')}
-              className={`px-5 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.35em] border transition-all ${
-                tab === 'gallery' ? 'bg-white text-black border-white' : 'bg-white/10 text-white border-white/15 hover:bg-white/15'
-              }`}
+              className={`px-4 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border transition-all ${tab === 'gallery' ? 'bg-white text-black border-white' : 'bg-white/10 text-white border-white/20 hover:bg-white/15'
+                }`}
             >
               Gallery
             </button>
             <button
               onClick={() => setTab('videos')}
-              className={`px-5 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.35em] border transition-all ${
-                tab === 'videos' ? 'bg-white text-black border-white' : 'bg-white/10 text-white border-white/15 hover:bg-white/15'
-              }`}
+              className={`px-4 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border transition-all ${tab === 'videos' ? 'bg-white text-black border-white' : 'bg-white/10 text-white border-white/20 hover:bg-white/15'
+                }`}
             >
               Videos
             </button>
             <button
               onClick={() => setTab('faq')}
-              className={`px-5 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.35em] border transition-all ${
-                tab === 'faq' ? 'bg-white text-black border-white' : 'bg-white/10 text-white border-white/15 hover:bg-white/15'
-              }`}
+              className={`px-4 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border transition-all ${tab === 'faq' ? 'bg-white text-black border-white' : 'bg-white/10 text-white border-white/20 hover:bg-white/15'
+                }`}
             >
               FAQ
             </button>
@@ -229,7 +253,7 @@ export default function ServiceMiniPage({
               <div className="lg:col-span-2">
                 <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8">
                   <h3 className="text-white text-xl font-black uppercase tracking-widest mb-4">The Experience</h3>
-                  <p className="text-white/70 leading-relaxed">
+                  <p className="text-white/80 leading-relaxed">
                     {service.longDescription || service.fullDescription || service.description || 'Details will be available soon.'}
                   </p>
 
@@ -239,7 +263,7 @@ export default function ServiceMiniPage({
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {highlights.map((h) => (
                           <div key={h} className="bg-black/30 border border-white/10 rounded-2xl p-4">
-                            <div className="text-white text-sm font-bold leading-snug">{h}</div>
+                            <div className="text-white text-sm font-semibold leading-snug">{h}</div>
                           </div>
                         ))}
                       </div>
@@ -303,7 +327,7 @@ export default function ServiceMiniPage({
 
                 <div className="bg-gradient-to-br from-burgundy/40 to-black/40 border border-burgundy/30 rounded-[2rem] p-7">
                   <h4 className="text-white text-[11px] font-black uppercase tracking-[0.35em] mb-4">Ready?</h4>
-                  <p className="text-white/75 text-sm leading-relaxed mb-5">
+                  <p className="text-white/85 text-sm leading-relaxed mb-5">
                     Tap “Book Now” to request a slot. Our team will confirm availability and payment instructions.
                   </p>
                   <button
@@ -316,6 +340,58 @@ export default function ServiceMiniPage({
               </div>
             </div>
           )}
+
+          {tab === 'menu' && hasMenu && (() => {
+            const menu = (service as any).menu;
+            const menuCategories: { key: 'breakfast' | 'lunch' | 'dinner' | 'drinks'; label: string; emoji: string }[] = [
+              { key: 'breakfast', label: 'Breakfast', emoji: '🌅' },
+              { key: 'lunch', label: 'Lunch', emoji: '☀️' },
+              { key: 'dinner', label: 'Dinner', emoji: '🌙' },
+              { key: 'drinks', label: 'Drinks', emoji: '🍹' },
+            ];
+            const currentItems = menu[menuTab] ?? [];
+            return (
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <h3 className="text-white text-xl font-black uppercase tracking-widest">Restaurant Menu</h3>
+                  <div className="flex items-center gap-2 bg-yellow-400/20 border border-yellow-400/40 px-3 py-1.5 rounded-full">
+                    <span className="text-yellow-300 text-xs">📱</span>
+                    <span className="text-yellow-300 text-[10px] font-black uppercase tracking-wider">MoMo Pay Available</span>
+                  </div>
+                </div>
+                {/* Menu Category Tabs */}
+                <div className="flex flex-wrap gap-3 mb-8">
+                  {menuCategories.map(cat => (
+                    <button
+                      key={cat.key}
+                      onClick={() => setMenuTab(cat.key)}
+                      className={`px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider border transition-all ${menuTab === cat.key
+                        ? 'bg-yellow-400 text-black border-yellow-400'
+                        : 'bg-white/10 text-white border-white/15 hover:bg-white/15'
+                        }`}
+                    >
+                      {cat.emoji} {cat.label}
+                    </button>
+                  ))}
+                </div>
+                {/* Menu Items */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {currentItems.map((item: { name: string; description: string; price: string }, idx: number) => (
+                    <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <h4 className="text-white font-bold text-base mb-1">{item.name}</h4>
+                          <p className="text-white/60 text-sm leading-relaxed">{item.description}</p>
+                        </div>
+                        <span className="text-yellow-400 font-black text-sm whitespace-nowrap shrink-0">{item.price}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-white/40 text-xs mt-6 italic">* Prices are subject to change. Ask staff for daily specials. MoMo Pay, cash, and card accepted.</p>
+              </div>
+            );
+          })()}
 
           {tab === 'gallery' && (
             <div>
@@ -396,9 +472,9 @@ export default function ServiceMiniPage({
               <h3 className="text-white text-xl font-black uppercase tracking-widest mb-6">Frequently Asked Questions</h3>
               <div className="space-y-4">
                 {faqs.map((f) => (
-                  <details key={f.q} className="bg-white/5 border border-white/10 rounded-[2rem] p-6">
+                  <details key={f.q} className="bg-white/5 border border-white/10 rounded-[2rem] p-6 open:bg-white/10 transition-colors">
                     <summary className="cursor-pointer text-white font-bold">{f.q}</summary>
-                    <div className="mt-3 text-white/70 text-sm leading-relaxed">{f.a}</div>
+                    <div className="mt-3 text-white/80 text-sm leading-relaxed">{f.a}</div>
                   </details>
                 ))}
               </div>

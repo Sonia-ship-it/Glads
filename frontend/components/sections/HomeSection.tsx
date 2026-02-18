@@ -31,8 +31,8 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
                         <div className="inline-block bg-neutral-100 dark:bg-neutral-900/80 px-8 py-3 rounded-full border border-neutral-200 dark:border-white/5">
                             <span className="text-[11px] font-black tracking-[0.5em] uppercase text-burgundy dark:text-neutral-200">{data.fullName}</span>
                         </div>
-                        <h1 className="text-8xl md:text-[10rem] font-black uppercase tracking-tighter leading-[0.8] mb-8">
-                            <span className="inline-block overflow-hidden align-top"><span className="inline-block animate-reveal translate-y-[110%] [animation-fill-mode:forwards]" style={{ animationDelay: '0.2s' }}>Art of</span></span>
+                        <h1 className="text-8xl md:text-[10rem] font-black uppercase tracking-tighter leading-[0.8] mb-8 text-burgundy">
+                            <span className="inline-block overflow-hidden align-top"><span className="inline-block animate-reveal translate-y-[110%] [animation-fill-mode:forwards] text-burgundy" style={{ animationDelay: '0.2s' }}>Art of</span></span>
                             <br />
                             <span className="inline-block overflow-hidden align-top"><span className="text-burgundy inline-block animate-reveal translate-y-[110%] [animation-fill-mode:forwards]" style={{ animationDelay: '0.4s' }}>Living.</span></span>
                         </h1>
