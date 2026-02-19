@@ -1,4 +1,4 @@
-
+﻿
 import React from 'react';
 import { Branch } from '../types';
 
@@ -9,16 +9,17 @@ interface Props {
 
 export const BranchSelector: React.FC<Props> = ({ activeBranch, onSelect }) => {
   return (
-    <div className="inline-flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 pointer-events-auto shadow-inner font-sans">
+    <div className="inline-flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 pointer-events-auto shadow-inner" style={{ fontFamily: 'var(--font-outfit)' }}>
       {Object.values(Branch).map((branch) => (
         <button
           key={branch}
           onClick={() => onSelect(branch)}
-          className={`px-3.5 py-2 rounded-xl text-[9.5px] md:text-[10px] font-extrabold tracking-[0.05em] uppercase transition-all duration-300 ${
+          className={`px-2.5 py-1.5 rounded-xl text-[5px] md:text-[6px] font-semibold tracking-[0em] uppercase transition-none ${
             activeBranch === branch
-              ? 'bg-white dark:bg-neutral-800 text-burgundy shadow-sm scale-[1.02]'
-              : 'text-neutral-800 dark:text-neutral-200 hover:text-burgundy dark:hover:text-burgundy'
+              ? 'bg-white dark:bg-neutral-800 text-burgundy shadow-sm'
+              : 'text-[#9d9d9d] dark:text-[#9d9d9d] hover:text-[#787878] dark:hover:text-[#c4c4c4]'
           }`}
+          style={{ fontWeight: 600 }}
         >
           {branch}
         </button>
@@ -26,3 +27,5 @@ export const BranchSelector: React.FC<Props> = ({ activeBranch, onSelect }) => {
     </div>
   );
 };
+
+

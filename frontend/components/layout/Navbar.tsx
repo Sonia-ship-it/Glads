@@ -1,4 +1,4 @@
-import * as React from 'react';
+﻿import * as React from 'react';
 import { Branch } from '../../types';
 import { Logo } from '../Logo';
 import { BranchSelector } from '../BranchSelector';
@@ -29,9 +29,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
     return (
         <header className="fixed top-0 left-0 right-0 z-50 p-4 md:p-6 flex justify-center pointer-events-none font-sans font-[var(--font-outfit)]">
-            <div className="w-full max-w-7xl glass-nav rounded-full px-4 md:px-7 h-20 md:h-22 flex items-center justify-between pointer-events-auto border border-neutral-200/70 dark:border-white/10 shadow-2xl transition-all duration-500">
+            <div className="w-full max-w-7xl glass-nav rounded-full px-4 md:px-7 h-[80px] md:h-[80px] flex items-center justify-between pointer-events-auto border border-neutral-200/70 dark:border-white/10 shadow-2xl transition-none">
                 <div className="flex items-center gap-6 xl:gap-8">
-                    <div className="cursor-pointer transition-transform hover:scale-105 active:scale-95 shrink-0" onClick={() => onTabSwitch('Home')}>
+                    <div className="cursor-pointer shrink-0" onClick={() => onTabSwitch('Home')}>
                         <Logo className="scale-75 md:scale-90" />
                     </div>
                     <nav className="hidden xl:flex items-center gap-1 2xl:gap-1.5" style={{ fontFamily: 'var(--font-outfit)' }}>
@@ -39,10 +39,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                             <button
                                 key={tab}
                                 onClick={() => onTabSwitch(tab as any)}
-                                className={`text-[8px] xl:text-[9px] font-black tracking-normal uppercase transition-all duration-300 relative py-1.5 px-2.5 rounded-full border ${currentTab === tab ? 'text-burgundy dark:text-white bg-white/90 dark:bg-white/20 border-neutral-200/80 dark:border-white/20 shadow-sm' : 'text-neutral-900 dark:text-neutral-100 border-transparent hover:text-burgundy dark:hover:text-burgundy hover:bg-white/65 dark:hover:bg-white/10'}`}
+                                className={`text-[6px] xl:text-[7px] font-semibold tracking-[0em] uppercase transition-none relative py-1 px-1.5 rounded-full border ${currentTab === tab ? 'text-burgundy dark:text-white bg-white/90 dark:bg-white/20 border-neutral-200/80 dark:border-white/20 shadow-sm' : 'text-[#9d9d9d] dark:text-[#9d9d9d] border-transparent hover:text-[#787878] dark:hover:text-[#c4c4c4] hover:bg-white/65 dark:hover:bg-white/10'}`}
+                                style={{ fontFamily: 'var(--font-outfit)', fontWeight: 600 }}
                             >
                                 {tab}
-                                <span className={`absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-[3px] bg-burgundy transition-all duration-300 rounded-full ${currentTab === tab ? 'w-full' : 'w-0'}`}></span>
+                                <span className={`absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-[3px] bg-burgundy dark:bg-white transition-none rounded-full ${currentTab === tab ? 'w-full' : 'w-0'}`}></span>
                             </button>
                         ))}
                     </nav>
@@ -60,7 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16m-7 6h7"} /></svg>
                         </button>
-                        <button onClick={() => onTabSwitch('Rooms')} className="hidden md:block bg-burgundy text-white px-6 py-3 rounded-full text-[9px] font-black tracking-[0.1em] uppercase hover:brightness-110 transition-all shadow-lg active:scale-95 font-sans">
+                        <button onClick={() => onTabSwitch('Rooms')} className="hidden md:block bg-burgundy text-white px-5 py-2 rounded-full text-[6px] font-semibold tracking-[0em] uppercase hover:brightness-110 transition-none shadow-lg" style={{ fontFamily: 'var(--font-outfit)', fontWeight: 600 }}>
                             Book Now
                         </button>
                     </div>
@@ -79,7 +80,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                             onTabSwitch(tab as any);
                             onMobileMenuToggle(false);
                         }}
-                        className={`text-[1.65rem] font-[900] tracking-[0.04em] uppercase transition-colors font-sans ${currentTab === tab ? 'text-burgundy' : 'text-neutral-900 dark:text-neutral-100'}`}
+                        className={`text-[0.78rem] font-semibold tracking-[0.01em] uppercase transition-colors font-sans ${currentTab === tab ? 'text-burgundy' : 'text-neutral-900 dark:text-neutral-100'}`}
                     >
                         {tab}
                     </button>
@@ -88,3 +89,5 @@ export const Navbar: React.FC<NavbarProps> = ({
         </header>
     );
 };
+
+

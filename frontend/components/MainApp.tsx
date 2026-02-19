@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { useState, useEffect, useMemo } from 'react';
@@ -551,9 +551,9 @@ const App: React.FC = () => {
 
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 p-4 md:p-6 flex justify-center pointer-events-none font-sans font-[var(--font-outfit)]">
-        <div className="w-full max-w-7xl glass-nav rounded-full px-4 md:px-7 h-20 md:h-22 flex items-center justify-between pointer-events-auto border border-neutral-200/70 dark:border-white/10 shadow-2xl transition-all duration-500">
+        <div className="w-full max-w-7xl glass-nav rounded-full px-4 md:px-7 h-[80px] md:h-[80px] flex items-center justify-between pointer-events-auto border border-neutral-200/70 dark:border-white/10 shadow-2xl transition-none">
           <div className="flex items-center gap-6 xl:gap-8">
-            <div className="cursor-pointer transition-transform hover:scale-105 active:scale-95 shrink-0" onClick={() => setCurrentTab('Home')}>
+            <div className="cursor-pointer shrink-0" onClick={() => setCurrentTab('Home')}>
               <Logo className="scale-75 md:scale-90" />
             </div>
             <nav className="hidden xl:flex items-center gap-1 2xl:gap-1.5" style={{ fontFamily: 'var(--font-outfit)' }}>
@@ -561,11 +561,13 @@ const App: React.FC = () => {
                 <button
                   key={tab}
                   onClick={() => setCurrentTab(tab as any)}
-                  className={`text-[8px] xl:text-[9px] font-black tracking-normal uppercase transition-all duration-300 relative py-1.5 px-2.5 rounded-full border ${currentTab === tab ? 'text-burgundy dark:text-white bg-white/90 dark:bg-white/20 border-neutral-200/80 dark:border-white/20 shadow-sm' : 'text-neutral-900 dark:text-neutral-100 border-transparent hover:text-burgundy dark:hover:text-burgundy hover:bg-white/65 dark:hover:bg-white/10'
+                  className={`text-[6px] xl:text-[7px] font-semibold tracking-[0em] uppercase transition-none relative py-1 px-1.5 rounded-full border ${
+                    currentTab === tab ? 'text-burgundy dark:text-white bg-white/90 dark:bg-white/20 border-neutral-200/80 dark:border-white/20 shadow-sm' : 'text-[#9d9d9d] dark:text-[#9d9d9d] border-transparent hover:text-[#787878] dark:hover:text-[#c4c4c4] hover:bg-white/65 dark:hover:bg-white/10'
                     }`}
+                  style={{ fontFamily: 'var(--font-outfit)', fontWeight: 600 }}
                 >
                   {tab}
-                  <span className={`absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-[3px] bg-burgundy dark:bg-white transition-all duration-300 rounded-full ${currentTab === tab ? 'w-full' : 'w-0'}`}></span>
+                  <span className={`absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-[3px] bg-burgundy dark:bg-white transition-none rounded-full ${currentTab === tab ? 'w-full' : 'w-0'}`}></span>
                 </button>
               ))}
             </nav>
@@ -583,7 +585,7 @@ const App: React.FC = () => {
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16m-7 6h7"} /></svg>
               </button>
-              <button onClick={() => setCurrentTab('Rooms')} className="hidden md:block bg-burgundy text-white px-6 py-3 rounded-full text-[9px] font-black tracking-[0.1em] uppercase hover:brightness-110 transition-all shadow-lg active:scale-95 font-sans">
+              <button onClick={() => setCurrentTab('Rooms')} className="hidden md:block bg-burgundy text-white px-5 py-2 rounded-full text-[6px] font-semibold tracking-[0em] uppercase hover:brightness-110 transition-none shadow-lg" style={{ fontFamily: 'var(--font-outfit)', fontWeight: 600 }}>
                 Book Now
               </button>
             </div>
@@ -608,7 +610,7 @@ const App: React.FC = () => {
                 setCurrentTab(tab as any);
                 setIsMobileMenuOpen(false);
               }}
-              className={`text-[1.65rem] font-[900] tracking-[0.04em] uppercase transition-colors font-sans ${currentTab === tab ? 'text-burgundy' : 'text-neutral-900 dark:text-neutral-100'
+              className={`text-[0.78rem] font-semibold tracking-[0.01em] uppercase transition-colors font-sans ${currentTab === tab ? 'text-burgundy' : 'text-neutral-900 dark:text-neutral-100'
                 }`}
             >
               {tab}
@@ -621,211 +623,121 @@ const App: React.FC = () => {
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
           {currentTab === 'Home' && (
             <div className="reveal">
-              {/* Hero Section — Full Width Video */}
-              <section className="relative min-h-screen flex items-center overflow-hidden -mt-32 md:-mt-44 bg-[#f3f3f3] dark:bg-neutral-950">
-                <div className="absolute inset-y-0 right-0 w-full md:w-[66%] h-full overflow-hidden z-0 md:[clip-path:ellipse(110%_130%_at_100%_50%)]">
+              {/* Hero Section - Full Width Video */}
+              <section className="relative min-h-screen flex items-center overflow-hidden -mt-32 md:-mt-44 bg-black">
+                <div className="absolute inset-0 z-0">
                   <video
                     autoPlay
                     muted
                     loop
                     playsInline
+                    preload="metadata"
+                    poster={data.gallery[0]}
                     className="w-full h-full object-cover"
                   >
                     <source src="/herovideo.mp4" type="video/mp4" />
-                    <img src={data.gallery[0]} alt="Hero Fallback" className="w-full h-full object-cover" />
                   </video>
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#f3f3f3] via-[#f3f3f3]/78 to-transparent dark:from-neutral-950 dark:via-neutral-950/72"></div>
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,rgba(255,255,255,0.55),transparent_52%)] dark:bg-[radial-gradient(circle_at_18%_50%,rgba(255,255,255,0.08),transparent_52%)]"></div>
+                  <div className="absolute inset-0 bg-black/32" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/56 via-black/28 to-black/34" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_45%,rgba(255,255,255,0.12),transparent_52%)]" />
                 </div>
 
-                <div className="relative z-20 max-w-7xl mx-auto w-full px-6 md:px-14 pt-40 md:pt-44 pb-24">
-                  <div className="max-w-2xl space-y-8">
-                    <div className="inline-flex items-center bg-neutral-100/90 dark:bg-neutral-900/80 backdrop-blur-sm px-8 py-3 rounded-full border border-neutral-200 dark:border-white/10">
-                      <span className="text-[11px] font-black tracking-[0.24em] uppercase text-burgundy">
-                        {data.fullName}
-                      </span>
+                <div className="relative z-20 max-w-7xl mx-auto w-full px-6 md:px-14 pt-36 md:pt-44 pb-24">
+                  <div className="max-w-3xl space-y-7 text-white">
+                    <div className="inline-flex items-center bg-white/10 backdrop-blur-sm px-7 py-3 rounded-full border border-white/20">
+                      <span className="text-[11px] font-black tracking-[0.24em] uppercase text-white">GLADS APARTMENT {activeBranch}</span>
                     </div>
-                    <h1 className="font-display text-[4.2rem] md:text-[8.8rem] font-black tracking-tight leading-[0.84] text-[#7a0016] dark:text-[#a40d2b]">
-                      <span className="inline-block align-top">
-                        <span className="inline-block text-[#7a0016] dark:text-[#a40d2b]">Art of</span>
-                      </span>
+                    <h1 className="font-display text-[3rem] md:text-[6.5rem] font-black tracking-tight leading-[0.9] text-[#7a0016] dark:text-white drop-shadow-[0_8px_28px_rgba(0,0,0,0.45)] uppercase">
+                      ART OF
                       <br />
-                      <span className="inline-block align-top">
-                        <span className="inline-block text-[#7a0016] dark:text-[#a40d2b]">Living.</span>
-                      </span>
+                      LIVING.
                     </h1>
-                    <p className="text-[1.05rem] md:text-[1.22rem] text-neutral-700 dark:text-neutral-500 font-normal leading-relaxed max-w-xl animate-in fade-in slide-in-from-left duration-1000 delay-700">
-                      <span className="block mb-1 md:mb-2">Lifestyle Branch - Connectivity Meets Comfort.</span>
-                      Discover hospitality redefined through silence, space, and sophisticated materials.
+                    <p className="text-[1rem] md:text-[1.08rem] text-white font-normal leading-relaxed max-w-2xl drop-shadow-[0_4px_16px_rgba(0,0,0,0.35)]">
+                      Lifestyle Branch - Connectivity Meets Comfort. Discover hospitality redefined through silence, space, and sophisticated materials.
                     </p>
-                    <div className="flex flex-wrap gap-4 md:gap-5 items-center pt-6">
+                    <div className="flex flex-wrap gap-3 md:gap-4 items-center pt-4">
                       <button
                         onClick={() => setCurrentTab('Rooms')}
-                        className="bg-burgundy hover:bg-burgundy/90 text-white px-14 py-5 rounded-full text-[11px] font-black tracking-[0.2em] uppercase transition-all shadow-xl"
+                        className="bg-burgundy hover:bg-burgundy/90 text-white px-8 py-3.5 text-[10px] font-black tracking-[0.12em] uppercase border border-burgundy rounded-full transition-colors"
                       >
-                        The Residence
+                        Check Availability
                       </button>
                       <button
-                        onClick={() => { setCurrentTab('Services'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                        className="group flex items-center gap-6 text-[11px] font-black tracking-[0.24em] uppercase text-neutral-600 dark:text-neutral-300"
+                        onClick={() => setCurrentTab('Services')}
+                        className="bg-white/10 hover:bg-white/20 text-white px-8 py-3.5 text-[10px] font-black tracking-[0.12em] uppercase border border-white/40 rounded-full transition-colors"
                       >
-                        <span className="flex h-16 w-16 items-center justify-center rounded-full border border-neutral-300 dark:border-neutral-700 bg-white/75 dark:bg-neutral-900/70">
-                          <svg className="h-5 w-5 text-neutral-600 dark:text-neutral-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
-                        </span>
-                        <span>3D View</span>
+                        View Menu
                       </button>
                       <button
-                        onClick={() => { setBookingRoom(null); setShowBranchSelector(true); }}
-                        className="text-[10px] font-black tracking-[0.14em] uppercase text-neutral-700 dark:text-neutral-300 hover:text-burgundy transition-colors"
+                        onClick={() => setCurrentTab('Services')}
+                        className="bg-transparent hover:bg-white/10 text-white px-8 py-3.5 text-[10px] font-black tracking-[0.12em] uppercase border border-white/30 rounded-full transition-colors"
                       >
-                        Our Locations
+                        Explore Our Services
                       </button>
                     </div>
-                  </div>
-                </div>
-              </section>
-
-              <section className="reveal max-w-7xl mx-auto px-6 py-20">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                  <div className="flex-1 text-center md:text-left group/stat">
-                    <div className="text-5xl md:text-7xl font-black text-burgundy mb-2 transition-all duration-500 group-hover/stat:drop-shadow-[0_0_15px_rgba(128,0,32,0.4)]">
-                      <Counter
-                        target={3}
-                        initialValue={stats.locations}
-                        onUpdate={(v) => setStats(s => ({ ...s, locations: v }))}
-                      />
-                    </div>
-                    <p className="text-sm uppercase tracking-[0.3em] text-neutral-500 font-bold">Locations</p>
-                  </div>
-                  <div className="text-center group/stat">
-                    <div className="text-5xl md:text-7xl font-black text-burgundy mb-2 transition-all duration-500 group-hover/stat:drop-shadow-[0_0_15px_rgba(128,0,32,0.4)]">
-                      <Counter
-                        target={50}
-                        suffix="+"
-                        initialValue={stats.suites}
-                        onUpdate={(v) => setStats(s => ({ ...s, suites: v }))}
-                      />
-                    </div>
-                    <p className="text-sm uppercase tracking-[0.3em] text-neutral-500 font-bold">Luxury Suites</p>
-                  </div>
-                  <div className="text-center group/stat">
-                    <div className="text-5xl md:text-7xl font-black text-burgundy mb-2 transition-all duration-500 group-hover/stat:drop-shadow-[0_0_15px_rgba(128,0,32,0.4)]">
-                      <Counter
-                        target={94}
-                        suffix="%"
-                        initialValue={stats.satisfaction}
-                        onUpdate={(v) => setStats(s => ({ ...s, satisfaction: v }))}
-                      />
-                    </div>
-                    <p className="text-sm uppercase tracking-[0.3em] text-neutral-500 font-bold">Satisfaction</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-6xl md:text-7xl font-black text-burgundy mb-4">
-                      24/7
-                    </p>
-                    <p className="text-sm uppercase tracking-[0.3em] text-neutral-500 font-bold">Concierge</p>
-                  </div>
-                </div>
-              </section>
-
-              {/* Testimonials Section */}
-              <section className="reveal max-w-7xl mx-auto px-6 py-20">
-                <div className="text-center mb-16">
-                  <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-6 block">Guest Experiences</span>
-                  <h3 className="text-5xl md:text-7xl font-black uppercase tracking-tighter">What They Say.</h3>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div className="bg-neutral-50 dark:bg-neutral-900/40 rounded-[3rem] p-10 border border-neutral-100 dark:border-white/5">
-                    <div className="flex gap-1 mb-6">
-                      {[...Array(5)].map((_, i) => (
-                        <svg key={i} className="w-5 h-5 text-burgundy" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                      ))}
-                    </div>
-                    <p className="text-lg text-neutral-600 dark:text-neutral-400 font-light mb-8 leading-relaxed">
-                      "An exceptional experience. The attention to detail and level of service exceeded all expectations. Truly a home away from home."
-                    </p>
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-burgundy/10 flex items-center justify-center">
-                        <span className="font-black text-burgundy">JD</span>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4 text-white">
+                      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white mb-2">Locations</p>
+                        <p className="text-3xl font-black text-white"><Counter target={3} /></p>
                       </div>
-                      <div>
-                        <p className="font-bold text-sm">James Davidson</p>
-                        <p className="text-xs text-neutral-500">Business Executive</p>
+                      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white mb-2">Suites</p>
+                        <p className="text-3xl font-black text-white"><Counter target={50} suffix="+" /></p>
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-neutral-50 dark:bg-neutral-900/40 rounded-[3rem] p-10 border border-neutral-100 dark:border-white/5">
-                    <div className="flex gap-1 mb-6">
-                      {[...Array(5)].map((_, i) => (
-                        <svg key={i} className="w-5 h-5 text-burgundy" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                      ))}
-                    </div>
-                    <p className="text-lg text-neutral-600 dark:text-neutral-400 font-light mb-8 leading-relaxed">
-                      "The perfect blend of luxury and comfort. Every amenity you could wish for, combined with impeccable hospitality. Highly recommend!"
-                    </p>
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-burgundy/10 flex items-center justify-center">
-                        <span className="font-black text-burgundy">SM</span>
+                      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white mb-2">Satisfaction</p>
+                        <p className="text-3xl font-black text-white"><Counter target={94} suffix="%" /></p>
                       </div>
-                      <div>
-                        <p className="font-bold text-sm">Sarah Mitchell</p>
-                        <p className="text-xs text-neutral-500">Travel Blogger</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-neutral-50 dark:bg-neutral-900/40 rounded-[3rem] p-10 border border-neutral-100 dark:border-white/5">
-                    <div className="flex gap-1 mb-6">
-                      {[...Array(5)].map((_, i) => (
-                        <svg key={i} className="w-5 h-5 text-burgundy" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                      ))}
-                    </div>
-                    <p className="text-lg text-neutral-600 dark:text-neutral-400 font-light mb-8 leading-relaxed">
-                      "Outstanding location, stunning views, and world-class facilities. The staff went above and beyond to make our stay memorable."
-                    </p>
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-burgundy/10 flex items-center justify-center">
-                        <span className="font-black text-burgundy">MC</span>
-                      </div>
-                      <div>
-                        <p className="font-bold text-sm">Michael Chen</p>
-                        <p className="text-xs text-neutral-500">Entrepreneur</p>
+                      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white mb-2">Concierge</p>
+                        <p className="text-3xl font-black text-white">24/7</p>
                       </div>
                     </div>
                   </div>
                 </div>
               </section>
 
-              {/* === SECTION: Featured Services === */}
+              {/* Service and Room Glimpse */}
               <section className="reveal py-24 px-6 bg-neutral-50 dark:bg-neutral-950">
                 <div className="max-w-7xl mx-auto">
-                  <div className="text-center mb-16">
-                    <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-4 block">What We Offer</span>
-                    <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white">Curated Experiences.</h2>
-                    <p className="text-neutral-600 dark:text-neutral-400 text-lg mt-4 max-w-2xl mx-auto">From wellness to fine dining, every service is crafted to elevate your stay.</p>
+                  <div className="text-center mb-14">
+                    <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-4 block">First Look</span>
+                    <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white">Service and Room Glimpse.</h2>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {[
-                      { icon: Waves, title: 'Wellness & Pool', desc: 'Infinity pool, sauna, jacuzzi, and massage therapies for total rejuvenation.', tab: 'Services' },
-                      { icon: UtensilsCrossed, title: 'Fine Dining', desc: 'International and local cuisine crafted by expert chefs. Breakfast to dinner.', tab: 'Services' },
-                      { icon: Dumbbell, title: 'Fitness Center', desc: 'State-of-the-art gym with personal training and modern equipment.', tab: 'Services' },
-                      { icon: Coffee, title: 'Coffee Shop', desc: 'Premium Rwandan coffee and artisan pastries in a relaxed setting.', tab: 'Services' },
-                      { icon: Presentation, title: 'Conference Halls', desc: 'Modern meeting spaces for corporate events, workshops, and seminars.', tab: 'Services' },
-                      { icon: ShoppingBag, title: 'Supermarket', desc: 'On-site convenience store with fresh produce and daily essentials.', tab: 'Services' },
-                    ].map((svc, i) => (
-                      <div key={i} onClick={() => setCurrentTab(svc.tab as any)} className="group bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 border border-neutral-100 dark:border-white/5 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 cursor-pointer">
-                        <div className="w-14 h-14 mb-6 rounded-2xl bg-burgundy/10 text-burgundy flex items-center justify-center">
-                          <svc.icon className="w-7 h-7" strokeWidth={2.2} />
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {data.services.slice(0, 3).map((service, i) => (
+                      <div
+                        key={service.id}
+                        className="group relative h-[420px] rounded-[2.5rem] overflow-hidden shadow-xl cursor-pointer hover:shadow-2xl transition-all duration-500 border border-neutral-200/60 dark:border-white/10"
+                        onClick={() => setCurrentTab('Services')}
+                      >
+                        <img src={service.icon} alt={service.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/35 to-black/15" />
+                        <div className="absolute bottom-6 left-6 right-6 text-white">
+                          <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-80 block mb-2">
+                            <Counter target={i + 1} zeroPad /> • Service
+                          </span>
+                          <h3 className="text-3xl font-black mb-2">{service.name}</h3>
+                          <p className="text-sm text-white/80 line-clamp-2">{service.description}</p>
                         </div>
-                        <h3 className="font-heading text-2xl font-bold text-neutral-900 dark:text-white mb-3">{svc.title}</h3>
-                        <p className="text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed mb-6">{svc.desc}</p>
-                        <div className="flex items-center gap-2 text-burgundy font-black text-[10px] uppercase tracking-widest group-hover:gap-4 transition-all">
-                          <span>Explore</span>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+                    {data.rooms.slice(0, 2).map((room, i) => (
+                      <div
+                        key={room.id}
+                        className="group relative h-[340px] rounded-[2.5rem] overflow-hidden shadow-xl border border-neutral-200/60 dark:border-white/10 cursor-pointer hover:shadow-2xl transition-all duration-500"
+                        onClick={() => setCurrentTab('Rooms')}
+                      >
+                        <img src={room.image} alt={room.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" decoding="async" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/35 to-black/15" />
+                        <div className="absolute bottom-6 left-6 right-6 text-white">
+                          <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-80 block mb-2">
+                            <Counter target={i + 1} zeroPad /> • Room
+                          </span>
+                          <h3 className="text-3xl font-black mb-2 leading-tight">{room.name}</h3>
+                          <p className="text-sm text-white/85 line-clamp-2">{room.description}</p>
                         </div>
                       </div>
                     ))}
@@ -833,49 +745,17 @@ const App: React.FC = () => {
                 </div>
               </section>
 
-              {/* === SECTION: Our Locations === */}
-              <section className="reveal py-24 px-6 bg-white dark:bg-black">
-                <div className="max-w-7xl mx-auto">
-                  <div className="text-center mb-16">
-                    <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-4 block">Find Us</span>
-                    <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white">Our Locations.</h2>
-                    <p className="text-neutral-600 dark:text-neutral-400 text-lg mt-4 max-w-2xl mx-auto">Three distinct branches across Kigali, each with its own character and offerings.</p>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {[
-                      { branch: Branch.NDERA, name: 'Ndera', subtitle: 'Flagship Location', address: 'Near 15 Road, Ndera, Gasabo', tag: 'Business & Relaxation', color: 'from-burgundy/90 to-red-900/90', img: '/hero.jpeg' },
-                      { branch: Branch.KANOMBE, name: 'Kanombe', subtitle: 'Vibrant Complex', address: 'Kanombe (KMH), Kicukiro', tag: 'Lifestyle & Wellness', color: 'from-neutral-800/90 to-neutral-900/90', img: '/OKK_5908-1-720x520.jpg.jpeg' },
-                      { branch: Branch.KABEZA, name: 'Kabeza', subtitle: 'Residential Living', address: 'Kabeza (Rubirizi), Kicukiro', tag: 'Quiet & Affordable', color: 'from-stone-700/90 to-stone-900/90', img: '/DSC_0996-1-720x470.jpg.jpeg' },
-                    ].map((loc, i) => (
-                      <div key={i} className="group relative rounded-[3rem] overflow-hidden h-[480px] shadow-2xl cursor-pointer" onClick={() => handleBranchSwitch(loc.branch)}>
-                        <img src={loc.img} alt={loc.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]" />
-                        <div className={`absolute inset-0 bg-gradient-to-t ${loc.color}`}></div>
-                        <div className="absolute inset-0 p-10 flex flex-col justify-end">
-                          <span className="text-white/60 text-[10px] font-black uppercase tracking-[0.4em] mb-2">{loc.subtitle}</span>
-                          <h3 className="font-display text-5xl font-bold text-white mb-2">Glads {loc.name}</h3>
-                          <p className="text-white/70 text-sm mb-4">📍 {loc.address}</p>
-                          <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-full border border-white/30">{loc.tag}</span>
-                          <button className="mt-6 bg-white text-neutral-900 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-wider hover:bg-burgundy hover:text-white transition-all opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 duration-500">
-                            Switch to This Branch
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-
-              {/* === SECTION: Why Choose Glads === */}
+              {/* Why Choose Us */}
               <section className="reveal py-24 px-6 bg-neutral-50 dark:bg-neutral-950">
                 <div className="max-w-7xl mx-auto">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div>
                       <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-6 block">The Glads Difference</span>
-                      <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white mb-8">Why Choose Glads?</h2>
-                      <p className="text-neutral-600 dark:text-neutral-400 text-lg leading-relaxed mb-10">We don't just offer a room — we offer a complete lifestyle. Every detail is crafted to exceed expectations.</p>
+                      <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white mb-8">Why Choose Us.</h2>
+                      <p className="text-neutral-600 dark:text-neutral-400 text-lg leading-relaxed mb-10">We do not just offer a room. We deliver a complete lifestyle experience designed around comfort, care, and consistency.</p>
                       <div className="space-y-6">
                         {[
-                          { icon: Trophy, title: 'All-in-One Destination', desc: 'Accommodation, dining, wellness, shopping — everything under one roof.' },
+                          { icon: Trophy, title: 'All-in-One Destination', desc: 'Accommodation, dining, wellness, and shopping under one roof.' },
                           { icon: Users, title: 'Professional Staff', desc: 'Customer-first approach with trained hospitality professionals.' },
                           { icon: MapPin, title: 'Strategic Locations', desc: 'Three branches across Kigali for maximum convenience.' },
                           { icon: Leaf, title: 'Sustainability Commitment', desc: 'Eco-conscious practices and community-driven initiatives.' },
@@ -894,23 +774,48 @@ const App: React.FC = () => {
                     </div>
                     <div className="relative h-[600px] hidden lg:block">
                       <div className="absolute top-0 right-0 w-[80%] h-[75%] rounded-[3rem] overflow-hidden shadow-2xl">
-                        <img src="/OKK_5838-1-scaled.jpg.jpeg" alt="Glads Experience" className="w-full h-full object-cover" />
+                        <img src="/OKK_5838-1-scaled.jpg.jpeg" alt="Glads Experience" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                       </div>
                       <div className="absolute bottom-0 left-0 w-[55%] h-[50%] rounded-[3rem] overflow-hidden shadow-2xl border-8 border-neutral-50 dark:border-neutral-950">
-                        <img src="/food.jpeg" alt="Glads Dining" className="w-full h-full object-cover" />
-                      </div>
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-burgundy rounded-full flex items-center justify-center shadow-2xl z-10">
-                        <div className="text-center text-white">
-                          <p className="text-3xl font-black">3+</p>
-                          <p className="text-[9px] font-bold uppercase tracking-wider">Branches</p>
-                        </div>
+                        <img src="/food.jpeg" alt="Glads Dining" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                       </div>
                     </div>
                   </div>
                 </div>
               </section>
 
-              {/* === SECTION: Photo Highlights === */}
+              {/* Our Locations */}
+              <section className="reveal py-24 px-6 bg-white dark:bg-black">
+                <div className="max-w-7xl mx-auto">
+                  <div className="text-center mb-16">
+                    <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-4 block">Find Us</span>
+                    <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white">Our Locations.</h2>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {[
+                      { branch: Branch.NDERA, name: 'Ndera', subtitle: 'Flagship Location', address: 'Near 15 Road, Ndera, Gasabo', tag: 'Business and Relaxation', color: 'from-burgundy/90 to-red-900/90', img: '/hero.jpeg' },
+                      { branch: Branch.KANOMBE, name: 'Kanombe', subtitle: 'Vibrant Complex', address: 'Kanombe (KMH), Kicukiro', tag: 'Lifestyle and Wellness', color: 'from-neutral-800/90 to-neutral-900/90', img: '/OKK_5908-1-720x520.jpg.jpeg' },
+                      { branch: Branch.KABEZA, name: 'Kabeza', subtitle: 'Residential Living', address: 'Kabeza (Rubirizi), Kicukiro', tag: 'Quiet and Affordable', color: 'from-stone-700/90 to-stone-900/90', img: '/DSC_0996-1-720x470.jpg.jpeg' },
+                    ].map((loc, i) => (
+                      <div key={i} className="group relative rounded-[3rem] overflow-hidden h-[460px] shadow-2xl cursor-pointer" onClick={() => handleBranchSwitch(loc.branch)}>
+                        <img src={loc.img} alt={loc.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" decoding="async" />
+                        <div className={`absolute inset-0 bg-gradient-to-t ${loc.color}`}></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
+                        <div className="absolute inset-0 p-8 md:p-10 flex flex-col justify-end">
+                          <div className="bg-black/45 backdrop-blur-md border border-white/20 rounded-2xl p-5 md:p-6">
+                            <span className="text-white text-[10px] font-black uppercase tracking-[0.26em] mb-2 block">{loc.subtitle}</span>
+                            <h3 className="font-display text-3xl md:text-4xl font-bold text-white mb-2 leading-tight uppercase">Glads Apartment {loc.name}</h3>
+                            <p className="text-white text-sm mb-4">{loc.address}</p>
+                            <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-full border border-white/30">{loc.tag}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* Glimpse Inside */}
               <section className="reveal py-24 px-6 bg-white dark:bg-black overflow-hidden">
                 <div className="max-w-7xl mx-auto">
                   <div className="text-center mb-16">
@@ -921,14 +826,13 @@ const App: React.FC = () => {
                     {data.gallery.slice(0, 6).map((img, i) => (
                       <div
                         key={i}
-                        className={`relative rounded-[2rem] overflow-hidden cursor-pointer group shadow-xl ${i === 0 ? 'md:col-span-2 md:row-span-2 h-64 md:h-full' : 'h-48 md:h-56'
-                          }`}
-                        onClick={() => openImmersive(img, `${activeBranch} — Highlight ${i + 1}`)}
+                        className={`relative rounded-[2rem] overflow-hidden cursor-pointer group shadow-xl ${i === 0 ? 'md:col-span-2 md:row-span-2 h-64 md:h-full' : 'h-48 md:h-56'}`}
+                        onClick={() => openImmersive(img, `${activeBranch} - Highlight ${i + 1}`)}
                         onMouseEnter={() => setCursorLabel('View')}
                         onMouseLeave={() => setCursorLabel(null)}
                       >
-                        <img src={img} alt={`Highlight ${i + 1}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1.5s]" />
-                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
+                        <img src={img} alt={`Highlight ${i + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" decoding="async" />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                           <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
                           </div>
@@ -936,45 +840,101 @@ const App: React.FC = () => {
                       </div>
                     ))}
                   </div>
-                  <div className="text-center mt-10">
-                    <button onClick={() => setCurrentTab('Gallery')} className="bg-neutral-900 dark:bg-white text-white dark:text-black px-10 py-4 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-burgundy dark:hover:bg-burgundy dark:hover:text-white transition-all">
-                      View Full Gallery
+                </div>
+              </section>
+
+              {/* Special Offers */}
+              <section className="reveal py-20 px-6 bg-neutral-50 dark:bg-neutral-950">
+                <div className="max-w-7xl mx-auto">
+                  <div className="flex items-end justify-between gap-4 mb-10">
+                    <div>
+                      <span className="text-burgundy font-black tracking-[0.5em] uppercase text-[11px] block mb-3">Special Offers</span>
+                      <h3 className="text-4xl md:text-6xl font-black tracking-tight">Limited Deals.</h3>
+                    </div>
+                    <button onClick={() => setCurrentTab('Rooms')} className="border border-neutral-300 dark:border-neutral-700 px-5 py-3 text-[10px] font-black uppercase tracking-[0.14em] hover:border-burgundy hover:text-burgundy transition-colors">
+                      Check Availability
                     </button>
                   </div>
-                </div>
-              </section>
-
-              {/* === SECTION: MoMo Pay Banner === */}
-              <section className="reveal py-20 px-6 bg-neutral-50 dark:bg-neutral-950">
-                <div className="max-w-5xl mx-auto">
-                  <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-[3rem] p-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl momo-badge">
-                    <div className="text-6xl shrink-0">📱</div>
-                    <div className="flex-1 text-center md:text-left">
-                      <h3 className="text-3xl md:text-4xl font-black text-neutral-900 mb-3">Pay with MoMo Pay</h3>
-                      <p className="text-neutral-800 text-lg font-medium leading-relaxed">
-                        We accept <strong>MTN Mobile Money (MoMo Pay)</strong> for all services and room bookings. Fast, secure, and convenient — pay directly from your phone.
-                      </p>
-                      <div className="flex flex-wrap gap-3 mt-4 justify-center md:justify-start">
-                        <span className="bg-neutral-900/10 text-neutral-900 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full">✓ Room Bookings</span>
-                        <span className="bg-neutral-900/10 text-neutral-900 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full">✓ All Services</span>
-                        <span className="bg-neutral-900/10 text-neutral-900 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full">✓ Restaurant & Bar</span>
-                        <span className="bg-neutral-900/10 text-neutral-900 text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full">✓ Wellness & Spa</span>
-                      </div>
-                    </div>
-                    <div className="shrink-0">
-                      <button onClick={() => setCurrentTab('Rooms')} className="bg-neutral-900 text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-wider hover:bg-burgundy transition-all shadow-xl">
-                        Book Now
-                      </button>
-                    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[
+                      { title: 'Weekend Escape', detail: 'Save 15% on two-night stays at Ndera and Kanombe.', cta: 'Book Weekend' },
+                      { title: 'Family Stay Package', detail: 'Complimentary breakfast and pool access for family bookings.', cta: 'View Package' },
+                      { title: 'Business Traveler Rate', detail: 'Preferential weekday rates with fast check-in and workspace setup.', cta: 'Apply Offer' },
+                    ].map((offer, i) => (
+                      <article key={i} className="bg-white dark:bg-neutral-900/40 border border-neutral-200 dark:border-white/10 p-7 rounded-[2rem] shadow-lg hover:shadow-xl transition-all">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-burgundy mb-3">Offer {String(i + 1).padStart(2, '0')}</p>
+                        <h4 className="text-2xl font-black mb-3">{offer.title}</h4>
+                        <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-6">{offer.detail}</p>
+                        <button className="text-[10px] font-black uppercase tracking-[0.12em] border border-neutral-300 dark:border-neutral-700 px-4 py-2 hover:border-burgundy hover:text-burgundy transition-colors">
+                          {offer.cta}
+                        </button>
+                      </article>
+                    ))}
                   </div>
                 </div>
               </section>
 
-              {/* Quick Contact CTA */}
+              {/* Testimonials */}
+              <section className="reveal max-w-7xl mx-auto px-6 py-20">
+                <div className="text-center mb-16">
+                  <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-6 block">Guest Experiences</span>
+                  <h3 className="text-5xl md:text-7xl font-black uppercase tracking-tighter">What They Say.</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {[
+                    { quote: 'An exceptional experience. The attention to detail and level of service exceeded all expectations.', initials: 'JD', name: 'James Davidson', role: 'Business Executive' },
+                    { quote: 'The perfect blend of luxury and comfort with impeccable hospitality from check-in to check-out.', initials: 'SM', name: 'Sarah Mitchell', role: 'Travel Blogger' },
+                    { quote: 'Outstanding location, elegant rooms, and a team that consistently goes above and beyond.', initials: 'MC', name: 'Michael Chen', role: 'Entrepreneur' },
+                  ].map((item, i) => (
+                    <div key={i} className="bg-neutral-50 dark:bg-neutral-900/40 p-10 border border-neutral-100 dark:border-white/5 rounded-[2.5rem] shadow-lg hover:shadow-xl transition-all">
+                      <div className="flex gap-1 mb-6">
+                        {[...Array(5)].map((_, j) => (
+                          <svg key={j} className="w-5 h-5 text-burgundy" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                        ))}
+                      </div>
+                      <p className="text-base text-neutral-600 dark:text-neutral-400 mb-8 leading-relaxed">{item.quote}</p>
+                      <div className="flex items-center gap-4">
+                        <div className="w-11 h-11 rounded-full bg-burgundy/10 flex items-center justify-center">
+                          <span className="font-black text-burgundy text-sm">{item.initials}</span>
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm">{item.name}</p>
+                          <p className="text-xs text-neutral-500">{item.role}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {/* News */}
+              <section className="reveal py-20 px-6 bg-white dark:bg-black">
+                <div className="max-w-7xl mx-auto">
+                  <div className="text-center mb-12">
+                    <span className="text-burgundy font-black tracking-[0.5em] uppercase text-[11px] block mb-3">News</span>
+                    <h3 className="text-4xl md:text-6xl font-black tracking-tight">Latest Updates.</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[
+                      { title: 'New Dining Menu Launch', text: 'Our updated food menu now includes expanded local favorites and chef specials.' },
+                      { title: 'Wellness Program Upgrade', text: 'Spa and fitness sessions now include structured weekly wellness routines.' },
+                      { title: 'Conference Space Expansion', text: 'Kanombe branch adds enhanced event facilities for corporate bookings.' },
+                    ].map((news, i) => (
+                      <article key={i} className="border border-neutral-200 dark:border-white/10 p-7 bg-neutral-50 dark:bg-neutral-900/30 rounded-[2rem] shadow-md hover:shadow-xl transition-all">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 mb-3">Update</p>
+                        <h4 className="text-2xl font-black mb-3">{news.title}</h4>
+                        <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">{news.text}</p>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* Contact Us */}
               <section className="reveal max-w-5xl mx-auto px-6 py-20">
                 <div className="bg-gradient-to-br from-burgundy to-red-900 rounded-[4rem] p-16 text-center text-white shadow-2xl">
-                  <h3 className="font-display text-5xl md:text-6xl font-bold tracking-tight mb-6">Ready to Experience GLADS?</h3>
-                  <p className="text-lg text-white/80 mb-10 max-w-2xl mx-auto">Book your stay today and discover why discerning travelers choose GLADS Apartment Hotel.</p>
+                  <h3 className="font-display text-5xl md:text-6xl font-bold tracking-tight mb-6">Contact Us.</h3>
+                  <p className="text-lg text-white/80 mb-10 max-w-2xl mx-auto">Talk to our team for room availability, menu details, services, and special requests.</p>
                   <div className="flex flex-wrap gap-6 justify-center">
                     <button onClick={() => setCurrentTab('Contact')} className="bg-white text-burgundy px-12 py-5 rounded-full text-sm font-black uppercase tracking-wider hover:scale-105 transition-all shadow-xl">
                       Contact Us
@@ -987,7 +947,6 @@ const App: React.FC = () => {
               </section>
             </div>
           )}
-
           {currentTab === 'Home' && (
             <>
               <ChatFloatingButton onClick={() => setShowChatAssistant(true)} />
@@ -1003,183 +962,11 @@ const App: React.FC = () => {
           )}
 
           {currentTab === 'About' && (
-            <div className="reveal">
-              {/* Cinematic Narrative - Our Story */}
-              <section className="relative py-32 md:py-48 px-6 bg-white dark:bg-black transition-colors duration-700 overflow-hidden">
-                <div className="max-w-7xl mx-auto relative">
-                  {/* Background Text Accent */}
-                  <div className="absolute -top-24 -left-20 text-[20rem] font-black text-neutral-100 dark:text-neutral-900 pointer-events-none select-none z-0 hidden lg:block">GLADS</div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-                    {/* Left Column: Visual Storytelling */}
-                    <div className="lg:col-span-7 relative h-[500px] md:h-[700px] reveal-left">
-                      <div className="absolute top-0 right-0 w-[85%] h-[85%] rounded-[3rem] overflow-hidden shadow-2xl z-10">
-                        <img src="/about-story-1.jpg" alt="The Sanctuary" className="w-full h-full object-cover hover:scale-110 transition-transform duration-[4s]" />
-                      </div>
-                      <div className="absolute bottom-0 left-0 w-[60%] h-[60%] rounded-[3rem] border-8 border-white dark:border-black overflow-hidden shadow-2xl z-20 hidden md:block">
-                        <img src="/about-story-2.jpg" alt="Detailed Living" className="w-full h-full object-cover hover:scale-110 transition-transform duration-[4s]" />
-                      </div>
-                      {/* Floating Accent */}
-                      <div className="absolute top-1/2 -left-10 w-40 h-40 bg-burgundy rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-                    </div>
-
-                    {/* Right Column: Text Narrative */}
-                    <div className="lg:col-span-5 relative z-30 reveal-right">
-                      <div className="space-y-12">
-                        <div className="space-y-4">
-                          <span className="text-burgundy font-black tracking-[0.5em] uppercase text-xs block">Since 2022</span>
-                          <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-[0.85] text-neutral-900 dark:text-white">
-                            Our <br /> <span className="text-burgundy dark:text-neutral-600">Story.</span>
-                          </h2>
-                        </div>
-
-                        <p className="text-xl md:text-2xl font-light leading-relaxed text-neutral-600 dark:text-neutral-400 border-l-4 border-burgundy pl-8 italic">
-                          "{COMPANY_PROFILE.about}"
-                        </p>
-
-                        <div className="grid grid-cols-2 gap-8 pt-8">
-                          <div>
-                            <h4 className="text-3xl font-sans italic text-burgundy mb-4">Our Mission</h4>
-                            <p className="text-sm text-neutral-500 dark:text-neutral-500 leading-relaxed font-bold">{COMPANY_PROFILE.mission}</p>
-                          </div>
-                          <div>
-                            <h4 className="text-3xl font-sans italic text-burgundy mb-4">Our Vision</h4>
-                            <p className="text-sm text-neutral-500 dark:text-neutral-500 leading-relaxed font-bold">{COMPANY_PROFILE.vision}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Core Values */}
-              {/* Core Values - Horizontal Accordion */}
-              <section className="py-20 px-6 bg-neutral-50 dark:bg-neutral-900 transition-colors duration-500 overflow-hidden">
-                <div className="max-w-7xl mx-auto">
-                  <div className="text-center mb-16">
-                    <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-6 block">Our DNA</span>
-                    <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-neutral-900 dark:text-white transition-colors duration-500">Core Values.</h2>
-                  </div>
-
-                  <div className="flex flex-col md:flex-row gap-4 h-[80vh] md:h-[600px] w-full">
-                    {COMPANY_PROFILE.values.map((value, idx) => (
-                      <div
-                        key={idx}
-                        className="group relative flex-1 hover:flex-[3] transition-all duration-700 ease-in-out overflow-hidden rounded-[2.5rem] bg-white dark:bg-neutral-800 border border-neutral-100 dark:border-white/5 shadow-xl hover:shadow-2xl cursor-default"
-                      >
-                        {/* Background Image/Gradient */}
-                        <div
-                          className="absolute inset-0 transition-transform duration-700 group-hover:scale-110 bg-cover bg-center opacity-0 group-hover:opacity-60 dark:group-hover:opacity-40"
-                          style={{
-                            backgroundImage: `url(${idx % 3 === 0 ? '/core-value-bg-1.jpeg' :
-                              idx % 3 === 1 ? '/core-value-bg-2.jpeg' :
-                                '/core-value-bg-3.jpg'
-                              })`
-                          }}
-                        ></div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-80 transition-opacity duration-500"></div>
-
-                        {/* Content Container */}
-                        <div className="absolute inset-0 p-8 flex flex-col justify-between">
-                          <div className="flex justify-between items-start">
-                            <span className="text-4xl md:text-6xl font-black text-transparent stroke-neutral-200 dark:stroke-white/10 transition-all duration-500 group-hover:stroke-white/30" style={{ WebkitTextStrokeWidth: '1px' }}>
-                              <Counter target={idx + 1} zeroPad />
-                            </span>
-                            <div className="w-10 h-10 rounded-full bg-burgundy text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform scale-0 group-hover:scale-100 delay-100">
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
-                            </div>
-                          </div>
-
-                          {/* Vertical Text (Collapsed State - Desktop) */}
-                          <div className="absolute bottom-8 left-8 md:bottom-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:-rotate-90 origin-center whitespace-nowrap opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none">
-                            <h3 className="text-2xl font-black uppercase tracking-widest text-neutral-300 dark:text-neutral-700 hidden md:block">{value.title}</h3>
-                          </div>
-
-                          {/* Expanded Content */}
-                          <div className="relative z-10 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-100">
-                            <h3 className="text-3xl md:text-4xl font-black uppercase mb-4 text-white">{value.title}</h3>
-                            <p className="text-neutral-200 font-light leading-relaxed text-sm md:text-lg max-w-md">{value.description}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-
-              {/* Why Choose Us - New Dedicated Section */}
-              {/* Why Choose Us - Enhanced Feature Cards */}
-              {/* Why Choose Us - Interactive Feature Split */}
-              <section className="py-32 px-6 bg-white dark:bg-black transition-colors duration-500">
-                <div className="max-w-7xl mx-auto">
-                  <div className="flex flex-col lg:flex-row gap-20">
-                    {/* Left: Interactive List */}
-                    <div className="lg:w-1/2 space-y-12">
-                      <div>
-                        <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-6 block">The Glads Difference</span>
-                        <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-8 leading-tight text-neutral-900 dark:text-white transition-colors duration-500">Why Choose <br /> Glads Apartment?</h2>
-                        <p className="text-lg text-neutral-500 font-light mb-12">We don't just offer a room; we offer a lifestyle. Explore the pillars of our excellence.</p>
-                      </div>
-
-                      <div className="space-y-4">
-                        {COMPANY_PROFILE.whyChooseUs.map((reason, i) => (
-                          <div
-                            key={i}
-                            className={`group p-8 rounded-[2rem] cursor-pointer transition-all duration-500 border border-transparent ${activeFeatureIndex === i
-                              ? 'bg-neutral-50 dark:bg-white/5 border-neutral-200 dark:border-white/10 shadow-xl scale-105'
-                              : 'hover:bg-neutral-50 dark:hover:bg-white/5 hover:pl-10'
-                              }`}
-                            onMouseEnter={() => setActiveFeatureIndex(i)}
-                          >
-                            <div className="flex items-center gap-6">
-                              <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-black transition-all duration-500 ${activeFeatureIndex === i ? 'bg-burgundy text-white' : 'bg-neutral-100 dark:bg-white/10 text-neutral-400 dark:text-neutral-500'
-                                }`}>
-                                <Counter target={i + 1} />
-                              </div>
-                              <h4 className={`text-xl font-bold transition-colors duration-500 ${activeFeatureIndex === i ? 'text-burgundy' : 'text-neutral-600 dark:text-neutral-400'
-                                }`}>
-                                {reason}
-                              </h4>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Right: Dynamic Visual */}
-                    <div className="lg:w-1/2 relative lg:h-[800px] h-[500px] hidden md:block">
-                      <div className="sticky top-10 h-full w-full rounded-[3rem] overflow-hidden shadow-2xl transition-all duration-700">
-                        {/* We simulate different images/gradients based on index since we don't have separate images for each reason */}
-                        <div
-                          className="absolute inset-0 bg-cover bg-center transition-all duration-1000 transform scale-105"
-                          style={{
-                            backgroundImage: `url(${activeFeatureIndex % 2 === 0
-                              ? '/about1-1.jpeg'
-                              : 'https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=2525&auto=format&fit=crop'
-                              })`,
-                            filter: activeFeatureIndex % 2 !== 0 ? 'hue-rotate(15deg)' : 'none'
-                          }}
-                        ></div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-
-                        {/* Dynamic Overlay Content */}
-                        <div className="absolute bottom-12 left-12 right-12 z-10">
-                          <div className="overflow-hidden">
-                            <h3 key={activeFeatureIndex} className="text-4xl font-black text-white mb-4 animate-slideUp">
-                              {COMPANY_PROFILE.whyChooseUs[activeFeatureIndex]}
-                            </h3>
-                          </div>
-                          <p className="text-white/70 text-lg font-light">Experience the difference in every detail.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-
-            </div>
+            <AboutSection
+              activeBranch={activeBranch}
+              activeFeatureIndex={activeFeatureIndex}
+              setActiveFeatureIndex={setActiveFeatureIndex}
+            />
           )}
 
           {currentTab === 'Rooms' && (
@@ -1451,7 +1238,7 @@ const App: React.FC = () => {
                   <div key={branch.id} className="bg-neutral-50 dark:bg-neutral-900/40 p-12 rounded-[3.5rem] border border-neutral-100 dark:border-white/5 shadow-xl group hover:scale-[1.02] transition-all duration-500">
                     <div className="mb-8">
                       <span className="text-burgundy font-black tracking-[0.4em] uppercase text-[10px] block mb-2">{branch.id}</span>
-                      <h3 className="text-2xl font-black uppercase tracking-tight">{branch.fullName.split('–')[1] || branch.fullName}</h3>
+                      <h3 className="text-2xl font-black uppercase tracking-tight">{branch.fullName.split('â€“')[1] || branch.fullName}</h3>
                     </div>
 
                     <div className="space-y-6">
@@ -1677,3 +1464,7 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+
+
+
