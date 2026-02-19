@@ -1,4 +1,4 @@
-
+﻿
 import React from 'react';
 
 interface Props {
@@ -10,7 +10,7 @@ export const ThemeToggle: React.FC<Props> = ({ isDark, onToggle }) => {
   return (
     <button
       onClick={onToggle}
-      className="p-3 rounded-full bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white transition-all border border-neutral-200 dark:border-neutral-800 hover:scale-110 active:scale-95 shadow-sm"
+      className="p-3 rounded-full bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white transition-colors border border-neutral-200 dark:border-neutral-800 shadow-sm"
       aria-label="Toggle Theme"
     >
       {isDark ? (
@@ -25,3 +25,5 @@ export const ThemeToggle: React.FC<Props> = ({ isDark, onToggle }) => {
     </button>
   );
 };
+
+
