@@ -3,6 +3,7 @@ import { SupabaseService } from '../supabase/supabase.service';
 import { InitiatePaymentDto, VerifyPaymentDto } from '../common/dto/payment.dto';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class PaymentsService {
@@ -19,6 +20,10 @@ export class PaymentsService {
     this.pesapalConsumerKey = this.configService.get<string>('PESAPAL_CONSUMER_KEY');
     this.pesapalConsumerSecret = this.configService.get<string>('PESAPAL_CONSUMER_SECRET');
     this.pesapalIpnUrl = this.configService.get<string>('PESAPAL_IPN_URL');
+  }
+
+  private generateTransactionId(): string {
+    return `TXN-${Date.now()}-${randomUUID().slice(0, 8)}`;
   }
 
   private async getPesapalAuthToken(): Promise<string> {
@@ -49,6 +54,7 @@ export class PaymentsService {
     const { data: paymentRecord, error } = await supabase
       .from('payments')
       .insert({
+        transaction_id: this.generateTransactionId(),
         booking_id: initiateDto.bookingId,
         service_booking_id: initiateDto.serviceBookingId,
         amount: initiateDto.amount,
@@ -78,7 +84,7 @@ export class PaymentsService {
         currency: initiateDto.currency || 'RWF',
         amount: initiateDto.amount,
         description: initiateDto.description || 'Hotel booking payment',
-        callback_url: `${this.configService.get('API_BASE_URL')}/payments/callback`,
+        callback_url: `${this.configService.get('API_BASE_URL') || 'http://localhost:3001/api'}/payments/callback`,
         notification_id: await this.registerIPN(authToken),
         billing_address: {
           email_address: initiateDto.customerEmail,
@@ -187,12 +193,18 @@ export class PaymentsService {
 
     // Verify payment status with Pesapal
     const paymentStatus = await this.verifyPaymentWithPesapal(OrderTrackingId);
+    const normalizedStatus = paymentStatus.payment_status_description?.toLowerCase?.() || 'pending';
+    const finalStatus = normalizedStatus.includes('complete')
+      ? 'completed'
+      : normalizedStatus.includes('fail')
+        ? 'failed'
+        : 'pending';
     
     // Update payment record
     const { error: updateError } = await supabase
       .from('payments')
       .update({
-        status: paymentStatus.payment_status_description.toLowerCase(),
+        status: finalStatus,
         payment_method: paymentStatus.payment_method,
         metadata: {
           ...payment.metadata,
@@ -208,7 +220,7 @@ export class PaymentsService {
     }
 
     // Update related booking status if payment is successful
-    if (paymentStatus.payment_status_description.toLowerCase() === 'completed') {
+    if (finalStatus === 'completed') {
       if (payment.booking_id) {
         await supabase
           .from('bookings')
@@ -274,7 +286,7 @@ export class PaymentsService {
   }
 
   async verifyPayment(verifyDto: VerifyPaymentDto) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     const { data, error } = await supabase
       .from('payments')
@@ -371,7 +383,7 @@ export class PaymentsService {
   }
 
   async findAll(bookingId?: string, serviceBookingId?: string, status?: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     let query = supabase
       .from('payments')
@@ -401,7 +413,7 @@ export class PaymentsService {
   }
 
   async findOne(id: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     const { data, error } = await supabase
       .from('payments')

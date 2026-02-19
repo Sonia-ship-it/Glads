@@ -51,20 +51,20 @@ export class RoomAvailabilityController {
     return this.service.findByRoom(roomId, startDate, endDate);
   }
 
-  @Put(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update room availability (Staff only)' })
-  update(@Param('id') id: string, @Body() updateDto: UpdateRoomAvailabilityDto) {
-    return this.service.update(id, updateDto);
-  }
-
   @Put('bulk')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Bulk update room availability (Staff only)' })
   bulkUpdate(@Body() bulkDto: BulkUpdateRoomAvailabilityDto) {
     return this.service.bulkUpdate(bulkDto);
+  }
+
+  @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update room availability (Staff only)' })
+  update(@Param('id') id: string, @Body() updateDto: UpdateRoomAvailabilityDto) {
+    return this.service.update(id, updateDto);
   }
 
   @Delete(':id')

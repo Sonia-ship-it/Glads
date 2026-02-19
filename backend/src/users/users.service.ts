@@ -41,7 +41,7 @@ export class UsersService {
   }
 
   async findAll(role?: string, branchId?: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     let query = supabase
       .from('users')
@@ -62,7 +62,7 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     const { data, error } = await supabase
       .from('users')
@@ -142,3 +142,4 @@ export class UsersService {
     return data;
   }
 }
+

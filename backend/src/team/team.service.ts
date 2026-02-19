@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CreateTeamMemberDto, UpdateTeamMemberDto } from '../common/dto/team.dto';
 
@@ -30,7 +30,7 @@ export class TeamService {
   }
 
   async findAll(branchId?: string, department?: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     let query = supabase
       .from('team_members')
@@ -46,12 +46,12 @@ export class TeamService {
 
     const { data, error } = await query.order('display_order');
 
-    if (error) throw new Error(`Failed to fetch team members: ${error.message}`);
+    if (error) throw new BadRequestException(`Failed to fetch team members: ${error.message}`);
     return data;
   }
 
   async findOne(id: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     const { data, error } = await supabase
       .from('team_members')
@@ -59,7 +59,9 @@ export class TeamService {
       .eq('id', id)
       .single();
 
-    if (error) throw new Error(`Team member not found: ${error.message}`);
+    if (error || !data) {
+      throw new NotFoundException(`Team member not found: ${error?.message || id}`);
+    }
     return data;
   }
 
@@ -84,7 +86,9 @@ export class TeamService {
       .select()
       .single();
 
-    if (error) throw new Error(`Failed to update team member: ${error.message}`);
+    if (error || !data) {
+      throw new NotFoundException(`Failed to update team member: ${error?.message || id}`);
+    }
     return data;
   }
 

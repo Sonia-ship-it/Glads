@@ -10,8 +10,10 @@ describe('Services Integration Tests', () => {
   let authToken: string;
   let testBranchId: string;
   let testServiceId: string;
-  let testUser: any;
+  let testUserId: string | undefined;
+
   const timestamp = Date.now();
+  const testEmail = `services-test-${timestamp}@glads.test`;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -23,40 +25,60 @@ describe('Services Integration Tests', () => {
 
     supabase = moduleFixture.get<SupabaseService>(SupabaseService);
 
-    // Create test user
-    const { data: authData } = await supabase.getAdminClient().auth.admin.createUser({
-      email: 'services-test@glads.rw',
-      password: 'TestPass123!',
-      email_confirm: true,
-    });
-
-    testUser = authData.user;
-
-    if (authData.user) {
-      const { data: { session } } = await supabase.getClient().auth.signInWithPassword({
-        email: 'services-test@glads.rw',
+    const { data: authData, error: createUserError } = await supabase
+      .getAdminClient()
+      .auth.admin.createUser({
+        email: testEmail,
         password: 'TestPass123!',
+        email_confirm: true,
       });
-      authToken = session?.access_token || '';
 
-      await supabase.getAdminClient().from('users').insert({
-        id: authData.user.id,
-        email: 'services-test@glads.rw',
-        full_name: 'Services Test Admin',
-        role: 'super-admin',
-        is_active: true,
-      });
+    if (createUserError || !authData.user) {
+      throw new Error(`Failed to create test user: ${createUserError?.message}`);
     }
 
-    // Create test branch
-    const { data: branch } = await supabase.getAdminClient().from('branches').insert({
-      name: 'Test Branch for Services',
-      code: `TEST-SERV-${timestamp}`,
-      address: { street: 'Test St', city: 'Kigali', country: 'Rwanda' },
-      coordinates: { latitude: -1.9441, longitude: 30.1367 },
-      contact_info: { phone: '+250788000002', email: 'services@test.rw' },
-      settings: { currency: 'RWF', timezone: 'Africa/Kigali' },
-    }).select().single();
+    testUserId = authData.user.id;
+
+    const {
+      data: { session },
+      error: signInError,
+    } = await supabase.getClient().auth.signInWithPassword({
+      email: testEmail,
+      password: 'TestPass123!',
+    });
+
+    if (signInError || !session?.access_token) {
+      throw new Error(`Failed to sign in test user: ${signInError?.message}`);
+    }
+
+    authToken = session.access_token;
+
+    await supabase.getAdminClient().from('users').insert({
+      id: testUserId,
+      email: testEmail,
+      full_name: 'Services Test Admin',
+      role: 'super-admin',
+      is_active: true,
+    });
+
+    const { data: branch, error: branchError } = await supabase
+      .getAdminClient()
+      .from('branches')
+      .insert({
+        name: 'Test Branch for Services',
+        code: `TEST-SERV-${timestamp}`,
+        address: { street: 'Test St', city: 'Kigali', country: 'Rwanda' },
+        coordinates: { latitude: -1.9441, longitude: 30.1367 },
+        contact_info: { phone: '+250788000002', email: 'services@test.rw' },
+        settings: { currency: 'RWF', timezone: 'Africa/Kigali' },
+      })
+      .select()
+      .single();
+
+    if (branchError || !branch) {
+      throw new Error(`Failed to create test branch: ${branchError?.message}`);
+    }
+
     testBranchId = branch.id;
   });
 
@@ -64,17 +86,21 @@ describe('Services Integration Tests', () => {
     if (testServiceId) {
       await supabase.getAdminClient().from('services').delete().eq('id', testServiceId);
     }
+
     if (testBranchId) {
       await supabase.getAdminClient().from('branches').delete().eq('id', testBranchId);
     }
-    await supabase.getAdminClient().from('users').delete().eq('email', 'services-test@glads.rw');
-    if (testUser) {
-      await supabase.getAdminClient().auth.admin.deleteUser(testUser.id);
+
+    await supabase.getAdminClient().from('users').delete().eq('email', testEmail);
+
+    if (testUserId) {
+      await supabase.getAdminClient().auth.admin.deleteUser(testUserId);
     }
+
     await app.close();
   });
 
-  describe('POST /services', () => {
+  describe('POST /services/:branchId', () => {
     it('should create a spa service', async () => {
       const serviceData = {
         branchId: testBranchId,
@@ -83,7 +109,7 @@ describe('Services Integration Tests', () => {
         category: 'spa',
         price: 50000,
         billingType: 'one-time',
-        duration: 60,
+        durationMinutes: 60,
         images: ['https://example.com/massage.jpg'],
       };
 
@@ -110,10 +136,7 @@ describe('Services Integration Tests', () => {
         price: 30000,
         billingType: 'subscription',
         subscriptionPeriod: 'monthly',
-        availabilitySchedule: [
-          { day: 'Monday', openTime: '06:00', closeTime: '22:00' },
-          { day: 'Tuesday', openTime: '06:00', closeTime: '22:00' },
-        ],
+        availableTimes: ['06:00-22:00'],
       };
 
       const response = await request(app.getHttpServer())
@@ -124,23 +147,21 @@ describe('Services Integration Tests', () => {
 
       expect(response.body.billing_type).toBe('subscription');
       expect(response.body.subscription_period).toBe('monthly');
+
+      await supabase.getAdminClient().from('services').delete().eq('id', response.body.id);
     });
   });
 
   describe('GET /services', () => {
     it('should return list of active services', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/services')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/services').expect(200);
 
       expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBeGreaterThan(0);
+      expect(response.body.some((service: any) => service.id === testServiceId)).toBe(true);
     });
 
     it('should filter services by category', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/services?category=spa')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/services?category=spa').expect(200);
 
       expect(Array.isArray(response.body)).toBe(true);
       response.body.forEach((service: any) => {
@@ -148,9 +169,9 @@ describe('Services Integration Tests', () => {
       });
     });
 
-    it('should filter services by branch', async () => {
+    it('should filter services by branchId', async () => {
       const response = await request(app.getHttpServer())
-        .get(`/services?branch_id=${testBranchId}`)
+        .get(`/services?branchId=${testBranchId}`)
         .expect(200);
 
       expect(Array.isArray(response.body)).toBe(true);
@@ -173,40 +194,37 @@ describe('Services Integration Tests', () => {
 
     it('should return 404 for non-existent service', async () => {
       const fakeId = '00000000-0000-0000-0000-000000000000';
-      await request(app.getHttpServer())
-        .get(`/services/${fakeId}`)
-        .expect(404);
+      await request(app.getHttpServer()).get(`/services/${fakeId}`).expect(404);
     });
   });
 
-  describe('PUT /services/:id', () => {
+  describe('PATCH /services/:id', () => {
     it('should update service details', async () => {
       const updateData = {
         name: 'Premium Relaxation Massage',
         price: 60000,
-        duration: 90,
+        durationMinutes: 90,
       };
 
       const response = await request(app.getHttpServer())
-        .put(`/services/${testServiceId}`)
+        .patch(`/services/${testServiceId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .send(updateData)
         .expect(200);
 
       expect(response.body.name).toBe(updateData.name);
       expect(response.body.price).toBe(updateData.price);
-      expect(response.body.duration).toBe(updateData.duration);
+      expect(response.body.duration).toBe(updateData.durationMinutes);
     });
   });
 
   describe('DELETE /services/:id', () => {
     it('should soft delete service', async () => {
-      const response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .delete(`/services/${testServiceId}`)
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
-      // Verify service is soft deleted
       const { data } = await supabase
         .getAdminClient()
         .from('services')

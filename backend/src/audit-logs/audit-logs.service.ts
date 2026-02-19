@@ -7,7 +7,7 @@ export class AuditLogsService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
   async findAll(queryDto: QueryAuditLogsDto) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     let query = supabase
       .from('audit_logs')
@@ -51,7 +51,7 @@ export class AuditLogsService {
   }
 
   async findOne(id: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     const { data, error } = await supabase
       .from('audit_logs')
@@ -64,7 +64,7 @@ export class AuditLogsService {
   }
 
   async findByEntity(entityType: string, entityId: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     const { data, error } = await supabase
       .from('audit_logs')
@@ -106,3 +106,4 @@ export class AuditLogsService {
     return data;
   }
 }
+

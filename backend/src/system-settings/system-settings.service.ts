@@ -27,7 +27,7 @@ export class SystemSettingsService {
   }
 
   async findAll() {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     const { data, error } = await supabase
       .from('system_settings')
@@ -39,7 +39,7 @@ export class SystemSettingsService {
   }
 
   async findByKey(key: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     const { data, error } = await supabase
       .from('system_settings')
@@ -89,3 +89,4 @@ export class SystemSettingsService {
     }, {});
   }
 }
+

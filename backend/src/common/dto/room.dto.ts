@@ -79,6 +79,11 @@ export class CreateRoomDto {
 }
 
 export class UpdateRoomDto {
+  @ApiProperty({ example: 'Deluxe Room 101', description: 'Room name', required: false })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
   @ApiProperty({ example: '102', description: 'Room number', required: false })
   @IsOptional()
   @IsString()
@@ -126,13 +131,13 @@ export class UpdateRoomDto {
   viewType?: string;
 
   @ApiProperty({
-    example: 'active',
+    example: 'available',
     description: 'Room status',
-    enum: ['active', 'occupied', 'maintenance', 'inactive'],
+    enum: ['available', 'occupied', 'maintenance', 'blocked', 'active', 'inactive'],
     required: false,
   })
   @IsOptional()
-  @IsEnum(['active', 'occupied', 'maintenance', 'inactive'])
+  @IsEnum(['available', 'occupied', 'maintenance', 'blocked', 'active', 'inactive'])
   status?: string;
 
   @ApiProperty({ example: ['AC', 'TV'], description: 'Amenities', required: false })

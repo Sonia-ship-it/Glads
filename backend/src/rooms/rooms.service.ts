@@ -1,10 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CreateRoomDto, UpdateRoomDto, SearchAvailableRoomsDto } from '../common/dto/room.dto';
 
 @Injectable()
 export class RoomsService {
   constructor(private readonly supabaseService: SupabaseService) {}
+
+  private normalizeRoomStatus(status?: string): string | undefined {
+    if (!status) return undefined;
+
+    const normalized = status.toLowerCase();
+    if (normalized === 'active') return 'available';
+    if (normalized === 'inactive') return 'blocked';
+    return normalized;
+  }
 
   async create(branchId: string, createRoomDto: CreateRoomDto) {
     const supabase = this.supabaseService.getAdminClient();
@@ -25,6 +34,8 @@ export class RoomsService {
         size_sqm: createRoomDto.sizeSqm,
         bed_type: createRoomDto.bedType,
         view_type: createRoomDto.viewType,
+        status: 'available',
+        is_active: true,
       })
       .select()
       .single();
@@ -34,12 +45,12 @@ export class RoomsService {
   }
 
   async findAll(branchId?: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     let query = supabase
       .from('rooms')
       .select('*, branches(name, coordinates)')
-      .eq('status', 'active');
+      .eq('is_active', true);
 
     if (branchId) {
       query = query.eq('branch_id', branchId);
@@ -52,7 +63,7 @@ export class RoomsService {
   }
 
   async findOne(id: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     const { data, error } = await supabase
       .from('rooms')
@@ -60,18 +71,19 @@ export class RoomsService {
       .eq('id', id)
       .single();
 
-    if (error) throw new Error(`Room not found: ${error.message}`);
+    if (error || !data) throw new NotFoundException(`Room not found: ${error?.message || id}`);
     return data;
   }
 
   async searchAvailable(searchDto: SearchAvailableRoomsDto) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     // Get all rooms matching criteria
     let query = supabase
       .from('rooms')
       .select('*, branches(name, coordinates)')
-      .eq('status', 'active');
+      .eq('is_active', true)
+      .eq('status', 'available');
 
     if (searchDto.branchId) {
       query = query.eq('branch_id', searchDto.branchId);
@@ -101,7 +113,7 @@ export class RoomsService {
           .from('bookings')
           .select('id')
           .eq('room_id', room.id)
-          .in('status', ['confirmed', 'checked_in'])
+          .in('status', ['confirmed', 'checked-in', 'checked_in'])
           .or(`and(check_in_date.lte.${searchDto.checkOut},check_out_date.gte.${searchDto.checkIn})`);
 
         if (bookingsError) continue;
@@ -123,16 +135,20 @@ export class RoomsService {
     const updateData: any = {};
     if (updateRoomDto.roomNumber) updateData.room_number = updateRoomDto.roomNumber;
     if (updateRoomDto.roomType) updateData.room_type = updateRoomDto.roomType;
+    if ((updateRoomDto as any).name) updateData.name = (updateRoomDto as any).name;
     if (updateRoomDto.floor !== undefined) updateData.floor = updateRoomDto.floor;
-    if (updateRoomDto.basePrice) updateData.base_price = updateRoomDto.basePrice;
-    if (updateRoomDto.maxOccupancy) updateData.max_occupancy = updateRoomDto.maxOccupancy;
+    if (updateRoomDto.basePrice !== undefined) updateData.base_price = updateRoomDto.basePrice;
+    if (updateRoomDto.maxOccupancy !== undefined)
+      updateData.max_occupancy = updateRoomDto.maxOccupancy;
     if (updateRoomDto.amenities) updateData.amenities = updateRoomDto.amenities;
     if (updateRoomDto.images) updateData.images = updateRoomDto.images;
     if (updateRoomDto.description) updateData.description = updateRoomDto.description;
-    if (updateRoomDto.sizeSqm) updateData.size_sqm = updateRoomDto.sizeSqm;
+    if (updateRoomDto.sizeSqm !== undefined) updateData.size_sqm = updateRoomDto.sizeSqm;
     if (updateRoomDto.bedType) updateData.bed_type = updateRoomDto.bedType;
     if (updateRoomDto.viewType) updateData.view_type = updateRoomDto.viewType;
-    if (updateRoomDto.status) updateData.status = updateRoomDto.status;
+
+    const normalizedStatus = this.normalizeRoomStatus(updateRoomDto.status);
+    if (normalizedStatus) updateData.status = normalizedStatus;
 
     const { data, error } = await supabase
       .from('rooms')
@@ -141,7 +157,7 @@ export class RoomsService {
       .select()
       .single();
 
-    if (error) throw new Error(`Failed to update room: ${error.message}`);
+    if (error || !data) throw new NotFoundException(`Failed to update room: ${error?.message || id}`);
     return data;
   }
 
@@ -150,7 +166,7 @@ export class RoomsService {
     
     const { error } = await supabase
       .from('rooms')
-      .update({ is_active: false })
+      .update({ is_active: false, status: 'blocked' })
       .eq('id', id);
 
     if (error) throw new Error(`Failed to delete room: ${error.message}`);
@@ -158,20 +174,22 @@ export class RoomsService {
   }
 
   async getRoomStats(branchId: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     const { data, error } = await supabase
       .from('rooms')
       .select('status, room_type')
-      .eq('branch_id', branchId);
+      .eq('branch_id', branchId)
+      .eq('is_active', true);
 
     if (error) throw new Error(`Failed to get room stats: ${error.message}`);
 
     const stats = {
       total: data.length,
-      active: data.filter(r => r.status === 'active').length,
+      available: data.filter(r => r.status === 'available').length,
       occupied: data.filter(r => r.status === 'occupied').length,
       maintenance: data.filter(r => r.status === 'maintenance').length,
+      blocked: data.filter(r => r.status === 'blocked').length,
       byType: data.reduce((acc, room) => {
         acc[room.room_type] = (acc[room.room_type] || 0) + 1;
         return acc;

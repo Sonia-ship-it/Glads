@@ -9,7 +9,10 @@ describe('Branches Integration Tests', () => {
   let supabase: SupabaseService;
   let authToken: string;
   let testBranchId: string;
-  let testUser: any;
+  let testUserId: string | undefined;
+
+  const timestamp = Date.now();
+  const testEmail = `branches-test-${timestamp}@glads.test`;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -21,42 +24,54 @@ describe('Branches Integration Tests', () => {
 
     supabase = moduleFixture.get<SupabaseService>(SupabaseService);
 
-    // Create test user and get auth token
-    const { data: authData } = await supabase.getAdminClient().auth.admin.createUser({
-      email: 'test@glads.rw',
+    const { data: authData, error: createUserError } = await supabase
+      .getAdminClient()
+      .auth.admin.createUser({
+        email: testEmail,
+        password: 'TestPass123!',
+        email_confirm: true,
+      });
+
+    if (createUserError || !authData.user) {
+      throw new Error(`Failed to create test user: ${createUserError?.message}`);
+    }
+
+    testUserId = authData.user.id;
+
+    const {
+      data: { session },
+      error: signInError,
+    } = await supabase.getClient().auth.signInWithPassword({
+      email: testEmail,
       password: 'TestPass123!',
-      email_confirm: true,
     });
 
-    testUser = authData.user;
-
-    if (authData.user) {
-      const { data: { session } } = await supabase.getClient().auth.signInWithPassword({
-        email: 'test@glads.rw',
-        password: 'TestPass123!',
-      });
-      authToken = session?.access_token || '';
-
-      // Insert user profile
-      await supabase.getAdminClient().from('users').insert({
-        id: authData.user.id,
-        email: 'test@glads.rw',
-        full_name: 'Test Admin',
-        role: 'super-admin',
-        is_active: true,
-      });
+    if (signInError || !session?.access_token) {
+      throw new Error(`Failed to sign in test user: ${signInError?.message}`);
     }
+
+    authToken = session.access_token;
+
+    await supabase.getAdminClient().from('users').insert({
+      id: testUserId,
+      email: testEmail,
+      full_name: 'Branches Test Admin',
+      role: 'super-admin',
+      is_active: true,
+    });
   });
 
   afterAll(async () => {
-    // Cleanup: delete test branch and user
     if (testBranchId) {
       await supabase.getAdminClient().from('branches').delete().eq('id', testBranchId);
     }
-    await supabase.getAdminClient().from('users').delete().eq('email', 'test@glads.rw');
-    if (testUser) {
-      await supabase.getAdminClient().auth.admin.deleteUser(testUser.id);
+
+    await supabase.getAdminClient().from('users').delete().eq('email', testEmail);
+
+    if (testUserId) {
+      await supabase.getAdminClient().auth.admin.deleteUser(testUserId);
     }
+
     await app.close();
   });
 
@@ -64,7 +79,7 @@ describe('Branches Integration Tests', () => {
     it('should create a new branch with valid data', async () => {
       const branchData = {
         name: 'Test Branch Ndera',
-        code: 'TEST-ND',
+        code: `TEST-ND-${timestamp}`,
         address: {
           street: 'KN 5 Rd',
           city: 'Kigali',
@@ -83,7 +98,7 @@ describe('Branches Integration Tests', () => {
           currency: 'RWF',
           timezone: 'Africa/Kigali',
           taxRate: 0.18,
-          serviceChargeRate: 0.10,
+          serviceChargeRate: 0.1,
         },
       };
 
@@ -104,7 +119,7 @@ describe('Branches Integration Tests', () => {
     it('should fail with duplicate branch code', async () => {
       const duplicateData = {
         name: 'Duplicate Branch',
-        code: 'TEST-ND', // Same code as above
+        code: `TEST-ND-${timestamp}`,
         address: { street: 'Test', city: 'Test', country: 'Rwanda' },
         coordinates: { latitude: -1.9441, longitude: 30.1367 },
         contact_info: { phone: '+250788123456', email: 'test2@glads.rw' },
@@ -122,20 +137,16 @@ describe('Branches Integration Tests', () => {
 
   describe('GET /branches', () => {
     it('should return list of branches', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/branches')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/branches').expect(200);
 
       expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBeGreaterThan(0);
+      expect(response.body.some((branch: any) => branch.id === testBranchId)).toBe(true);
     });
   });
 
   describe('GET /branches/:id', () => {
     it('should return branch details', async () => {
-      const response = await request(app.getHttpServer())
-        .get(`/branches/${testBranchId}`)
-        .expect(200);
+      const response = await request(app.getHttpServer()).get(`/branches/${testBranchId}`).expect(200);
 
       expect(response.body.id).toBe(testBranchId);
       expect(response.body).toHaveProperty('name');
@@ -144,9 +155,7 @@ describe('Branches Integration Tests', () => {
 
     it('should return 404 for non-existent branch', async () => {
       const fakeId = '00000000-0000-0000-0000-000000000000';
-      await request(app.getHttpServer())
-        .get(`/branches/${fakeId}`)
-        .expect(404);
+      await request(app.getHttpServer()).get(`/branches/${fakeId}`).expect(404);
     });
   });
 
@@ -168,6 +177,20 @@ describe('Branches Integration Tests', () => {
     });
   });
 
+  describe('GET /branches/:id/stats', () => {
+    it('should return branch stats', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/branches/${testBranchId}/stats`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(response.body.branchId).toBe(testBranchId);
+      expect(response.body).toHaveProperty('rooms');
+      expect(response.body).toHaveProperty('bookings');
+      expect(response.body).toHaveProperty('revenue');
+    });
+  });
+
   describe('DELETE /branches/:id', () => {
     it('should soft delete branch', async () => {
       await request(app.getHttpServer())
@@ -175,7 +198,6 @@ describe('Branches Integration Tests', () => {
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
-      // Verify branch is soft deleted (is_active = false)
       const { data } = await supabase
         .getAdminClient()
         .from('branches')

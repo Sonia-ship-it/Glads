@@ -7,14 +7,14 @@ export class AnalyticsService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
   async getRevenueReport(reportDto: GetRevenueReportDto) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     let query = supabase
       .from('payments')
-      .select('amount, currency, paid_at, booking_id, bookings(branch_id, branches(name))')
+      .select('amount, currency, created_at, booking_id, bookings(branch_id, branches(name))')
       .eq('status', 'completed')
-      .gte('paid_at', reportDto.startDate)
-      .lte('paid_at', reportDto.endDate);
+      .gte('created_at', reportDto.startDate)
+      .lte('created_at', reportDto.endDate);
 
     if (reportDto.branchId) {
       query = query.eq('bookings.branch_id', reportDto.branchId);
@@ -31,7 +31,7 @@ export class AnalyticsService {
 
     // Group by date
     const dailyRevenue = data.reduce((acc, payment) => {
-      const date = payment.paid_at.split('T')[0];
+      const date = payment.created_at.split('T')[0];
       acc[date] = (acc[date] || 0) + payment.amount;
       return acc;
     }, {});
@@ -62,18 +62,18 @@ export class AnalyticsService {
   }
 
   async getServiceReport(branchId?: string, startDate?: string, endDate?: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     let query = supabase
       .from('service_bookings')
-      .select('id, total_amount, status, booking_date, service_id, services(name, category, branch_id, branches(name))')
+      .select('id, total_amount, status, service_date, service_id, services(name, category, branch_id, branches(name))')
       .in('status', ['confirmed', 'completed']);
 
     if (startDate) {
-      query = query.gte('booking_date', startDate);
+      query = query.gte('service_date', startDate);
     }
     if (endDate) {
-      query = query.lte('booking_date', endDate);
+      query = query.lte('service_date', endDate);
     }
 
     const { data, error } = await query;
@@ -104,7 +104,7 @@ export class AnalyticsService {
   }
 
   async getDetailedOccupancyReport(reportDto: { startDate: string; endDate: string; branchId?: string }) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     // Get room availability data
     let roomQuery = supabase
@@ -157,7 +157,7 @@ export class AnalyticsService {
   }
 
   async getBookingStatistics(reportDto: { startDate: string; endDate: string; branchId?: string }) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     let query = supabase
       .from('bookings')

@@ -6,7 +6,7 @@ export class BranchesService {
   constructor(private supabaseService: SupabaseService) {}
 
   async findAll() {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     const { data, error } = await supabase
       .from('branches')
@@ -22,7 +22,7 @@ export class BranchesService {
   }
 
   async findOne(id: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     const { data, error } = await supabase
       .from('branches')
@@ -89,7 +89,7 @@ export class BranchesService {
   }
 
   async getBranchStats(branchId: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     // Verify branch exists
     await this.findOne(branchId);

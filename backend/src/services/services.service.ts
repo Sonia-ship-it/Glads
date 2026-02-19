@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CreateServiceDto, UpdateServiceDto, CreateServiceBookingDto } from '../common/dto/service.dto';
 
@@ -32,7 +32,7 @@ export class ServicesService {
   }
 
   async findAll(branchId?: string, category?: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     let query = supabase
       .from('services')
@@ -53,7 +53,7 @@ export class ServicesService {
   }
 
   async findOne(id: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     
     const { data, error } = await supabase
       .from('services')
@@ -61,7 +61,9 @@ export class ServicesService {
       .eq('id', id)
       .single();
 
-    if (error) throw new Error(`Service not found: ${error.message}`);
+    if (error || !data) {
+      throw new NotFoundException(`Service not found: ${error?.message || id}`);
+    }
     return data;
   }
 
@@ -75,11 +77,11 @@ export class ServicesService {
     if (updateServiceDto.price !== undefined) updateData.price = updateServiceDto.price;
     if (updateServiceDto.billingType) updateData.billing_type = updateServiceDto.billingType;
     if (updateServiceDto.subscriptionPeriod) updateData.subscription_period = updateServiceDto.subscriptionPeriod;
-    if (updateServiceDto.durationMinutes) updateData.duration_minutes = updateServiceDto.durationMinutes;
-    if (updateServiceDto.maxCapacity) updateData.max_capacity = updateServiceDto.maxCapacity;
-    if (updateServiceDto.availableTimes) updateData.available_times = updateServiceDto.availableTimes;
+    if (updateServiceDto.durationMinutes !== undefined) updateData.duration = updateServiceDto.durationMinutes;
+    if (updateServiceDto.maxCapacity !== undefined)
+      updateData.max_bookings_per_slot = updateServiceDto.maxCapacity;
+    if (updateServiceDto.availableTimes) updateData.availability_schedule = updateServiceDto.availableTimes;
     if (updateServiceDto.images) updateData.images = updateServiceDto.images;
-    if (updateServiceDto.amenities) updateData.amenities = updateServiceDto.amenities;
     if (updateServiceDto.isActive !== undefined) updateData.is_active = updateServiceDto.isActive;
 
     const { data, error } = await supabase
@@ -89,7 +91,9 @@ export class ServicesService {
       .select()
       .single();
 
-    if (error) throw new Error(`Failed to update service: ${error.message}`);
+    if (error || !data) {
+      throw new NotFoundException(`Failed to update service: ${error?.message || id}`);
+    }
     return data;
   }
 

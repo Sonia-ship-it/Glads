@@ -49,7 +49,7 @@ export class GymSubscriptionsService {
   }
 
   async findAll(branchId?: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     let query = supabase
       .from('gym_subscriptions')
@@ -66,7 +66,7 @@ export class GymSubscriptionsService {
   }
 
   async findByMember(memberId: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     const { data, error } = await supabase
       .from('gym_subscriptions')
@@ -79,7 +79,7 @@ export class GymSubscriptionsService {
   }
 
   async findOne(id: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     const { data, error } = await supabase
       .from('gym_subscriptions')
@@ -92,7 +92,7 @@ export class GymSubscriptionsService {
   }
 
   async findByMembershipNumber(membershipNumber: string) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     const { data, error } = await supabase
       .from('gym_subscriptions')
