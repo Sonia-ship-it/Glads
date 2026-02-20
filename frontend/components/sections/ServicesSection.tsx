@@ -42,9 +42,9 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                         <img src={service.icon} alt={service.name} className="absolute inset-0 w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-[2s]" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
                         <div className="absolute bottom-12 left-12 right-12 z-10 transition-transform duration-700 group-hover:-translate-y-4">
-                            <span className="text-[10px] font-black tracking-[0.5em] uppercase text-white/50 mb-4 block"><Counter target={i + 1} zeroPad /> &bull; {service.category}</span>
-                            <h4 className="text-4xl font-sans italic mb-6 text-white leading-tight">{service.name}</h4>
-                            <p className="text-sm text-white/60 font-light leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-700">{service.description}</p>
+                            <span className="text-[10px] font-black tracking-[0.5em] uppercase !text-white mb-4 block"><Counter target={i + 1} zeroPad /> &bull; {service.category}</span>
+                            <h4 className="text-4xl font-sans italic mb-6 !text-white leading-tight">{service.name}</h4>
+                            <p className="text-sm !text-white font-light leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-700">{service.description}</p>
                         </div>
                     </div>
                 ))}

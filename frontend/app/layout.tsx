@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     title: "Glads Apartment Hotel | Luxury Living",
     description: "Experience luxury living with Glads Apartment Hotel.",
       icons: {
-    icon: '/logo.png', 
+    icon: '/lg.png', 
   },
 };
 

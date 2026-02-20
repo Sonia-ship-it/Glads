@@ -15,7 +15,7 @@ const BRANCH_TEAMS: Record<Branch, {
     phone: string;
     color: string;
     borderColor: string;
-    members: { name: string; role: string; emoji: string }[];
+    members: { name: string; role: string; image: string }[];
 }> = {
     [Branch.NDERA]: {
         branch: 'Ndera (Flagship)',
@@ -24,11 +24,11 @@ const BRANCH_TEAMS: Record<Branch, {
         color: 'from-burgundy/20 to-red-900/10',
         borderColor: 'border-burgundy/30',
         members: [
-            { name: 'Uwase Claudine', role: 'Branch Manager', emoji: 'ðŸ‘©â€ðŸ’¼' },
-            { name: 'Habimana Eric', role: 'Head of Hospitality', emoji: 'ðŸ¤' },
-            { name: 'Mukamana Diane', role: 'Front Desk Lead', emoji: 'ðŸ¨' },
-            { name: 'Niyonzima Jean', role: 'Wellness & Spa Supervisor', emoji: 'ðŸ§˜' },
-            { name: 'Ingabire Solange', role: 'Restaurant Manager', emoji: 'ðŸ½ï¸' },
+            { name: 'Uwase Claudine', role: 'Branch Manager', image: '/about-story-1.jpg' },
+            { name: 'Habimana Eric', role: 'Head of Hospitality', image: '/hero.jpeg' },
+            { name: 'Mukamana Diane', role: 'Front Desk Lead', image: '/about-story-2.jpg' },
+            { name: 'Niyonzima Jean', role: 'Wellness & Spa Supervisor', image: '/food.jpeg' },
+            { name: 'Ingabire Solange', role: 'Restaurant Manager', image: '/OKK_5838-1-scaled.jpg.jpeg' },
         ],
     },
     [Branch.KANOMBE]: {
@@ -38,10 +38,10 @@ const BRANCH_TEAMS: Record<Branch, {
         color: 'from-neutral-800/20 to-neutral-900/10',
         borderColor: 'border-neutral-300/30 dark:border-white/10',
         members: [
-            { name: 'Nsengimana Patrick', role: 'Branch Manager', emoji: 'ðŸ‘¨â€ðŸ’¼' },
-            { name: 'Uwimana Grace', role: 'Guest Relations Lead', emoji: 'ðŸ¤' },
-            { name: 'Bizimana Thierry', role: 'Facilities Supervisor', emoji: 'ðŸ”§' },
-            { name: 'Mukagasana Ange', role: 'Food & Beverage Lead', emoji: 'â˜•' },
+            { name: 'Nsengimana Patrick', role: 'Branch Manager', image: '/OKK_5908-1-720x520.jpg.jpeg' },
+            { name: 'Uwimana Grace', role: 'Guest Relations Lead', image: '/hero.jpeg' },
+            { name: 'Bizimana Thierry', role: 'Facilities Supervisor', image: '/DSC_0996-1-720x470.jpg.jpeg' },
+            { name: 'Mukagasana Ange', role: 'Food & Beverage Lead', image: '/food.jpeg' },
         ],
     },
     [Branch.KABEZA]: {
@@ -51,9 +51,9 @@ const BRANCH_TEAMS: Record<Branch, {
         color: 'from-stone-700/20 to-stone-900/10',
         borderColor: 'border-stone-300/30 dark:border-white/10',
         members: [
-            { name: 'Kayitesi Aline', role: 'Branch Coordinator', emoji: 'ðŸ‘©â€ðŸ’¼' },
-            { name: 'Nkurunziza Alain', role: 'Maintenance Lead', emoji: 'ðŸ”§' },
-            { name: 'Uwera Beatrice', role: 'Resident Services', emoji: 'ðŸ ' },
+            { name: 'Kayitesi Aline', role: 'Branch Coordinator', image: '/DSC_0996-1-720x470.jpg.jpeg' },
+            { name: 'Nkurunziza Alain', role: 'Maintenance Lead', image: '/about-story-2.jpg' },
+            { name: 'Uwera Beatrice', role: 'Resident Services', image: '/hero.jpeg' },
         ],
     },
 };
@@ -116,7 +116,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                         {COMPANY_PROFILE.values.map((value, idx) => (
                             <div
                                 key={idx}
-                                className="group relative flex-1 hover:flex-[2.3] transition-all duration-700 ease-in-out overflow-hidden rounded-[2.5rem] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 shadow-xl hover:shadow-2xl cursor-default"
+                                className="group relative flex-1 hover:flex-[2.3] transition-all duration-700 ease-in-out overflow-hidden rounded-[2.5rem] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 shadow-xl hover:shadow-2xl cursor-default text-white"
                             >
                                 <div
                                     className="absolute inset-0 transition-transform duration-700 group-hover:scale-110 bg-cover bg-center opacity-0 group-hover:opacity-55 dark:group-hover:opacity-35"
@@ -137,12 +137,12 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                                     </div>
 
                                     <div className="absolute bottom-8 left-8 md:bottom-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:-rotate-90 origin-center whitespace-nowrap opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none">
-                                        <h3 className="text-2xl font-black uppercase tracking-widest text-neutral-300 dark:text-neutral-700 hidden md:block">{value.title}</h3>
+                                        <h3 className="text-2xl font-black uppercase tracking-widest text-neutral-700 dark:text-neutral-300 group-hover:!text-white hidden md:block">{value.title}</h3>
                                     </div>
 
                                     <div className="relative z-10 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-100">
                                         <h3 className="text-3xl md:text-4xl font-black uppercase mb-4 text-white">{value.title}</h3>
-                                        <p className="text-neutral-100 font-normal leading-relaxed text-sm md:text-lg max-w-md">{value.description}</p>
+                                        <p className="!text-white font-normal leading-relaxed text-sm md:text-lg max-w-md">{value.description}</p>
                                     </div>
                                 </div>
                             </div>
@@ -188,8 +188,14 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                                 className="group rounded-[2rem] border border-neutral-200 dark:border-white/10 bg-white dark:bg-white/[0.02] px-5 py-5 md:px-6 md:py-6 hover:border-burgundy/40 hover:shadow-xl transition-all duration-300"
                             >
                                 <div className="flex items-start gap-4 md:gap-5">
-                                    <div className="h-11 w-11 md:h-12 md:w-12 rounded-full border border-burgundy/25 bg-burgundy/10 flex items-center justify-center text-sm font-black text-burgundy shrink-0">
-                                        {String(j + 1).padStart(2, '0')}
+                                    <div className="h-12 w-12 md:h-14 md:w-14 rounded-full border border-burgundy/30 overflow-hidden shrink-0">
+                                        <img
+                                            src={member.image}
+                                            alt={member.name}
+                                            className="w-full h-full object-cover"
+                                            loading="lazy"
+                                            decoding="async"
+                                        />
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-xl md:text-2xl font-black tracking-tight text-neutral-900 dark:text-white leading-tight">

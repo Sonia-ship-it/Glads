@@ -197,6 +197,36 @@ p, li, span {
   outline-offset: 2px;
 }
 
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.35);
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 1000;
+  transform: translateY(-150%);
+  transition: transform 0.2s ease;
+  background: #8b0000;
+  color: #fff;
+  border-radius: 9999px;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 @media (hover: hover) and (pointer: fine) and (min-width: 1024px) {
   body,
   * {
@@ -226,4 +256,21 @@ p, li, span {
 
 .momo-badge {
   animation: momo-pulse 2s ease-in-out infinite;
+}
+
+@keyframes testimonials-slide {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-38%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.testimonials-slider {
+  animation: testimonials-slide 22s ease-in-out infinite;
+  will-change: transform;
 }

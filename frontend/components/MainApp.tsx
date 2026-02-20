@@ -59,6 +59,8 @@ const App: React.FC = () => {
     }
     return false;
   });
+  const [activeBranch, setActiveBranch] = useState<Branch>(Branch.NDERA);
+  const [isDark, setIsDark] = useState(false);
 
   const [currentTab, setCurrentTab] = useState<'Home' | 'About' | 'Rooms' | 'Services' | 'Gallery' | 'Contact' | 'Admin'>('Home');
   const [selectedRoom, setSelectedRoom] = useState<RoomType | null>(null);
@@ -93,6 +95,7 @@ const App: React.FC = () => {
   const [cursorActive, setCursorActive] = useState(false);
   const [cursorLabel, setCursorLabel] = useState<string | null>(null);
   const [stats, setStats] = useState({ locations: 0, suites: 0, satisfaction: 0 });
+  const [isNavCondensed, setIsNavCondensed] = useState(false);
 
   // Scroll to top on tab change
   useEffect(() => {
@@ -118,6 +121,39 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setShowChatAssistant(true);
+      }
+      if (e.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => setIsNavCondensed(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const savedBranch = localStorage.getItem('glads-selected-branch') as Branch | null;
+    if (savedBranch && Object.values(Branch).includes(savedBranch)) {
+      setActiveBranch(savedBranch);
+    }
+
+    const savedTheme = localStorage.getItem('glads-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setIsDark(savedTheme === 'dark' || (!savedTheme && prefersDark));
+  }, []);
+
+  useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('glads-theme', 'dark');
@@ -134,6 +170,11 @@ const App: React.FC = () => {
   }, []);
 
   const data = useMemo(() => BRANCH_DATA[activeBranch], [activeBranch]);
+  const testimonials = useMemo(() => ([
+    { quote: 'An exceptional experience. The attention to detail and level of service exceeded all expectations.', initials: 'JD', name: 'James Davidson', role: 'Business Executive' },
+    { quote: 'The perfect blend of luxury and comfort with impeccable hospitality from check-in to check-out.', initials: 'SM', name: 'Sarah Mitchell', role: 'Travel Blogger' },
+    { quote: 'Outstanding location, elegant rooms, and a team that consistently goes above and beyond.', initials: 'MC', name: 'Michael Chen', role: 'Entrepreneur' },
+  ]), []);
 
   const availableTabs = useMemo(() => {
     const tabs: ('Home' | 'About' | 'Rooms' | 'Services' | 'Gallery' | 'Contact' | 'Admin')[] = ['Home', 'About', 'Rooms', 'Services', 'Gallery', 'Contact'];
@@ -230,6 +271,9 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen transition-all duration-700 bg-white dark:bg-black text-neutral-900 dark:text-neutral-100 font-sans selection:bg-burgundy selection:text-white overflow-x-hidden">
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <CustomCursor cursorActive={cursorActive} cursorPos={cursorPos} cursorLabel={cursorLabel} />
 
       <ImmersivePhotoViewer
@@ -549,18 +593,19 @@ const App: React.FC = () => {
       )}
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 p-4 md:p-6 flex justify-center pointer-events-none font-sans font-[var(--font-outfit)]">
-        <div className="w-full max-w-7xl glass-nav rounded-full px-4 md:px-7 h-[80px] md:h-[80px] flex items-center justify-between pointer-events-auto border border-neutral-200/70 dark:border-white/10 shadow-2xl transition-none">
+      <header className="fixed top-0 left-0 right-0 z-50 p-4 md:p-6 flex justify-center pointer-events-none font-sans font-[var(--font-outfit)] transition-all duration-300">
+        <div className={`glass-nav rounded-full px-4 md:px-7 lg:px-8 flex items-center justify-between pointer-events-auto border border-neutral-200/70 dark:border-white/10 shadow-2xl transition-all duration-300 h-[80px] md:h-[80px] ${isNavCondensed ? 'w-[min(92vw,1220px)] xl:w-[min(90vw,1260px)]' : 'w-[min(96vw,1280px)] xl:w-[min(94vw,1320px)]'}`}>
           <div className="flex items-center gap-6 xl:gap-8">
-            <div className="cursor-pointer shrink-0" onClick={() => setCurrentTab('Home')}>
+            <button className="cursor-pointer shrink-0" onClick={() => setCurrentTab('Home')} aria-label="Go to Home">
               <Logo className="scale-75 md:scale-90" />
-            </div>
-            <nav className="hidden xl:flex items-center gap-1 2xl:gap-1.5" style={{ fontFamily: 'var(--font-outfit)' }}>
+            </button>
+            <nav className="hidden xl:flex items-center gap-1 2xl:gap-1.5" style={{ fontFamily: 'var(--font-outfit)' }} aria-label="Primary navigation">
               {availableTabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setCurrentTab(tab as any)}
-                  className={`text-[6px] xl:text-[7px] font-semibold tracking-[0em] uppercase transition-none relative py-1 px-1.5 rounded-full border ${
+                  aria-current={currentTab === tab ? 'page' : undefined}
+                  className={`text-[10px] xl:text-[11px] font-semibold tracking-[0.08em] uppercase relative py-1.5 px-3 rounded-full border transition-colors ${
                     currentTab === tab ? 'text-burgundy dark:text-white bg-white/90 dark:bg-white/20 border-neutral-200/80 dark:border-white/20 shadow-sm' : 'text-[#9d9d9d] dark:text-[#9d9d9d] border-transparent hover:text-[#787878] dark:hover:text-[#c4c4c4] hover:bg-white/65 dark:hover:bg-white/10'
                     }`}
                   style={{ fontFamily: 'var(--font-outfit)', fontWeight: 600 }}
@@ -581,10 +626,13 @@ const App: React.FC = () => {
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="xl:hidden p-3 rounded-full bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-800"
+                aria-label={isMobileMenuOpen ? 'Close mobile menu' : 'Open mobile menu'}
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="mobile-nav-drawer"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16m-7 6h7"} /></svg>
               </button>
-              <button onClick={() => setCurrentTab('Rooms')} className="hidden md:block bg-burgundy text-white px-5 py-2 rounded-full text-[6px] font-semibold tracking-[0em] uppercase hover:brightness-110 transition-none shadow-lg" style={{ fontFamily: 'var(--font-outfit)', fontWeight: 600 }}>
+              <button onClick={() => setCurrentTab('Rooms')} className="hidden md:block bg-burgundy text-white px-5 py-2.5 rounded-full text-[10px] font-semibold tracking-[0.08em] uppercase hover:brightness-110 transition-all shadow-lg">
                 Book Now
               </button>
             </div>
@@ -592,10 +640,11 @@ const App: React.FC = () => {
         </div>
 
         {/* Mobile Nav Drawer */}
-        <div className={`xl:hidden fixed inset-0 z-[100] bg-white/98 dark:bg-black/98 backdrop-blur-2xl flex flex-col items-center justify-center space-y-10 transition-all duration-500 ${isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}`}>
+        <div id="mobile-nav-drawer" role="dialog" aria-modal="true" className={`xl:hidden fixed inset-0 z-[100] bg-white/98 dark:bg-black/98 backdrop-blur-2xl flex flex-col items-center justify-center space-y-10 transition-all duration-500 ${isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}`}>
           <button
             onClick={() => setIsMobileMenuOpen(false)}
             className="absolute top-10 right-10 text-neutral-400"
+            aria-label="Close mobile navigation"
           >
             <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
@@ -618,7 +667,7 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="pt-32 md:pt-44 min-h-screen transition-all duration-700 ease-in-out" key={currentTab}>
+      <main id="main-content" tabIndex={-1} className="pt-32 md:pt-44 min-h-screen transition-all duration-700 ease-in-out" key={currentTab}>
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
           {currentTab === 'Home' && (
             <div className="reveal">
@@ -717,7 +766,7 @@ const App: React.FC = () => {
                             <Counter target={i + 1} zeroPad /> • Service
                           </span>
                           <h3 className="text-3xl font-black mb-2">{service.name}</h3>
-                          <p className="text-sm text-white/80 line-clamp-2">{service.description}</p>
+                          <p className="text-sm text-white line-clamp-2">{service.description}</p>
                         </div>
                       </div>
                     ))}
@@ -772,6 +821,32 @@ const App: React.FC = () => {
                       </div>
                     </div>
                     <div className="relative h-[600px] hidden lg:block">
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-44 h-44 rounded-full bg-white/90 dark:bg-black/70 backdrop-blur-xl border border-white/70 dark:border-white/15 shadow-2xl flex flex-col items-center justify-center p-4">
+                        <div className="flex -space-x-3 mb-3">
+                          <img
+                            src="/hero.jpeg"
+                            alt="Ndera Branch"
+                            className="w-11 h-11 rounded-full object-cover border-2 border-white dark:border-black"
+                            loading="lazy"
+                          />
+                          <img
+                            src="/OKK_5908-1-720x520.jpg.jpeg"
+                            alt="Kanombe Branch"
+                            className="w-11 h-11 rounded-full object-cover border-2 border-white dark:border-black"
+                            loading="lazy"
+                          />
+                          <img
+                            src="/DSC_0996-1-720x470.jpg.jpeg"
+                            alt="Kabeza Branch"
+                            className="w-11 h-11 rounded-full object-cover border-2 border-white dark:border-black"
+                            loading="lazy"
+                          />
+                        </div>
+                        <p className="text-3xl font-black text-burgundy leading-none">3</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-neutral-700 dark:text-white/80 mt-1 text-center">
+                          Branches
+                        </p>
+                      </div>
                       <div className="absolute top-0 right-0 w-[80%] h-[75%] rounded-[3rem] overflow-hidden shadow-2xl">
                         <img src="/OKK_5838-1-scaled.jpg.jpeg" alt="Glads Experience" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                       </div>
@@ -802,10 +877,25 @@ const App: React.FC = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
                         <div className="absolute inset-0 p-8 md:p-10 flex flex-col justify-end">
                           <div className="bg-black/45 backdrop-blur-md border border-white/20 rounded-2xl p-5 md:p-6">
-                            <span className="text-white text-[10px] font-black uppercase tracking-[0.26em] mb-2 block">{loc.subtitle}</span>
-                            <h3 className="font-display text-3xl md:text-4xl font-bold text-white mb-2 leading-tight uppercase">Glads Apartment {loc.name}</h3>
-                            <p className="text-white text-sm mb-4">{loc.address}</p>
-                            <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-full border border-white/30">{loc.tag}</span>
+                            <span className="!text-white text-[10px] font-black uppercase tracking-[0.26em] mb-2 block">{loc.subtitle}</span>
+                            <h3 className="font-display text-3xl md:text-4xl font-bold !text-white mb-2 leading-tight uppercase">Glads Apartment {loc.name}</h3>
+                            <p className="!text-white text-sm mb-4">{loc.address}</p>
+                            <span className="inline-block bg-white/20 backdrop-blur-sm !text-white text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-full border border-white/30">{loc.tag}</span>
+                            <div className="mt-4">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (activeBranch !== loc.branch) handleBranchSwitch(loc.branch);
+                                }}
+                                className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.16em] border transition-all ${
+                                  activeBranch === loc.branch
+                                    ? 'bg-white/15 !text-white border-white/40 cursor-default'
+                                    : 'bg-burgundy !text-white border-burgundy hover:brightness-110'
+                                }`}
+                              >
+                                {activeBranch === loc.branch ? 'Current Branch' : 'Switch to this branch'}
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -879,30 +969,30 @@ const App: React.FC = () => {
                   <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-6 block">Guest Experiences</span>
                   <h3 className="text-5xl md:text-7xl font-black uppercase tracking-tighter">What They Say.</h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {[
-                    { quote: 'An exceptional experience. The attention to detail and level of service exceeded all expectations.', initials: 'JD', name: 'James Davidson', role: 'Business Executive' },
-                    { quote: 'The perfect blend of luxury and comfort with impeccable hospitality from check-in to check-out.', initials: 'SM', name: 'Sarah Mitchell', role: 'Travel Blogger' },
-                    { quote: 'Outstanding location, elegant rooms, and a team that consistently goes above and beyond.', initials: 'MC', name: 'Michael Chen', role: 'Entrepreneur' },
-                  ].map((item, i) => (
-                    <div key={i} className="bg-neutral-50 dark:bg-neutral-900/40 p-10 border border-neutral-100 dark:border-white/5 rounded-[2.5rem] shadow-lg hover:shadow-xl transition-all">
-                      <div className="flex gap-1 mb-6">
-                        {[...Array(5)].map((_, j) => (
-                          <svg key={j} className="w-5 h-5 text-burgundy" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                        ))}
-                      </div>
-                      <p className="text-base text-neutral-600 dark:text-neutral-400 mb-8 leading-relaxed">{item.quote}</p>
-                      <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-full bg-burgundy/10 flex items-center justify-center">
-                          <span className="font-black text-burgundy text-sm">{item.initials}</span>
-                        </div>
-                        <div>
-                          <p className="font-bold text-sm">{item.name}</p>
-                          <p className="text-xs text-neutral-500">{item.role}</p>
-                        </div>
-                      </div>
+                <div className="relative">
+                  <div className="overflow-hidden">
+                    <div className="testimonials-slider flex gap-6 w-max py-1">
+                      {[...testimonials, ...testimonials].map((item, i) => (
+                        <article key={i} className="w-[86vw] md:w-[440px] lg:w-[420px] bg-neutral-50 dark:bg-neutral-900/40 p-8 md:p-10 border border-neutral-100 dark:border-white/5 rounded-[2.2rem] shadow-lg">
+                          <div className="flex gap-1 mb-5">
+                            {[...Array(5)].map((_, j) => (
+                              <svg key={j} className="w-5 h-5 text-burgundy" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                            ))}
+                          </div>
+                          <p className="text-base text-neutral-700 dark:text-neutral-300 mb-8 leading-relaxed">{item.quote}</p>
+                          <div className="flex items-center gap-4">
+                            <div className="w-11 h-11 rounded-full bg-burgundy/10 flex items-center justify-center">
+                              <span className="font-black text-burgundy text-sm">{item.initials}</span>
+                            </div>
+                            <div>
+                              <p className="font-bold text-sm">{item.name}</p>
+                              <p className="text-xs text-neutral-500">{item.role}</p>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
               </section>
 
@@ -915,14 +1005,20 @@ const App: React.FC = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {[
-                      { title: 'New Dining Menu Launch', text: 'Our updated food menu now includes expanded local favorites and chef specials.' },
-                      { title: 'Wellness Program Upgrade', text: 'Spa and fitness sessions now include structured weekly wellness routines.' },
-                      { title: 'Conference Space Expansion', text: 'Kanombe branch adds enhanced event facilities for corporate bookings.' },
+                      { title: 'New Dining Menu Launch', text: 'Our updated food menu now includes expanded local favorites and chef specials.', image: '/food.jpeg' },
+                      { title: 'Wellness Program Upgrade', text: 'Spa and fitness sessions now include structured weekly wellness routines.', image: '/hero.jpeg' },
+                      { title: 'Conference Space Expansion', text: 'Kanombe branch adds enhanced event facilities for corporate bookings.', image: '/OKK_5908-1-720x520.jpg.jpeg' },
                     ].map((news, i) => (
-                      <article key={i} className="border border-neutral-200 dark:border-white/10 p-7 bg-neutral-50 dark:bg-neutral-900/30 rounded-[2rem] shadow-md hover:shadow-xl transition-all">
+                      <article key={i} className="border border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-neutral-900/30 rounded-[2rem] overflow-hidden shadow-md hover:shadow-xl transition-all">
+                        <div className="h-44 relative">
+                          <img src={news.image} alt={news.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-black/10" />
+                        </div>
+                        <div className="p-7">
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 mb-3">Update</p>
                         <h4 className="text-2xl font-black mb-3">{news.title}</h4>
                         <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">{news.text}</p>
+                        </div>
                       </article>
                     ))}
                   </div>
@@ -1059,11 +1155,11 @@ const App: React.FC = () => {
                       <img src={service.icon} alt={service.name} className="absolute inset-0 w-full h-full object-cover grayscale-[0.25] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-[1.2s]" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/86 via-black/30 to-black/8"></div>
                       <div className="absolute bottom-8 left-8 right-8 z-10">
-                        <span className="text-[10px] font-black tracking-[0.2em] uppercase text-white/75 mb-3 block">
+                        <span className="text-[10px] font-black tracking-[0.2em] uppercase !text-white mb-3 block">
                           <Counter target={i + 1} zeroPad /> &bull; {service.category}
                         </span>
-                        <h4 className="text-3xl font-black mb-3 text-white leading-tight">{service.name}</h4>
-                        <p className="text-sm text-white/80 font-normal leading-relaxed line-clamp-3">{service.description}</p>
+                        <h4 className="text-3xl font-black mb-3 !text-white leading-tight">{service.name}</h4>
+                        <p className="text-sm !text-white font-normal leading-relaxed line-clamp-3">{service.description}</p>
                       </div>
                       <div className="absolute top-6 right-6 bg-burgundy/80 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
@@ -1083,7 +1179,7 @@ const App: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
                     {SPORT_PRICES.map((item, idx) => (
                       <div key={idx} className="flex items-center justify-between py-4 border-b border-neutral-200 dark:border-neutral-800">
-                        <span className="font-bold text-lg">{item.product}</span>
+                        <span className="font-bold text-lg text-white">{item.product}</span>
                         <span className="text-burgundy font-black text-xl">{item.price}</span>
                       </div>
                     ))}
@@ -1223,7 +1319,7 @@ const App: React.FC = () => {
                   <div key={branch.id} className="bg-neutral-50 dark:bg-neutral-900/40 p-12 rounded-[3.5rem] border border-neutral-100 dark:border-white/5 shadow-xl group hover:scale-[1.02] transition-all duration-500">
                     <div className="mb-8">
                       <span className="text-burgundy font-black tracking-[0.4em] uppercase text-[10px] block mb-2">{branch.id}</span>
-                      <h3 className="text-2xl font-black uppercase tracking-tight">{branch.fullName.split('â€“')[1] || branch.fullName}</h3>
+                      <h3 className="text-2xl font-black uppercase tracking-tight">{branch.fullName.split(/[–-]/)[1] || branch.fullName}</h3>
                     </div>
 
                     <div className="space-y-6">
@@ -1344,44 +1440,46 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      <footer className="relative border-t border-neutral-100 dark:border-neutral-900 py-32 px-10 mt-32 overflow-hidden">
+      <footer className="relative border-t border-neutral-100 dark:border-neutral-900 py-28 px-6 md:px-10 mt-32 overflow-hidden">
         {/* Hero Image Background with Enhanced Dark Red Overlay */}
         <div className="absolute inset-0 z-0">
           <img src="/hero.jpeg" alt="Footer Background" className="w-full h-full object-cover opacity-50" />
           <div className="absolute inset-0 bg-gradient-to-t from-red-950 via-red-950/95 to-red-900/90 dark:from-black dark:via-black/95 dark:to-neutral-950/90"></div>
         </div>
 
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-24 relative z-10">
+        <div className="max-w-7xl mx-auto relative z-10 bg-white/5 border border-white/10 rounded-[2.5rem] p-8 md:p-12 backdrop-blur-md">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-14 md:gap-20">
           <div className="flex flex-col items-center md:items-start">
             <div className="mb-8" style={{ filter: 'brightness(0) invert(1)' }}>
               <Logo className="scale-[2.0]" />
             </div>
-            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white opacity-90 max-w-sm text-center md:text-left leading-relaxed">GLADS APARTMENT HOTEL &bull; KIGALI, RWANDA</p>
-            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-white opacity-75 max-w-sm text-center md:text-left leading-relaxed mt-2">One Brand &bull; Three Locations &bull; Ultimate Experience</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.5em] !text-white opacity-90 max-w-sm text-center md:text-left leading-relaxed">GLADS APARTMENT HOTEL &bull; KIGALI, RWANDA</p>
+            <p className="text-[9px] font-bold uppercase tracking-[0.3em] !text-white opacity-80 max-w-sm text-center md:text-left leading-relaxed mt-2">One Brand &bull; Three Locations &bull; Ultimate Experience</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-24 text-[11px] font-black tracking-[0.4em] uppercase text-white">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 md:gap-14 text-[11px] font-black tracking-[0.34em] uppercase !text-white">
             <div className="space-y-6">
-              <p className="text-white mb-8 text-sm font-black opacity-100">Quick Access</p>
-              <button onClick={() => { setAdminRole('Super Admin'); setAdminSection('dashboard'); setCurrentTab('Admin'); }} className="block opacity-80 hover:opacity-100 transition-opacity text-left text-xs font-bold">Admin Dashboard</button>
-              <button onClick={() => { setAdminRole('Super Admin'); setAdminSection('bookings'); setCurrentTab('Admin'); }} className="block opacity-80 hover:opacity-100 transition-opacity text-left text-xs font-bold">Booking Management</button>
-              <button onClick={() => { setAdminRole('Super Admin'); setAdminSection('services'); setCurrentTab('Admin'); }} className="block opacity-80 hover:opacity-100 transition-opacity text-left text-xs font-bold">Service Management</button>
-              <button onClick={() => setShowLocationGuide(true)} className="block opacity-80 hover:opacity-100 transition-opacity text-left text-xs font-bold">Location Guide</button>
+              <p className="!text-white mb-8 text-sm font-black opacity-100">Quick Access</p>
+              <button onClick={() => { setAdminRole('Super Admin'); setAdminSection('dashboard'); setCurrentTab('Admin'); }} className="block !text-white/90 hover:!text-white transition-all text-left text-xs font-bold hover:translate-x-1">Admin Dashboard</button>
+              <button onClick={() => { setAdminRole('Super Admin'); setAdminSection('bookings'); setCurrentTab('Admin'); }} className="block !text-white/90 hover:!text-white transition-all text-left text-xs font-bold hover:translate-x-1">Booking Management</button>
+              <button onClick={() => { setAdminRole('Super Admin'); setAdminSection('services'); setCurrentTab('Admin'); }} className="block !text-white/90 hover:!text-white transition-all text-left text-xs font-bold hover:translate-x-1">Service Management</button>
+              <button onClick={() => setShowLocationGuide(true)} className="block !text-white/90 hover:!text-white transition-all text-left text-xs font-bold hover:translate-x-1">Location Guide</button>
             </div>
             <div className="space-y-6">
-              <p className="text-white mb-8 text-sm font-black opacity-100">Branches</p>
-              <button onClick={() => handleBranchSwitch(Branch.NDERA)} className="block opacity-80 hover:opacity-100 transition-all uppercase text-left text-xs font-bold">Ndera Flagship</button>
-              <button onClick={() => handleBranchSwitch(Branch.KANOMBE)} className="block opacity-80 hover:opacity-100 transition-all uppercase text-left text-xs font-bold">Kanombe (KMH)</button>
-              <button onClick={() => handleBranchSwitch(Branch.KABEZA)} className="block opacity-80 hover:opacity-100 transition-all uppercase text-left text-xs font-bold">Kabeza (Rubirizi)</button>
+              <p className="!text-white mb-8 text-sm font-black opacity-100">Branches</p>
+              <button onClick={() => handleBranchSwitch(Branch.NDERA)} className="block !text-white/90 hover:!text-white transition-all uppercase text-left text-xs font-bold hover:translate-x-1">Ndera Flagship</button>
+              <button onClick={() => handleBranchSwitch(Branch.KANOMBE)} className="block !text-white/90 hover:!text-white transition-all uppercase text-left text-xs font-bold hover:translate-x-1">Kanombe (KMH)</button>
+              <button onClick={() => handleBranchSwitch(Branch.KABEZA)} className="block !text-white/90 hover:!text-white transition-all uppercase text-left text-xs font-bold hover:translate-x-1">Kabeza (Rubirizi)</button>
             </div>
             <div className="space-y-6">
-              <p className="text-white mb-8 text-sm font-black opacity-100">Legal</p>
-              <a href="#" className="block opacity-80 hover:opacity-100 transition-opacity text-xs font-bold">Privacy Policy</a>
-              <a href="#" className="block opacity-80 hover:opacity-100 transition-opacity text-xs font-bold">Terms of Service</a>
-              <a href="#" className="block opacity-80 hover:opacity-100 transition-opacity text-xs font-bold">Booking Terms</a>
+              <p className="!text-white mb-8 text-sm font-black opacity-100">Legal</p>
+              <a href="#" className="block !text-white/90 hover:!text-white transition-all text-xs font-bold hover:translate-x-1">Privacy Policy</a>
+              <a href="#" className="block !text-white/90 hover:!text-white transition-all text-xs font-bold hover:translate-x-1">Terms of Service</a>
+              <a href="#" className="block !text-white/90 hover:!text-white transition-all text-xs font-bold hover:translate-x-1">Booking Terms</a>
             </div>
+          </div>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto mt-32 pt-12 border-t border-white/20 dark:border-neutral-900 text-[10px] font-black tracking-[0.5em] uppercase text-white opacity-70 text-center md:text-left relative z-10">
+        <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-white/20 dark:border-neutral-900 text-[10px] font-black tracking-[0.5em] uppercase !text-white/80 text-center md:text-left relative z-10">
           &copy; 2026 GLADS APARTMENT HOTEL. PREMIUM HOSPITALITY. RWANDA.
         </div>
       </footer>
