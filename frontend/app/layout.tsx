@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
+import { GlobalChatAssistant } from "@/components/GlobalChatAssistant";
 
 const outfit = Outfit({
     subsets: ["latin"],
@@ -25,6 +26,7 @@ export default function RootLayout({
         <html lang="en">
             <body className={`${outfit.variable} antialiased`}>
                 {children}
+                <GlobalChatAssistant />
             </body>
         </html>
     );

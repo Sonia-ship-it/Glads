@@ -36,7 +36,6 @@ import { BookingModal } from './modals/BookingModal';
 import { CustomCursor } from './common/CustomCursor';
 import { Counter } from './common/Counter';
 import { ImmersivePhotoViewer } from './ImmersivePhotoViewer';
-import { ChatAssistant, ChatFloatingButton } from './ChatAssistant';
 import ServiceMiniPage from './ServiceMiniPage';
 import { Coffee, Dumbbell, Leaf, MapPin, Presentation, ShoppingBag, Trophy, Users, UtensilsCrossed, Waves } from 'lucide-react';
 import { Logo } from './Logo';
@@ -45,18 +44,13 @@ import { ThemeToggle } from './ThemeToggle';
 import { AdminDashboard } from './AdminDashboard';
 import { BookingManagement } from './BookingManagement';
 import { ServiceManagement } from './ServiceManagement';
+import { getStoredBranch, setStoredBranch, subscribeToBranchChanges } from '@/lib/branchSelection';
 
 type Role = 'Customer' | 'HQ Admin' | 'Branch Admin';
 
 
 const App: React.FC = () => {
-  const [activeBranch, setActiveBranch] = useState<Branch>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('glads-selected-branch');
-      return (saved as Branch) || Branch.NDERA;
-    }
-    return Branch.NDERA;
-  });
+  const [activeBranch, setActiveBranch] = useState<Branch>(() => getStoredBranch(Branch.NDERA));
 
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -88,7 +82,6 @@ const App: React.FC = () => {
   const [roomPaymentMethod, setRoomPaymentMethod] = useState<'card' | 'momo' | null>(null);
   const [rotation, setRotation] = useState(0);
   const [isRotating, setIsRotating] = useState(false);
-  const [showChatAssistant, setShowChatAssistant] = useState(false);
   const [locationAnimation, setLocationAnimation] = useState({
     isAnimating: false,
     startPoint: '',
@@ -134,6 +127,12 @@ const App: React.FC = () => {
     }
   }, [isDark]);
 
+  useEffect(() => {
+    return subscribeToBranchChanges((branch) => {
+      setActiveBranch(branch);
+    });
+  }, []);
+
   const data = useMemo(() => BRANCH_DATA[activeBranch], [activeBranch]);
 
   const availableTabs = useMemo(() => {
@@ -153,7 +152,7 @@ const App: React.FC = () => {
   const handleBranchSwitch = (branch: Branch) => {
     setActiveBranch(branch);
     setIsMobileMenuOpen(false);
-    localStorage.setItem('glads-selected-branch', branch);
+    setStoredBranch(branch);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -947,20 +946,6 @@ const App: React.FC = () => {
               </section>
             </div>
           )}
-          {currentTab === 'Home' && (
-            <>
-              <ChatFloatingButton onClick={() => setShowChatAssistant(true)} />
-              <ChatAssistant
-                visible={showChatAssistant}
-                onClose={() => setShowChatAssistant(false)}
-                activeBranch={activeBranch}
-                branches={Object.values(BRANCH_DATA).map(b => ({ id: b.id, fullName: b.fullName, tagline: b.tagline }))}
-                branchData={BRANCH_DATA[activeBranch]}
-                onSelectBranch={handleBranchSwitch}
-              />
-            </>
-          )}
-
           {currentTab === 'About' && (
             <AboutSection
               activeBranch={activeBranch}
