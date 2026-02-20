@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import type { Branch, BranchData } from '../types';
+import type { Branch } from '../types';
 
 type Message = {
   id: string;
@@ -13,77 +13,43 @@ type Props = {
   onClose: () => void;
   activeBranch: Branch;
   branches: Array<{ id: Branch; fullName: string; tagline: string }>;
-  branchData: BranchData;
   onSelectBranch: (branch: Branch) => void;
+};
+
+type ChatHistoryItem = {
+  role: 'assistant' | 'user';
+  content: string;
+};
+
+type QuickPrompt = {
+  q: string;
+  a: string;
 };
 
 function uid() {
   return Math.random().toString(16).slice(2) + Date.now().toString(16);
 }
 
-function normalize(s: string) {
-  return s.toLowerCase().trim();
-}
+async function fetchAssistantReply(
+  branch: Branch,
+  message: string,
+  history: ChatHistoryItem[]
+): Promise<string> {
+  const res = await fetch('/api/assistant/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ branch, message, history }),
+  });
 
-function buildAssistantReply(input: string, branchData: BranchData) {
-  const q = normalize(input);
-
-  const roomNames = branchData.rooms.map(r => r.name);
-  const serviceNames = branchData.services.map(s => s.name);
-
-  const wantsRooms = /room|rooms|suite|suites|stay|book|booking|price|rates|night/.test(q);
-  const wantsServices = /service|services|spa|pool|gym|sauna|massage|restaurant|bar|cinema|conference|meeting|salon|supermarket/.test(q);
-  const wantsLocation = /location|where|address|map|direction|directions|near|airport|distance|transport/.test(q);
-  const wantsContact = /contact|phone|email|call|whatsapp/.test(q);
-  const wantsHours = /hours|open|closing|close|time/.test(q);
-
-  if (wantsLocation) {
-    const loc = branchData.location;
-    return `GLADS ${branchData.fullName} is located at ${loc.address}. It’s about ${loc.distance}. If you want, open the Location Guide (footer link) for maps and directions.`;
+  if (!res.ok) {
+    const fallback = await res.text();
+    throw new Error(fallback || 'Assistant service returned an error.');
   }
 
-  if (wantsContact) {
-    const c = branchData.contact;
-    return `You can reach ${branchData.fullName} on ${c.phone} or email ${c.email}.`;
-  }
-
-  if (wantsHours) {
-    const serviceWithHours = branchData.services.filter(s => s.hours).slice(0, 6);
-    if (serviceWithHours.length === 0) return 'Some services have specific hours. Tell me which service you mean and I’ll share its times.';
-    return `Here are a few hours for ${branchData.fullName}:\n- ${serviceWithHours.map(s => `${s.name}: ${s.hours}`).join('\n- ')}`;
-  }
-
-  if (wantsRooms && !wantsServices) {
-    const cheapest = [...branchData.rooms].sort((a, b) => a.price - b.price)[0];
-    const priciest = [...branchData.rooms].sort((a, b) => b.price - a.price)[0];
-    return `For ${branchData.fullName}, rooms currently range from $${cheapest.price}/night (${cheapest.name}) up to $${priciest.price}/night (${priciest.name}). Want me to recommend a suite based on budget and guests?`;
-  }
-
-  if (wantsServices && !wantsRooms) {
-    const categories = Array.from(new Set(branchData.services.map(s => s.category)));
-    return `At ${branchData.fullName}, popular services include:\n- ${serviceNames.slice(0, 6).join(', ')}\nCategories available: ${categories.join(' • ')}. Which one do you want details for?`;
-  }
-
-  // Specific room/service name match (simple contains check)
-  const matchRoom = roomNames.find(n => q.includes(normalize(n)));
-  if (matchRoom) {
-    const room = branchData.rooms.find(r => r.name === matchRoom)!;
-    return `${room.name} is $${room.price}/night. Highlights: ${room.features.slice(0, 3).join(' • ')}. You can open Rooms tab and tap “Book Now” to reserve.`;
-  }
-
-  const matchService = serviceNames.find(n => q.includes(normalize(n)));
-  if (matchService) {
-    const svc = branchData.services.find(s => s.name === matchService)!;
-    const hours = svc.hours ? ` Hours: ${svc.hours}.` : '';
-    const pricing = svc.pricing ? ` Pricing: ${svc.pricing}.` : '';
-    return `${svc.name}: ${svc.fullDescription || svc.description || ''}${hours}${pricing}`.trim();
-  }
-
-  if (wantsRooms && wantsServices) {
-    return `Sure—are you planning to book a room, a service, or both at ${branchData.fullName}? Tell me your dates and preferences and I’ll guide you.`;
-  }
-
-  return `I can help with rooms, services, location, and contact info for ${branchData.fullName}. What do you want to know?`;
+  const payload = await res.json();
+  return payload.answer || 'I could not generate a response. Please try again.';
 }
 
 export function ChatAssistant({
@@ -91,21 +57,33 @@ export function ChatAssistant({
   onClose,
   activeBranch,
   branches,
-  branchData,
   onSelectBranch,
 }: Props) {
   const [step, setStep] = useState<'branch' | 'chat'>('branch');
   const [pendingBranch, setPendingBranch] = useState<Branch>(activeBranch);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isSending, setIsSending] = useState(false);
   const listRef = useRef<HTMLDivElement | null>(null);
 
-  const quickPrompts = useMemo(
+  const quickPrompts = useMemo<QuickPrompt[]>(
     () => [
-      'Show me room prices',
-      'What services do you have?',
-      'Where are you located?',
-      'How can I contact you?',
+      {
+        q: 'How can I contact you?',
+        a: 'Branch phone, email, manager contact, and MoMo code.',
+      },
+      {
+        q: 'Show me room prices',
+        a: 'See range and sample room rates for this branch.',
+      },
+      {
+        q: 'What services do you have?',
+        a: 'Get all facilities available at this selected branch.',
+      },
+      {
+        q: 'Where are you located?',
+        a: 'Get branch address and legal location reference.',
+      },
     ],
     []
   );
@@ -118,16 +96,16 @@ export function ChatAssistant({
 
   useEffect(() => {
     if (!visible) return;
-    // Initialize greeting once per open
     setMessages([
       {
         id: uid(),
         role: 'assistant',
-        text: 'Hi! I’m GLADS Assistant. First, choose the branch you want to ask about.',
+        text: 'Hi! I am GLADS Assistant. First, choose the branch you want to ask about.',
         ts: Date.now(),
       },
     ]);
     setInput('');
+    setIsSending(false);
   }, [visible]);
 
   useEffect(() => {
@@ -136,16 +114,40 @@ export function ChatAssistant({
     listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [messages, visible]);
 
-  const send = (text: string) => {
+  const send = async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || isSending) return;
 
     const userMsg: Message = { id: uid(), role: 'user', text: trimmed, ts: Date.now() };
-    const assistantText = buildAssistantReply(trimmed, branchData);
-    const assistantMsg: Message = { id: uid(), role: 'assistant', text: assistantText, ts: Date.now() + 1 };
+    const history: ChatHistoryItem[] = [...messages, userMsg]
+      .filter((m) => m.role === 'user' || m.role === 'assistant')
+      .slice(-12)
+      .map((m) => ({ role: m.role, content: m.text }));
 
-    setMessages(prev => [...prev, userMsg, assistantMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     setInput('');
+    setIsSending(true);
+
+    try {
+      const assistantText = await fetchAssistantReply(activeBranch, trimmed, history);
+      const assistantMsg: Message = {
+        id: uid(),
+        role: 'assistant',
+        text: assistantText,
+        ts: Date.now() + 1,
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
+    } catch {
+      const errMsg: Message = {
+        id: uid(),
+        role: 'assistant',
+        text: 'I could not reach the assistant service. Please check configuration and try again.',
+        ts: Date.now() + 1,
+      };
+      setMessages((prev) => [...prev, errMsg]);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   if (!visible) return null;
@@ -172,7 +174,7 @@ export function ChatAssistant({
         </div>
 
         <div ref={listRef} className="max-h-[55vh] md:max-h-[520px] overflow-y-auto p-5 space-y-3">
-          {messages.map(m => (
+          {messages.map((m) => (
             <div key={m.id} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
               <div
                 className={
@@ -187,11 +189,19 @@ export function ChatAssistant({
             </div>
           ))}
 
+          {isSending && (
+            <div className="flex justify-start">
+              <div className="max-w-[85%] bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-300 rounded-2xl px-4 py-3 text-sm border border-neutral-200 dark:border-white/10">
+                Thinking...
+              </div>
+            </div>
+          )}
+
           {step === 'branch' && (
             <div className="mt-2 bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-white/10 rounded-2xl p-4">
               <div className="text-[10px] font-black uppercase tracking-[0.35em] text-neutral-500 mb-3">Choose Branch</div>
               <div className="grid grid-cols-1 gap-2">
-                {branches.map(b => (
+                {branches.map((b) => (
                   <button
                     key={b.id}
                     type="button"
@@ -213,12 +223,12 @@ export function ChatAssistant({
                   onClick={() => {
                     onSelectBranch(pendingBranch);
                     setStep('chat');
-                    setMessages(prev => [
+                    setMessages((prev) => [
                       ...prev,
                       {
                         id: uid(),
                         role: 'assistant',
-                        text: `Great. You’re asking about ${pendingBranch}. What can I help you with?`,
+                        text: `Great. You are asking about ${pendingBranch}. What can I help you with?`,
                         ts: Date.now(),
                       },
                     ]);
@@ -230,12 +240,12 @@ export function ChatAssistant({
                 <button
                   type="button"
                   onClick={() => {
-                    setMessages(prev => [
+                    setMessages((prev) => [
                       ...prev,
                       {
                         id: uid(),
                         role: 'assistant',
-                        text: 'You can also ask general questions, but branch helps me answer better.',
+                        text: 'You can ask now and switch branch anytime for branch-specific answers.',
                         ts: Date.now(),
                       },
                     ]);
@@ -250,15 +260,17 @@ export function ChatAssistant({
           )}
 
           {step === 'chat' && (
-            <div className="flex flex-wrap gap-2 pt-1">
-              {quickPrompts.map(p => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+              {quickPrompts.map((p) => (
                 <button
-                  key={p}
+                  key={p.q}
                   type="button"
-                  onClick={() => send(p)}
-                  className="px-4 py-2 rounded-full text-[11px] font-bold bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 text-neutral-700 dark:text-white hover:brightness-95"
+                  onClick={() => send(p.q)}
+                  disabled={isSending}
+                  className="text-left px-3 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 hover:brightness-95 disabled:opacity-50"
                 >
-                  {p}
+                  <div className="text-[9px] font-black uppercase tracking-[0.2em] text-burgundy">Q: {p.q}</div>
+                  <div className="text-[10px] text-neutral-600 dark:text-neutral-300 mt-1">A: {p.a}</div>
                 </button>
               ))}
             </div>
@@ -270,7 +282,7 @@ export function ChatAssistant({
             onSubmit={(e) => {
               e.preventDefault();
               if (step !== 'chat') return;
-              send(input);
+              void send(input);
             }}
             className="flex items-center gap-3"
           >
@@ -278,12 +290,12 @@ export function ChatAssistant({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={step === 'chat' ? 'Type your question...' : 'Select branch to start'}
-              disabled={step !== 'chat'}
+              disabled={step !== 'chat' || isSending}
               className="flex-1 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 rounded-full px-5 py-3 text-sm outline-none focus:ring-2 ring-burgundy/40"
             />
             <button
               type="submit"
-              disabled={step !== 'chat' || !input.trim()}
+              disabled={step !== 'chat' || !input.trim() || isSending}
               className="w-12 h-12 rounded-full bg-burgundy text-white disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
               aria-label="Send"
             >
