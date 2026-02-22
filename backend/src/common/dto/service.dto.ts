@@ -60,12 +60,20 @@ export class CreateServiceDto {
   @IsNumber()
   maxCapacity?: number;
 
-  @ApiProperty({ example: ['09:00', '14:00', '17:00'], description: 'Available time slots', required: false })
+  @ApiProperty({
+    example: ['09:00', '14:00', '17:00'],
+    description: 'Available time slots',
+    required: false,
+  })
   @IsOptional()
   @IsArray()
   availableTimes?: string[];
 
-  @ApiProperty({ example: ['https://example.com/image.jpg'], description: 'Service images', required: false })
+  @ApiProperty({
+    example: ['https://example.com/image.jpg'],
+    description: 'Service images',
+    required: false,
+  })
   @IsOptional()
   @IsArray()
   images?: string[];
@@ -82,7 +90,11 @@ export class UpdateServiceDto {
   @IsString()
   name?: string;
 
-  @ApiProperty({ example: 'Updated description', description: 'Service description', required: false })
+  @ApiProperty({
+    example: 'Updated description',
+    description: 'Service description',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -170,7 +182,11 @@ export class CreateServiceBookingDto {
   @Min(1)
   numberOfPeople?: number;
 
-  @ApiProperty({ example: 'Special requests here', description: 'Special requests', required: false })
+  @ApiProperty({
+    example: 'Special requests here',
+    description: 'Special requests',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   specialRequests?: string;
@@ -179,7 +195,11 @@ export class CreateServiceBookingDto {
   @IsNumber()
   totalAmount: number;
 
-  @ApiProperty({ example: true, description: 'Auto renewal (for gym subscriptions)', required: false })
+  @ApiProperty({
+    example: true,
+    description: 'Auto renewal (for gym subscriptions)',
+    required: false,
+  })
   @IsOptional()
   @IsBoolean()
   autoRenewal?: boolean;

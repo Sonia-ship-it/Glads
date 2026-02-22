@@ -28,14 +28,18 @@ export class PaymentsService {
 
   private async getPesapalAuthToken(): Promise<string> {
     try {
-      const response = await axios.post(`${this.pesapalBaseUrl}/api/Auth/RequestToken`, {
-        consumer_key: this.pesapalConsumerKey,
-        consumer_secret: this.pesapalConsumerSecret,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await axios.post(
+        `${this.pesapalBaseUrl}/api/Auth/RequestToken`,
+        {
+          consumer_key: this.pesapalConsumerKey,
+          consumer_secret: this.pesapalConsumerSecret,
         },
-      });
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
 
       if (response.data.status === '200') {
         return response.data.token;
@@ -49,7 +53,7 @@ export class PaymentsService {
 
   async initiatePayment(initiateDto: InitiatePaymentDto) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     // Create payment record first
     const { data: paymentRecord, error } = await supabase
       .from('payments')
@@ -101,10 +105,10 @@ export class PaymentsService {
         paymentPayload,
         {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
             'Content-Type': 'application/json',
           },
-        }
+        },
       );
 
       if (response.data.status === '200') {
@@ -153,10 +157,10 @@ export class PaymentsService {
         },
         {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
             'Content-Type': 'application/json',
           },
-        }
+        },
       );
 
       if (response.data.status === '200') {
@@ -171,12 +175,12 @@ export class PaymentsService {
 
   async handleCallback(callbackData: any) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { OrderTrackingId, OrderMerchantReference } = callbackData;
-    
+
     // Find payment by transaction ID or Pesapal tracking ID
     let query = supabase.from('payments').select('*, bookings(*), service_bookings(*)');
-    
+
     if (OrderMerchantReference) {
       query = query.eq('transaction_id', OrderMerchantReference);
     } else if (OrderTrackingId) {
@@ -199,7 +203,7 @@ export class PaymentsService {
       : normalizedStatus.includes('fail')
         ? 'failed'
         : 'pending';
-    
+
     // Update payment record
     const { error: updateError } = await supabase
       .from('payments')
@@ -224,18 +228,18 @@ export class PaymentsService {
       if (payment.booking_id) {
         await supabase
           .from('bookings')
-          .update({ 
+          .update({
             payment_status: 'paid',
             pesapal_payment_method: paymentStatus.payment_method,
             pesapal_transaction_id: OrderTrackingId,
           })
           .eq('id', payment.booking_id);
       }
-      
+
       if (payment.service_booking_id) {
         await supabase
           .from('service_bookings')
-          .update({ 
+          .update({
             payment_status: 'paid',
             pesapal_payment_method: paymentStatus.payment_method,
             pesapal_transaction_id: OrderTrackingId,
@@ -258,15 +262,15 @@ export class PaymentsService {
   private async verifyPaymentWithPesapal(orderTrackingId: string) {
     try {
       const authToken = await this.getPesapalAuthToken();
-      
+
       const response = await axios.get(
         `${this.pesapalBaseUrl}/api/Transactions/GetTransactionStatus?orderTrackingId=${orderTrackingId}`,
         {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
             'Content-Type': 'application/json',
           },
-        }
+        },
       );
 
       if (response.data.status === '200') {
@@ -287,7 +291,7 @@ export class PaymentsService {
 
   async verifyPayment(verifyDto: VerifyPaymentDto) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('payments')
       .select('*, bookings(*), service_bookings(*)')
@@ -302,7 +306,7 @@ export class PaymentsService {
     if (data.status === 'pending' && data.pesapal_transaction_id) {
       try {
         const pesapalStatus = await this.verifyPaymentWithPesapal(data.pesapal_transaction_id);
-        
+
         // Update payment record if status changed
         if (pesapalStatus.payment_status_description.toLowerCase() !== data.status) {
           await supabase
@@ -316,7 +320,7 @@ export class PaymentsService {
               },
             })
             .eq('id', data.id);
-          
+
           data.status = pesapalStatus.payment_status_description.toLowerCase();
           data.payment_method = pesapalStatus.payment_method;
         }
@@ -331,7 +335,7 @@ export class PaymentsService {
 
   async processRefund(paymentId: string, refundAmount?: number) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data: payment, error } = await supabase
       .from('payments')
       .select('*')
@@ -347,7 +351,7 @@ export class PaymentsService {
     }
 
     const refundAmountToProcess = refundAmount || payment.amount;
-    
+
     if (refundAmountToProcess > payment.amount) {
       throw new BadRequestException('Refund amount cannot exceed original payment amount');
     }
@@ -355,7 +359,7 @@ export class PaymentsService {
     // Note: Pesapal v3 API doesn't have direct refund endpoint
     // This would typically be handled manually or through their merchant portal
     // For now, we'll mark the payment as refunded in our system
-    
+
     const { error: updateError } = await supabase
       .from('payments')
       .update({
@@ -384,19 +388,21 @@ export class PaymentsService {
 
   async findAll(bookingId?: string, serviceBookingId?: string, status?: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     let query = supabase
       .from('payments')
-      .select('*, bookings(booking_reference, guest_info, total_amount), service_bookings(booking_reference, guest_info, total_amount)');
+      .select(
+        '*, bookings(booking_reference, guest_info, total_amount), service_bookings(booking_reference, guest_info, total_amount)',
+      );
 
     if (bookingId) {
       query = query.eq('booking_id', bookingId);
     }
-    
+
     if (serviceBookingId) {
       query = query.eq('service_booking_id', serviceBookingId);
     }
-    
+
     if (status) {
       query = query.eq('status', status);
     }
@@ -414,17 +420,19 @@ export class PaymentsService {
 
   async findOne(id: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('payments')
-      .select('*, bookings(booking_reference, guest_info, total_amount, check_in_date, check_out_date), service_bookings(booking_reference, guest_info, total_amount, service_date)')
+      .select(
+        '*, bookings(booking_reference, guest_info, total_amount, check_in_date, check_out_date), service_bookings(booking_reference, guest_info, total_amount, service_date)',
+      )
       .eq('id', id)
       .single();
 
     if (error) {
       throw new BadRequestException(`Payment not found: ${error.message}`);
     }
-    
+
     return data;
   }
 }

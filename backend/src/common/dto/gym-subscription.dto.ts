@@ -1,12 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsUUID,
-  IsString,
-  IsBoolean,
-  IsOptional,
-  IsEnum,
-  IsDateString,
-} from 'class-validator';
+import { IsUUID, IsString, IsBoolean, IsOptional, IsEnum, IsDateString } from 'class-validator';
 
 export class CreateGymSubscriptionDto {
   @ApiProperty({ example: 'uuid-service-booking-id', description: 'Service booking ID' })

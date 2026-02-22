@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Branch, RoomType } from '../../types';
+import { LoadingScreen } from '../common/LoadingScreen';
 
 interface RoomsSectionProps {
     data: any;
@@ -16,6 +17,8 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({
     onBookRoom,
     setCursorLabel
 }) => {
+    const isLoading = data?.roomsLoading === true;
+
     return (
         <section className="reveal max-w-7xl mx-auto px-6 py-20">
             <div className="mb-24">
@@ -23,6 +26,9 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({
                 <h2 className="text-7xl md:text-9xl font-black uppercase tracking-tighter mb-10 leading-[0.8]">Master Suites.</h2>
                 <p className="text-neutral-400 text-xl max-w-xl font-light">Hand-picked residences at {activeBranch}. Built for those who appreciate the finer details of spatial design.</p>
             </div>
+            {isLoading ? (
+                <LoadingScreen message="Loading rooms..." variant="section" />
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
                 {data.rooms.map((room: any) => (
                     <div key={room.id} className="group flex flex-col h-full bg-neutral-50 dark:bg-neutral-900/40 rounded-[3rem] p-8 border border-neutral-100 dark:border-white/5 shadow-lg transition-all duration-700">
@@ -44,6 +50,7 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({
                     </div>
                 ))}
             </div>
+            )}
         </section>
     );
 };

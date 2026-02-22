@@ -44,7 +44,15 @@ export const AdminSection: React.FC<AdminSectionProps> = ({
             </div>
 
             {adminSection === 'dashboard' && (
-                <AdminDashboard role={adminRole} branch={activeBranch} branchRevenues={DUMMY_BRANCH_REVENUE} roomBookings={DUMMY_BOOKINGS} serviceBookings={DUMMY_SERVICE_BOOKINGS} />
+                <AdminDashboard
+                    role={adminRole}
+                    branchId={activeBranch}
+                    branch={activeBranch}
+                    branchOptions={Object.values(Branch).map((b) => ({ id: b, name: b }))}
+                    branchRevenues={DUMMY_BRANCH_REVENUE}
+                    roomBookings={DUMMY_BOOKINGS}
+                    serviceBookings={DUMMY_SERVICE_BOOKINGS}
+                />
             )}
 
             {adminSection === 'bookings' && (

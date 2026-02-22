@@ -62,7 +62,10 @@ export class CreateBranchDto {
   @IsArray()
   amenities: string[];
 
-  @ApiProperty({ example: 'Modern apartment hotel in the heart of Kigali', description: 'Branch description' })
+  @ApiProperty({
+    example: 'Modern apartment hotel in the heart of Kigali',
+    description: 'Branch description',
+  })
   @IsString()
   description: string;
 
@@ -71,7 +74,7 @@ export class CreateBranchDto {
       currency: 'RWF',
       timezone: 'Africa/Kigali',
       taxRate: 0.18,
-      serviceChargeRate: 0.10,
+      serviceChargeRate: 0.1,
     },
     description: 'Branch settings',
   })
@@ -119,7 +122,11 @@ export class UpdateBranchDto {
   @IsArray()
   amenities?: string[];
 
-  @ApiProperty({ example: 'Updated description', description: 'Branch description', required: false })
+  @ApiProperty({
+    example: 'Updated description',
+    description: 'Branch description',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;

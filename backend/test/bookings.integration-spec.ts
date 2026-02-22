@@ -157,7 +157,10 @@ describe('Bookings Integration Tests', () => {
         paymentGateway: 'pesapal',
       };
 
-      const response = await request(app.getHttpServer()).post('/bookings').send(bookingData).expect(201);
+      const response = await request(app.getHttpServer())
+        .post('/bookings')
+        .send(bookingData)
+        .expect(201);
 
       expect(response.body).toHaveProperty('id');
       expect(response.body).toHaveProperty('booking_reference');
@@ -263,7 +266,9 @@ describe('Bookings Integration Tests', () => {
 
   describe('GET /bookings/:id', () => {
     it('should return booking details', async () => {
-      const response = await request(app.getHttpServer()).get(`/bookings/${testBookingId}`).expect(200);
+      const response = await request(app.getHttpServer())
+        .get(`/bookings/${testBookingId}`)
+        .expect(200);
 
       expect(response.body.id).toBe(testBookingId);
       expect(response.body).toHaveProperty('booking_reference');

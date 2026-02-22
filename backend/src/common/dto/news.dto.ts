@@ -1,12 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsString,
-  IsBoolean,
-  IsOptional,
-  IsEnum,
-  IsUUID,
-  IsDateString,
-} from 'class-validator';
+import { IsString, IsBoolean, IsOptional, IsEnum, IsUUID, IsDateString } from 'class-validator';
 
 export class CreateNewsDto {
   @ApiProperty({ example: 'uuid-author-id', description: 'Author user ID' })
@@ -17,11 +10,18 @@ export class CreateNewsDto {
   @IsString()
   title: string;
 
-  @ApiProperty({ example: 'Full news content here...', description: 'News content (HTML/Markdown)' })
+  @ApiProperty({
+    example: 'Full news content here...',
+    description: 'News content (HTML/Markdown)',
+  })
   @IsString()
   content: string;
 
-  @ApiProperty({ example: 'Brief excerpt of the news', description: 'News excerpt', required: false })
+  @ApiProperty({
+    example: 'Brief excerpt of the news',
+    description: 'News excerpt',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   excerpt?: string;
@@ -34,7 +34,11 @@ export class CreateNewsDto {
   @IsEnum(['announcement', 'event', 'promotion', 'maintenance'])
   category: string;
 
-  @ApiProperty({ example: 'https://example.com/news.jpg', description: 'Image URL', required: false })
+  @ApiProperty({
+    example: 'https://example.com/news.jpg',
+    description: 'Image URL',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   imageUrl?: string;
@@ -47,7 +51,11 @@ export class CreateNewsDto {
   @IsEnum(['global', 'branch-specific'])
   scope: string;
 
-  @ApiProperty({ example: 'uuid-branch-id', description: 'Branch ID (required if scope is branch-specific)', required: false })
+  @ApiProperty({
+    example: 'uuid-branch-id',
+    description: 'Branch ID (required if scope is branch-specific)',
+    required: false,
+  })
   @IsOptional()
   @IsUUID()
   branchId?: string;
@@ -60,7 +68,11 @@ export class CreateNewsDto {
   @IsEnum(['all', 'guests', 'staff'])
   targetAudience: string;
 
-  @ApiProperty({ example: '2026-02-20T00:00:00Z', description: 'Publication date', required: false })
+  @ApiProperty({
+    example: '2026-02-20T00:00:00Z',
+    description: 'Publication date',
+    required: false,
+  })
   @IsOptional()
   @IsDateString()
   publishedDate?: string;
@@ -97,7 +109,11 @@ export class UpdateNewsDto {
   @IsEnum(['announcement', 'event', 'promotion', 'maintenance'])
   category?: string;
 
-  @ApiProperty({ example: 'https://example.com/updated.jpg', description: 'Image URL', required: false })
+  @ApiProperty({
+    example: 'https://example.com/updated.jpg',
+    description: 'Image URL',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   imageUrl?: string;

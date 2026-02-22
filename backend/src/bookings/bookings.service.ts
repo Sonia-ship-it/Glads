@@ -35,11 +35,11 @@ export class BookingsService {
     if (Number.isNaN(checkIn.getTime()) || Number.isNaN(checkOut.getTime())) {
       throw new BadRequestException('Invalid check-in/check-out date format');
     }
-    
+
     if (checkOut <= checkIn) {
       throw new BadRequestException('Check-out date must be after check-in date');
     }
-    
+
     if (checkIn < new Date()) {
       throw new BadRequestException('Check-in date cannot be in the past');
     }
@@ -64,10 +64,15 @@ export class BookingsService {
       .single();
 
     if (roomError || !room) {
-      throw new NotFoundException(`Room not found: ${roomError?.message || createBookingDto.roomId}`);
+      throw new NotFoundException(
+        `Room not found: ${roomError?.message || createBookingDto.roomId}`,
+      );
     }
 
-    const numberOfNights = this.calculateNights(createBookingDto.checkInDate, createBookingDto.checkOutDate);
+    const numberOfNights = this.calculateNights(
+      createBookingDto.checkInDate,
+      createBookingDto.checkOutDate,
+    );
     const roomRate = Number(room.base_price);
     const computedTotalAmount = roomRate * numberOfNights;
 
@@ -97,7 +102,19 @@ export class BookingsService {
     return data;
   }
 
-  async createOtaManualBooking(otaBookingDto: OtaManualBookingDto) {
+  async createOtaManualBooking(otaBookingDto: OtaManualBookingDto, user: any) {
+    const userRole = user.role || user.user_metadata?.role;
+    const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
+
+    if (
+      (userRole === 'branch-manager' || userRole === 'receptionist') &&
+      otaBookingDto.branchId !== userBranchId
+    ) {
+      throw new BadRequestException(
+        'Forbidden: You can only create OTA bookings for your assigned branch',
+      );
+    }
+
     const supabase = this.supabaseService.getAdminClient();
 
     const { data: room, error: roomError } = await supabase
@@ -110,7 +127,10 @@ export class BookingsService {
       throw new NotFoundException(`Room not found: ${roomError?.message || otaBookingDto.roomId}`);
     }
 
-    const numberOfNights = this.calculateNights(otaBookingDto.checkInDate, otaBookingDto.checkOutDate);
+    const numberOfNights = this.calculateNights(
+      otaBookingDto.checkInDate,
+      otaBookingDto.checkOutDate,
+    );
     const roomRate = Number(room.base_price);
 
     const { data, error } = await supabase
@@ -140,14 +160,19 @@ export class BookingsService {
     return data;
   }
 
-  async findAll(branchId?: string, status?: string) {
+  async findAll(branchId?: string, status?: string, user?: any) {
     const supabase = this.supabaseService.getAdminClient();
 
     let query = supabase
       .from('bookings')
       .select('*, rooms(room_number, room_type), branches(name)');
 
-    if (branchId) {
+    const userRole = user?.role || user?.user_metadata?.role;
+    const userBranchId = user?.branchId || user?.branch_id || user?.user_metadata?.branchId;
+
+    if (userRole === 'branch-manager' || userRole === 'receptionist') {
+      query = query.eq('branch_id', userBranchId);
+    } else if (branchId) {
       query = query.eq('branch_id', branchId);
     }
     if (status) {
@@ -200,8 +225,27 @@ export class BookingsService {
     return data.length === 0;
   }
 
-  async update(id: string, updateBookingDto: UpdateBookingDto) {
+  async update(id: string, updateBookingDto: UpdateBookingDto, user: any) {
     const supabase = this.supabaseService.getAdminClient();
+
+    // Check permissions
+    const { data: existingBooking } = await supabase
+      .from('bookings')
+      .select('branch_id')
+      .eq('id', id)
+      .single();
+    if (existingBooking) {
+      const userRole = user.role || user.user_metadata?.role;
+      const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
+      if (
+        (userRole === 'branch-manager' || userRole === 'receptionist') &&
+        existingBooking.branch_id !== userBranchId
+      ) {
+        throw new BadRequestException(
+          'Forbidden: You can only update bookings in your assigned branch',
+        );
+      }
+    }
 
     const updateData: any = {};
     if (updateBookingDto.checkInDate) updateData.check_in_date = updateBookingDto.checkInDate;
@@ -212,7 +256,8 @@ export class BookingsService {
       updateData.special_requests = updateBookingDto.specialRequests;
     if (updateBookingDto.status) updateData.status = updateBookingDto.status.replace('_', '-');
     if (updateBookingDto.paymentStatus) updateData.payment_status = updateBookingDto.paymentStatus;
-    if (updateBookingDto.totalAmount !== undefined) updateData.total_amount = updateBookingDto.totalAmount;
+    if (updateBookingDto.totalAmount !== undefined)
+      updateData.total_amount = updateBookingDto.totalAmount;
 
     const { data, error } = await supabase
       .from('bookings')
@@ -227,8 +272,27 @@ export class BookingsService {
     return data;
   }
 
-  async checkIn(id: string) {
+  async checkIn(id: string, user: any) {
     const supabase = this.supabaseService.getAdminClient();
+
+    // Check permissions
+    const { data: existingBooking } = await supabase
+      .from('bookings')
+      .select('branch_id, room_id')
+      .eq('id', id)
+      .single();
+    if (existingBooking) {
+      const userRole = user.role || user.user_metadata?.role;
+      const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
+      if (
+        (userRole === 'branch-manager' || userRole === 'receptionist') &&
+        existingBooking.branch_id !== userBranchId
+      ) {
+        throw new BadRequestException(
+          'Forbidden: You can only check in bookings in your assigned branch',
+        );
+      }
+    }
 
     const { data, error } = await supabase
       .from('bookings')
@@ -250,8 +314,27 @@ export class BookingsService {
     return data;
   }
 
-  async checkOut(id: string) {
+  async checkOut(id: string, user: any) {
     const supabase = this.supabaseService.getAdminClient();
+
+    // Check permissions
+    const { data: existingBooking } = await supabase
+      .from('bookings')
+      .select('branch_id, room_id')
+      .eq('id', id)
+      .single();
+    if (existingBooking) {
+      const userRole = user.role || user.user_metadata?.role;
+      const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
+      if (
+        (userRole === 'branch-manager' || userRole === 'receptionist') &&
+        existingBooking.branch_id !== userBranchId
+      ) {
+        throw new BadRequestException(
+          'Forbidden: You can only check out bookings in your assigned branch',
+        );
+      }
+    }
 
     const { data, error } = await supabase
       .from('bookings')
@@ -273,8 +356,27 @@ export class BookingsService {
     return data;
   }
 
-  async cancel(id: string) {
+  async cancel(id: string, user: any) {
     const supabase = this.supabaseService.getAdminClient();
+
+    // Check permissions
+    const { data: existingBooking } = await supabase
+      .from('bookings')
+      .select('branch_id')
+      .eq('id', id)
+      .single();
+    if (existingBooking) {
+      const userRole = user.role || user.user_metadata?.role;
+      const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
+      if (
+        (userRole === 'branch-manager' || userRole === 'receptionist') &&
+        existingBooking.branch_id !== userBranchId
+      ) {
+        throw new BadRequestException(
+          'Forbidden: You can only cancel bookings in your assigned branch',
+        );
+      }
+    }
 
     const { data, error } = await supabase
       .from('bookings')
@@ -289,7 +391,17 @@ export class BookingsService {
     return data;
   }
 
-  async getBookingStats(branchId: string, startDate?: string, endDate?: string) {
+  async getBookingStats(branchId: string, startDate?: string, endDate?: string, user?: any) {
+    const userRole = user?.role || user?.user_metadata?.role;
+    const userBranchId = user?.branchId || user?.branch_id || user?.user_metadata?.branchId;
+
+    if (
+      (userRole === 'branch-manager' || userRole === 'receptionist') &&
+      branchId !== userBranchId
+    ) {
+      throw new BadRequestException('Forbidden: You can only view stats for your assigned branch');
+    }
+
     const supabase = this.supabaseService.getAdminClient();
 
     let query = supabase.from('bookings').select('status, total_amount').eq('branch_id', branchId);

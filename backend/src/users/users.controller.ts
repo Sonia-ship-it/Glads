@@ -8,7 +8,11 @@ import {
   Delete,
   Query,
   UseGuards,
+  Request as RequestDecorator,
 } from '@nestjs/common';
+import { Request } from 'express';
+import { Roles } from '../common/decorators/roles.decorator';
+import { RolesGuard } from '../common/guards/roles.guard';
 import {
   ApiTags,
   ApiOperation,
@@ -24,25 +28,36 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Users')
 @Controller('users')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth('JWT-auth')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
-  @ApiOperation({ summary: 'Create user', description: 'Create a new user account. Admin only.' })
+  @Roles('super-admin', 'super-manager')
+  @ApiOperation({
+    summary: 'Create user',
+    description: 'Create a new user account. Super Admin/Manager only.',
+  })
   @ApiBody({ type: CreateUserDto })
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - Email already exists or invalid data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
-  create(@Body() createDto: CreateUserDto) {
-    return this.usersService.create(createDto);
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all users', description: 'Retrieve all active users. Admin/Manager only.' })
-  @ApiQuery({ name: 'role', required: false, description: 'Filter by role (super_admin, admin, manager, staff, guest)' })
+  @ApiOperation({
+    summary: 'Get all users',
+    description: 'Retrieve all active users. Admin/Manager only.',
+  })
+  @ApiQuery({
+    name: 'role',
+    required: false,
+    description: 'Filter by role (super_admin, admin, manager, staff, guest)',
+  })
   @ApiQuery({ name: 'branchId', required: false, description: 'Filter by branch ID' })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -51,7 +66,10 @@ export class UsersController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get user by ID', description: 'Retrieve detailed user information. Admin/Manager only.' })
+  @ApiOperation({
+    summary: 'Get user by ID',
+    description: 'Retrieve detailed user information. Admin/Manager only.',
+  })
   @ApiParam({ name: 'id', description: 'User ID', example: 'uuid-user-id' })
   @ApiResponse({ status: 200, description: 'User retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -72,7 +90,11 @@ export class UsersController {
   }
 
   @Post('change-role')
-  @ApiOperation({ summary: 'Change user role', description: 'Change user role. Super Admin only.' })
+  @Roles('super-admin', 'super-manager')
+  @ApiOperation({
+    summary: 'Change user role',
+    description: 'Change user role. Super Admin/Manager only.',
+  })
   @ApiBody({ type: ChangeUserRoleDto })
   @ApiResponse({ status: 200, description: 'User role changed successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -83,7 +105,11 @@ export class UsersController {
   }
 
   @Delete(':id/deactivate')
-  @ApiOperation({ summary: 'Deactivate user', description: 'Deactivate user account. Admin only.' })
+  @Roles('super-admin', 'super-manager')
+  @ApiOperation({
+    summary: 'Deactivate user',
+    description: 'Deactivate user account. Super Admin/Manager only.',
+  })
   @ApiParam({ name: 'id', description: 'User ID', example: 'uuid-user-id' })
   @ApiResponse({ status: 200, description: 'User deactivated successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -93,7 +119,11 @@ export class UsersController {
   }
 
   @Post(':id/activate')
-  @ApiOperation({ summary: 'Activate user', description: 'Activate user account. Admin only.' })
+  @Roles('super-admin', 'super-manager')
+  @ApiOperation({
+    summary: 'Activate user',
+    description: 'Activate user account. Super Admin/Manager only.',
+  })
   @ApiParam({ name: 'id', description: 'User ID', example: 'uuid-user-id' })
   @ApiResponse({ status: 200, description: 'User activated successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })

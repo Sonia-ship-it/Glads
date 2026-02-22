@@ -8,7 +8,11 @@ import {
   Delete,
   Query,
   UseGuards,
+  Request as RequestDecorator,
 } from '@nestjs/common';
+import { Request } from 'express';
+import { Roles } from '../common/decorators/roles.decorator';
+import { RolesGuard } from '../common/guards/roles.guard';
 import {
   ApiTags,
   ApiOperation,
@@ -29,6 +33,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Bookings')
 @Controller('bookings')
+@UseGuards(RolesGuard)
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
@@ -46,6 +51,7 @@ export class BookingsController {
 
   @Post('ota')
   @UseGuards(JwtAuthGuard)
+  @Roles('super-admin', 'super-manager', 'branch-manager', 'receptionist')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Create OTA manual booking',
@@ -54,8 +60,8 @@ export class BookingsController {
   @ApiBody({ type: OtaManualBookingDto })
   @ApiResponse({ status: 201, description: 'OTA booking created successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  createOtaBooking(@Body() otaBookingDto: OtaManualBookingDto) {
-    return this.bookingsService.createOtaManualBooking(otaBookingDto);
+  createOtaBooking(@Body() otaBookingDto: OtaManualBookingDto, @RequestDecorator() req: Request) {
+    return this.bookingsService.createOtaManualBooking(otaBookingDto, req.user);
   }
 
   @Post('check-availability')
@@ -71,21 +77,30 @@ export class BookingsController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
+  @Roles('super-admin', 'super-manager', 'branch-manager')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Get all bookings',
-    description: 'Retrieve all bookings, optionally filtered by branch and status. Staff/Admin only.',
+    description:
+      'Retrieve all bookings, optionally filtered by branch and status. Admin/Manager only.',
   })
   @ApiQuery({ name: 'branchId', required: false, description: 'Filter by branch ID' })
   @ApiQuery({ name: 'status', required: false, description: 'Filter by booking status' })
   @ApiResponse({ status: 200, description: 'Bookings retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  findAll(@Query('branchId') branchId?: string, @Query('status') status?: string) {
-    return this.bookingsService.findAll(branchId, status);
+  findAll(
+    @Query('branchId') branchId?: string,
+    @Query('status') status?: string,
+    @RequestDecorator() req?: Request,
+  ) {
+    return this.bookingsService.findAll(branchId, status, req?.user);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get booking by ID', description: 'Retrieve detailed booking information' })
+  @ApiOperation({
+    summary: 'Get booking by ID',
+    description: 'Retrieve detailed booking information',
+  })
   @ApiParam({ name: 'id', description: 'Booking ID', example: 'uuid-booking-id' })
   @ApiResponse({ status: 200, description: 'Booking retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Booking not found' })
@@ -95,10 +110,12 @@ export class BookingsController {
 
   @Get('branch/:branchId/stats')
   @UseGuards(JwtAuthGuard)
+  @Roles('super-admin', 'super-manager', 'branch-manager')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Get booking statistics',
-    description: 'Get booking statistics for a branch (total, revenue, status breakdown)',
+    description:
+      'Get booking statistics for a branch (total, revenue, status breakdown). Manager/Admin only.',
   })
   @ApiParam({ name: 'branchId', description: 'Branch ID', example: 'uuid-branch-id' })
   @ApiQuery({ name: 'startDate', required: false, description: 'Start date (ISO format)' })
@@ -109,8 +126,9 @@ export class BookingsController {
     @Param('branchId') branchId: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @RequestDecorator() req?: Request,
   ) {
-    return this.bookingsService.getBookingStats(branchId, startDate, endDate);
+    return this.bookingsService.getBookingStats(branchId, startDate, endDate, req?.user);
   }
 
   @Patch(':id')
@@ -126,8 +144,12 @@ export class BookingsController {
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Booking not found' })
-  update(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto) {
-    return this.bookingsService.update(id, updateBookingDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateBookingDto: UpdateBookingDto,
+    @RequestDecorator() req: Request,
+  ) {
+    return this.bookingsService.update(id, updateBookingDto, req.user);
   }
 
   @Post(':id/check-in')
@@ -141,8 +163,8 @@ export class BookingsController {
   @ApiResponse({ status: 200, description: 'Check-in successful' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Booking not found' })
-  checkIn(@Param('id') id: string) {
-    return this.bookingsService.checkIn(id);
+  checkIn(@Param('id') id: string, @RequestDecorator() req: Request) {
+    return this.bookingsService.checkIn(id, req.user);
   }
 
   @Post(':id/check-out')
@@ -156,22 +178,23 @@ export class BookingsController {
   @ApiResponse({ status: 200, description: 'Check-out successful' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Booking not found' })
-  checkOut(@Param('id') id: string) {
-    return this.bookingsService.checkOut(id);
+  checkOut(@Param('id') id: string, @RequestDecorator() req: Request) {
+    return this.bookingsService.checkOut(id, req.user);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
+  @Roles('super-admin', 'super-manager', 'branch-manager')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Cancel booking',
-    description: 'Cancel a booking. Staff/Admin only.',
+    description: 'Cancel a booking. Manager/Admin only.',
   })
   @ApiParam({ name: 'id', description: 'Booking ID', example: 'uuid-booking-id' })
   @ApiResponse({ status: 200, description: 'Booking cancelled successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Booking not found' })
-  cancel(@Param('id') id: string) {
-    return this.bookingsService.cancel(id);
+  cancel(@Param('id') id: string, @RequestDecorator() req: Request) {
+    return this.bookingsService.cancel(id, req.user);
   }
 }

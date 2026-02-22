@@ -14,12 +14,20 @@ export class CreateTeamMemberDto {
   @IsString()
   department: string;
 
-  @ApiProperty({ example: 'Experienced hotel manager with 10 years...', description: 'Bio', required: false })
+  @ApiProperty({
+    example: 'Experienced hotel manager with 10 years...',
+    description: 'Bio',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   bio?: string;
 
-  @ApiProperty({ example: 'https://example.com/photo.jpg', description: 'Photo URL', required: false })
+  @ApiProperty({
+    example: 'https://example.com/photo.jpg',
+    description: 'Photo URL',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   photoUrl?: string;
@@ -61,7 +69,11 @@ export class UpdateTeamMemberDto {
   @IsString()
   bio?: string;
 
-  @ApiProperty({ example: 'https://example.com/photo.jpg', description: 'Photo URL', required: false })
+  @ApiProperty({
+    example: 'https://example.com/photo.jpg',
+    description: 'Photo URL',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   photoUrl?: string;

@@ -19,10 +19,7 @@ export class AuditLogsController {
 
   @Get('entity/:entityType/:entityId')
   @ApiOperation({ summary: 'Get audit logs for specific entity' })
-  findByEntity(
-    @Param('entityType') entityType: string,
-    @Param('entityId') entityId: string,
-  ) {
+  findByEntity(@Param('entityType') entityType: string, @Param('entityId') entityId: string) {
     return this.service.findByEntity(entityType, entityId);
   }
 

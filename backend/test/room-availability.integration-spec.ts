@@ -110,7 +110,11 @@ describe('Room Availability Integration Tests', () => {
 
   afterAll(async () => {
     if (testAvailabilityId) {
-      await supabase.getAdminClient().from('room_availability').delete().eq('id', testAvailabilityId);
+      await supabase
+        .getAdminClient()
+        .from('room_availability')
+        .delete()
+        .eq('id', testAvailabilityId);
     }
 
     if (testRoomId) {
@@ -146,7 +150,9 @@ describe('Room Availability Integration Tests', () => {
 
   it('should fetch availability by date range', async () => {
     const response = await request(app.getHttpServer())
-      .get(`/room-availability?branchId=${testBranchId}&startDate=${testDate}&endDate=${testEndDate}`)
+      .get(
+        `/room-availability?branchId=${testBranchId}&startDate=${testDate}&endDate=${testEndDate}`,
+      )
       .expect(200);
 
     expect(Array.isArray(response.body)).toBe(true);

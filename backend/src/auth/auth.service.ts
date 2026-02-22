@@ -1,10 +1,41 @@
-import { Injectable, UnauthorizedException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
-import { RegisterStaffDto, UpdateProfileDto, ChangePasswordDto } from './dto/auth.dto';
+import { LoginDto, RegisterStaffDto, UpdateProfileDto, ChangePasswordDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
   constructor(private supabaseService: SupabaseService) {}
+
+  async login(loginDto: LoginDto) {
+    const supabase = this.supabaseService.getClient();
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: loginDto.email,
+      password: loginDto.password,
+    });
+
+    if (error || !data?.session?.access_token || !data?.user?.id) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    const profile = await this.validateUser(data.user.id);
+    if (!profile) {
+      throw new UnauthorizedException('User profile not found');
+    }
+
+    return {
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+      token_type: data.session.token_type || 'bearer',
+      expires_in: data.session.expires_in,
+      user: profile,
+    };
+  }
 
   async getCurrentUser(userId: string) {
     const supabase = this.supabaseService.getAdminClient();
@@ -39,12 +70,16 @@ export class AuthService {
     }
 
     // Branch managers can only create staff in their own branch
-    if (currentUser.role === 'branch-manager' && registerDto.branchId && registerDto.branchId !== currentUser.branch_id) {
+    if (
+      currentUser.role === 'branch-manager' &&
+      registerDto.branchId &&
+      registerDto.branchId !== currentUser.branch_id
+    ) {
       throw new ForbiddenException('Branch managers can only create staff in their own branch');
     }
 
     const supabase = this.supabaseService.getAdminClient();
-    
+
     // Create user in Supabase Auth
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
       email: registerDto.email,
@@ -92,7 +127,7 @@ export class AuthService {
     const supabase = this.supabaseService.getAdminClient();
 
     const updateData: any = {};
-    
+
     if (updateDto.firstName || updateDto.lastName) {
       // Get current user to merge names
       const currentUser = await this.getCurrentUser(userId);

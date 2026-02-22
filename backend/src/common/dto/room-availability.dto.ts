@@ -14,7 +14,11 @@ export class CreateRoomAvailabilityDto {
   @IsBoolean()
   isAvailable: boolean;
 
-  @ApiProperty({ example: 'uuid-booking-id', description: 'Booking ID if occupied', required: false })
+  @ApiProperty({
+    example: 'uuid-booking-id',
+    description: 'Booking ID if occupied',
+    required: false,
+  })
   @IsOptional()
   @IsUUID()
   bookingId?: string;
@@ -26,7 +30,11 @@ export class UpdateRoomAvailabilityDto {
   @IsBoolean()
   isAvailable?: boolean;
 
-  @ApiProperty({ example: 'uuid-booking-id', description: 'Booking ID if occupied', required: false })
+  @ApiProperty({
+    example: 'uuid-booking-id',
+    description: 'Booking ID if occupied',
+    required: false,
+  })
   @IsOptional()
   @IsUUID()
   bookingId?: string;

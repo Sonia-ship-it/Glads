@@ -82,9 +82,7 @@ describe('MenuController', () => {
 
     it('should filter menus by branch', async () => {
       const branchId = 'branch-123';
-      const mockMenus = [
-        { id: 'menu-1', branch_id: branchId, name: 'Breakfast Menu' },
-      ];
+      const mockMenus = [{ id: 'menu-1', branch_id: branchId, name: 'Breakfast Menu' }];
 
       mockMenuService.getAllMenus.mockResolvedValue(mockMenus);
 

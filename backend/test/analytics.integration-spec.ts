@@ -221,13 +221,21 @@ describe('Analytics Integration Tests', () => {
 
   afterAll(async () => {
     if (testAvailabilityId) {
-      await supabase.getAdminClient().from('room_availability').delete().eq('id', testAvailabilityId);
+      await supabase
+        .getAdminClient()
+        .from('room_availability')
+        .delete()
+        .eq('id', testAvailabilityId);
     }
     if (testPaymentId) {
       await supabase.getAdminClient().from('payments').delete().eq('id', testPaymentId);
     }
     if (testServiceBookingId) {
-      await supabase.getAdminClient().from('service_bookings').delete().eq('id', testServiceBookingId);
+      await supabase
+        .getAdminClient()
+        .from('service_bookings')
+        .delete()
+        .eq('id', testServiceBookingId);
     }
     if (testBookingId) {
       await supabase.getAdminClient().from('bookings').delete().eq('id', testBookingId);
@@ -264,7 +272,9 @@ describe('Analytics Integration Tests', () => {
 
   it('should return occupancy report', async () => {
     const response = await request(app.getHttpServer())
-      .get(`/analytics/occupancy?branchId=${testBranchId}&startDate=${startDate}&endDate=${endDate}`)
+      .get(
+        `/analytics/occupancy?branchId=${testBranchId}&startDate=${startDate}&endDate=${endDate}`,
+      )
       .set('Authorization', `Bearer ${authToken}`)
       .expect(200);
 
