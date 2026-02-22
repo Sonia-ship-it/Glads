@@ -29,7 +29,6 @@ import { BookingModal } from './modals/BookingModal';
 import { CustomCursor } from './common/CustomCursor';
 import { Counter } from './common/Counter';
 import { ImmersivePhotoViewer } from './ImmersivePhotoViewer';
-import { ChatAssistant, ChatFloatingButton } from './ChatAssistant';
 import ServiceMiniPage from './ServiceMiniPage';
 import { CalendarCheck2, Coffee, Dumbbell, LayoutDashboard, Leaf, LogOut, MapPin, Presentation, Settings2, ShoppingBag, Trophy, UserCircle2, Users, UtensilsCrossed, Waves } from 'lucide-react';
 import { Logo } from './Logo';
@@ -39,6 +38,7 @@ import { AdminDashboard } from './AdminDashboard';
 import { LoadingScreen } from './common/LoadingScreen';
 import { BookingManagement } from './BookingManagement';
 import { ServiceManagement } from './ServiceManagement';
+import { getStoredBranch, setStoredBranch, subscribeToBranchChanges } from '@/lib/branchSelection';
 
 type Role = 'Customer' | 'HQ Admin' | 'Branch Admin';
 type LegalDocKey = 'privacy' | 'terms' | 'booking';
@@ -228,70 +228,16 @@ const getFriendlyApiErrorMessage = (status: number, rawBody: string): string => 
   if (status === 403) return 'You do not have permission to perform this action.';
   if (status >= 500) return 'Server error. Please try again shortly.';
 
-  if (!rawBody) return `Request failed (${status}).`;
+const App: React.FC = () => {
+  const [activeBranch, setActiveBranch] = useState<Branch>(() => getStoredBranch(Branch.NDERA));
 
-  try {
-    const parsed = JSON.parse(rawBody);
-    if (typeof parsed?.message === 'string' && parsed.message.trim()) {
-      return parsed.message;
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('glads-theme');
+      return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
     }
-    if (Array.isArray(parsed?.message) && parsed.message.length > 0) {
-      return String(parsed.message[0]);
-    }
-  } catch {
-    // rawBody is not JSON
-  }
-
-  return rawBody;
-};
-
-const decodeAuthUserFromToken = (token: string): AuthUser | null => {
-  try {
-    const parts = token.split('.');
-    if (parts.length < 2) return null;
-    const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const padded = payload.padEnd(Math.ceil(payload.length / 4) * 4, '=');
-    const raw = atob(padded);
-    const parsed = JSON.parse(raw) as any;
-    return {
-      id: parsed?.sub,
-      email: parsed?.email,
-      role: parsed?.role || parsed?.user_metadata?.role || 'receptionist',
-      firstName: parsed?.user_metadata?.first_name || parsed?.user_metadata?.firstName || '',
-      lastName: parsed?.user_metadata?.last_name || parsed?.user_metadata?.lastName || '',
-    };
-  } catch {
-    return null;
-  }
-};
-
-const TAB_TO_PATH: Record<Tab, string> = {
-  Home: '/',
-  About: '/about',
-  Rooms: '/rooms',
-  Services: '/services',
-  Gallery: '/gallery',
-  Contact: '/contact',
-  Admin: '/admin',
-};
-
-const PATH_TO_TAB: Record<string, Tab> = {
-  '/': 'Home',
-  '/about': 'About',
-  '/rooms': 'Rooms',
-  '/services': 'Services',
-  '/gallery': 'Gallery',
-  '/contact': 'Contact',
-  '/admin': 'Admin',
-};
-
-type MainAppProps = {
-  initialTab?: Tab;
-};
-
-const App: React.FC<MainAppProps> = ({ initialTab = 'Home' }) => {
-  const router = useRouter();
-  const pathname = usePathname();
+    return false;
+  });
   const [activeBranch, setActiveBranch] = useState<Branch>(Branch.NDERA);
   const [isDark, setIsDark] = useState(false);
   const [isThemeReady, setIsThemeReady] = useState(false);
@@ -318,7 +264,6 @@ const App: React.FC<MainAppProps> = ({ initialTab = 'Home' }) => {
   const [roomPaymentMethod, setRoomPaymentMethod] = useState<'card' | 'momo' | null>(null);
   const [rotation, setRotation] = useState(0);
   const [isRotating, setIsRotating] = useState(false);
-  const [showChatAssistant, setShowChatAssistant] = useState(false);
   const [locationAnimation, setLocationAnimation] = useState({
     isAnimating: false,
     startPoint: '',
@@ -2007,40 +1952,18 @@ const App: React.FC<MainAppProps> = ({ initialTab = 'Home' }) => {
     }
   };
 
-  const submitUpdateService = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!serviceEditForm) return;
-    setOpsLoading(true);
-    setOpsMessage(null);
-    try {
-      await apiRequest(`/services/${serviceEditForm.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          name: serviceEditForm.name,
-          description: serviceEditForm.description,
-          category: serviceEditForm.category,
-          price: parseFloat(serviceEditForm.pricing) || 0,
-          images: serviceEditForm.icon ? [serviceEditForm.icon] : [],
-        }),
-      });
-      setOpsMessage('Service updated successfully.');
-      setServiceEditForm(null);
-      await loadOperationsData();
-      // Refresh live data
-      const branchId = activeBranchOption?.id;
-      if (branchId) {
-        const res = await fetch(`${API_BASE}/services?branchId=${branchId}`);
-        if (res.ok) {
-          const raw = await res.json();
-          setLiveServices((Array.isArray(raw) ? raw : []).map(mapApiServiceToUiService));
-        }
-      }
-    } catch (err: any) {
-      setOpsMessage(err?.message || 'Failed to update service.');
-    } finally {
-      setOpsLoading(false);
-    }
-  };
+  useEffect(() => {
+    return subscribeToBranchChanges((branch) => {
+      setActiveBranch(branch);
+    });
+  }, []);
+
+  const data = useMemo(() => BRANCH_DATA[activeBranch], [activeBranch]);
+  const testimonials = useMemo(() => ([
+    { quote: 'An exceptional experience. The attention to detail and level of service exceeded all expectations.', initials: 'JD', name: 'James Davidson', role: 'Business Executive' },
+    { quote: 'The perfect blend of luxury and comfort with impeccable hospitality from check-in to check-out.', initials: 'SM', name: 'Sarah Mitchell', role: 'Travel Blogger' },
+    { quote: 'Outstanding location, elegant rooms, and a team that consistently goes above and beyond.', initials: 'MC', name: 'Michael Chen', role: 'Entrepreneur' },
+  ]), []);
 
   const submitDeleteService = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this service?')) return;
@@ -2098,7 +2021,7 @@ const App: React.FC<MainAppProps> = ({ initialTab = 'Home' }) => {
   const handleBranchSwitch = (branch: Branch) => {
     setActiveBranch(branch);
     setIsMobileMenuOpen(false);
-    localStorage.setItem('glads-selected-branch', branch);
+    setStoredBranch(branch);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -2951,20 +2874,6 @@ const App: React.FC<MainAppProps> = ({ initialTab = 'Home' }) => {
               </section>
             </div>
           )}
-          {currentTab === 'Home' && (
-            <>
-              <ChatFloatingButton onClick={() => setShowChatAssistant(true)} />
-              <ChatAssistant
-                visible={showChatAssistant}
-                onClose={() => setShowChatAssistant(false)}
-                activeBranch={activeBranch}
-                branches={Object.values(BRANCH_DATA).map(b => ({ id: b.id, fullName: b.fullName, tagline: b.tagline }))}
-                branchData={BRANCH_DATA[activeBranch]}
-                onSelectBranch={handleBranchSwitch}
-              />
-            </>
-          )}
-
           {currentTab === 'About' && (
             <AboutSection
               activeBranch={activeBranch}
