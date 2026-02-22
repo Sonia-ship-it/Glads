@@ -2,7 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsDateString, IsOptional, IsUUID } from 'class-validator';
 
 export class GetRevenueReportDto {
-  @ApiProperty({ example: 'uuid-branch-id', description: 'Branch ID (omit for all branches)', required: false })
+  @ApiProperty({
+    example: 'uuid-branch-id',
+    description: 'Branch ID (omit for all branches)',
+    required: false,
+  })
   @IsOptional()
   @IsUUID()
   branchId?: string;

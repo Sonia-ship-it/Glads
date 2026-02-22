@@ -5,6 +5,18 @@ export enum Branch {
   KABEZA = 'Kabeza'
 }
 
+export interface TeamMember {
+  id: string;
+  fullName: string;
+  position: string;
+  department?: string;
+  bio?: string;
+  photoUrl: string;
+  email?: string;
+  phone?: string;
+  displayOrder?: number;
+}
+
 export interface RoomType {
   id: string;
   name: string;
@@ -50,6 +62,7 @@ export interface BranchData {
   };
   rooms: RoomType[];
   services: Service[];
+  teamMembers: TeamMember[];
   gallery: string[];
   contact: {
     address: string;
@@ -96,7 +109,8 @@ export interface ServiceRevenue {
 }
 
 export interface BranchRevenue {
-  branchId: Branch;
+  branchId: string;
+  branchName?: string;
   roomRevenue: number;
   serviceRevenue: number;
   totalRevenue: number;

@@ -107,7 +107,11 @@ describe('Service Bookings Integration Tests', () => {
 
   afterAll(async () => {
     if (testServiceBookingId) {
-      await supabase.getAdminClient().from('service_bookings').delete().eq('id', testServiceBookingId);
+      await supabase
+        .getAdminClient()
+        .from('service_bookings')
+        .delete()
+        .eq('id', testServiceBookingId);
     }
 
     if (testServiceId) {

@@ -8,7 +8,7 @@ export class AnalyticsService {
 
   async getRevenueReport(reportDto: GetRevenueReportDto) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     let query = supabase
       .from('payments')
       .select('amount, currency, created_at, booking_id, bookings(branch_id, branches(name))')
@@ -54,19 +54,22 @@ export class AnalyticsService {
 
   async getOccupancyReport(branchId?: string, startDate?: string, endDate?: string) {
     // Delegate to the main implementation
-    return this.getDetailedOccupancyReport({ 
-      startDate: startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], 
-      endDate: endDate || new Date().toISOString().split('T')[0], 
-      branchId 
+    return this.getDetailedOccupancyReport({
+      startDate:
+        startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      endDate: endDate || new Date().toISOString().split('T')[0],
+      branchId,
     });
   }
 
   async getServiceReport(branchId?: string, startDate?: string, endDate?: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     let query = supabase
       .from('service_bookings')
-      .select('id, total_amount, status, service_date, service_id, services(name, category, branch_id, branches(name))')
+      .select(
+        'id, total_amount, status, service_date, service_id, services(name, category, branch_id, branches(name))',
+      )
       .in('status', ['confirmed', 'completed']);
 
     if (startDate) {
@@ -82,7 +85,7 @@ export class AnalyticsService {
 
     // Filter by branch if needed
     const filteredData = branchId
-      ? data.filter(sb => {
+      ? data.filter((sb) => {
           const service = Array.isArray(sb.services) ? sb.services[0] : sb.services;
           return service && service.branch_id === branchId;
         })
@@ -103,7 +106,11 @@ export class AnalyticsService {
     };
   }
 
-  async getDetailedOccupancyReport(reportDto: { startDate: string; endDate: string; branchId?: string }) {
+  async getDetailedOccupancyReport(reportDto: {
+    startDate: string;
+    endDate: string;
+    branchId?: string;
+  }) {
     const supabase = this.supabaseService.getAdminClient();
 
     // Get room availability data
@@ -118,12 +125,14 @@ export class AnalyticsService {
     }
 
     const { data: availabilityData, error: availabilityError } = await roomQuery;
-    if (availabilityError) throw new Error(`Failed to fetch occupancy data: ${availabilityError.message}`);
+    if (availabilityError)
+      throw new Error(`Failed to fetch occupancy data: ${availabilityError.message}`);
 
     // Calculate occupancy metrics
     const totalAvailableNights = availabilityData?.length || 0;
-    const occupiedNights = availabilityData?.filter(a => !a.is_available).length || 0;
-    const averageOccupancy = totalAvailableNights > 0 ? (occupiedNights / totalAvailableNights) * 100 : 0;
+    const occupiedNights = availabilityData?.filter((a) => !a.is_available).length || 0;
+    const averageOccupancy =
+      totalAvailableNights > 0 ? (occupiedNights / totalAvailableNights) * 100 : 0;
 
     // Group by date
     const dailyOccupancy = (availabilityData || []).reduce((acc, item) => {
@@ -142,8 +151,8 @@ export class AnalyticsService {
     const dailyOccupancyRate = Object.fromEntries(
       Object.entries(dailyOccupancy).map(([date, data]: [string, any]) => [
         date,
-        data.total > 0 ? Math.round((data.occupied / data.total) * 100 * 100) / 100 : 0
-      ])
+        data.total > 0 ? Math.round((data.occupied / data.total) * 100 * 100) / 100 : 0,
+      ]),
     );
 
     return {
@@ -185,8 +194,9 @@ export class AnalyticsService {
       return acc;
     }, {});
 
-    const popularRoomType = Object.entries(roomTypeCount)
-      .sort(([, a], [, b]) => (b as number) - (a as number))[0]?.[0];
+    const popularRoomType = Object.entries(roomTypeCount).sort(
+      ([, a], [, b]) => (b as number) - (a as number),
+    )[0]?.[0];
 
     return {
       startDate: reportDto.startDate,
@@ -241,7 +251,7 @@ export class AnalyticsService {
     // Simple PDF generation using basic HTML to PDF conversion
     // In production, you might want to use more sophisticated libraries like puppeteer
     const htmlContent = this.generateHTMLReport(data, exportDto);
-    
+
     // For now, return HTML as buffer - in production implement actual PDF generation
     // You would typically use: puppeteer, PDFKit, or jsPDF server-side
     return Buffer.from(htmlContent, 'utf8');
@@ -250,10 +260,10 @@ export class AnalyticsService {
   private async generateExcelReport(data: any, exportDto: ExportReportDto): Promise<Buffer> {
     // Simple Excel generation
     // In production, use libraries like 'exceljs' or 'node-xlsx'
-    
+
     let worksheetData: any[][] = [];
-    let fileName = `${exportDto.reportType}-report`;
-    
+    const fileName = `${exportDto.reportType}-report`;
+
     switch (exportDto.reportType) {
       case 'revenue':
         worksheetData = this.prepareRevenueDataForExcel(data);
@@ -268,18 +278,18 @@ export class AnalyticsService {
 
     // Create simple CSV format as Excel alternative (in production use actual Excel library)
     const csvContent = worksheetData
-      .map(row => row.map(cell => `"${cell}"`).join(','))
+      .map((row) => row.map((cell) => `"${cell}"`).join(','))
       .join('\\n');
-    
+
     return Buffer.from(csvContent, 'utf8');
   }
 
   private generateHTMLReport(data: any, exportDto: ExportReportDto): string {
     const title = `${exportDto.reportType.toUpperCase()} Report`;
     const dateRange = `${exportDto.startDate} to ${exportDto.endDate}`;
-    
+
     let content = '';
-    
+
     switch (exportDto.reportType) {
       case 'revenue':
         content = this.generateRevenueHTMLContent(data);
@@ -332,7 +342,10 @@ export class AnalyticsService {
         </thead>
         <tbody>
           ${Object.entries(data.dailyRevenue)
-            .map(([date, revenue]) => `<tr><td>${date}</td><td>${(revenue as number).toLocaleString()}</td></tr>`)
+            .map(
+              ([date, revenue]) =>
+                `<tr><td>${date}</td><td>${(revenue as number).toLocaleString()}</td></tr>`,
+            )
             .join('')}
         </tbody>
       </table>
@@ -379,7 +392,10 @@ export class AnalyticsService {
         <tbody>
           ${Object.entries(data.statusBreakdown || {})
             .map(([status, count]) => {
-              const percentage = data.totalBookings > 0 ? ((count as number) / data.totalBookings * 100).toFixed(1) : '0';
+              const percentage =
+                data.totalBookings > 0
+                  ? (((count as number) / data.totalBookings) * 100).toFixed(1)
+                  : '0';
               return `<tr><td>${status}</td><td>${count}</td><td>${percentage}%</td></tr>`;
             })
             .join('')}
@@ -390,9 +406,8 @@ export class AnalyticsService {
 
   private prepareRevenueDataForExcel(data: any): any[][] {
     const headers = ['Date', `Revenue (${data.summary.currency})`];
-    const rows = Object.entries(data.dailyRevenue)
-      .map(([date, revenue]) => [date, revenue]);
-    
+    const rows = Object.entries(data.dailyRevenue).map(([date, revenue]) => [date, revenue]);
+
     return [
       ['Revenue Report'],
       [`Period: ${data.period.start} to ${data.period.end}`],
@@ -408,9 +423,8 @@ export class AnalyticsService {
 
   private prepareOccupancyDataForExcel(data: any): any[][] {
     const headers = ['Date', 'Occupancy Rate (%)', 'Rooms Occupied'];
-    const rows = Object.entries(data.dailyOccupancy || {})
-      .map(([date, rate]) => [date, rate, '-']);
-    
+    const rows = Object.entries(data.dailyOccupancy || {}).map(([date, rate]) => [date, rate, '-']);
+
     return [
       ['Occupancy Report'],
       [`Period: ${data.startDate} to ${data.endDate}`],
@@ -425,12 +439,12 @@ export class AnalyticsService {
 
   private prepareBookingDataForExcel(data: any): any[][] {
     const headers = ['Status', 'Count', 'Percentage'];
-    const rows = Object.entries(data.statusBreakdown || {})
-      .map(([status, count]) => {
-        const percentage = data.totalBookings > 0 ? ((count as number) / data.totalBookings * 100).toFixed(1) : '0';
-        return [status, count, `${percentage}%`];
-      });
-    
+    const rows = Object.entries(data.statusBreakdown || {}).map(([status, count]) => {
+      const percentage =
+        data.totalBookings > 0 ? (((count as number) / data.totalBookings) * 100).toFixed(1) : '0';
+      return [status, count, `${percentage}%`];
+    });
+
     return [
       ['Booking Statistics Report'],
       [`Period: ${data.startDate} to ${data.endDate}`],

@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsString,
-  IsBoolean,
-  IsOptional,
-  IsUUID,
-  IsDateString,
-} from 'class-validator';
+import { IsString, IsBoolean, IsOptional, IsUUID, IsDateString } from 'class-validator';
 
 export class CreateMenuDto {
   @ApiProperty({ example: 'uuid-branch-id', description: 'Branch ID' })
@@ -16,7 +10,10 @@ export class CreateMenuDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ example: 'https://example.com/menu-feb-2026.pdf', description: 'Menu file URL (PDF or image)' })
+  @ApiProperty({
+    example: 'https://example.com/menu-feb-2026.pdf',
+    description: 'Menu file URL (PDF or image)',
+  })
   @IsString()
   menuUrl: string;
 
@@ -24,7 +21,11 @@ export class CreateMenuDto {
   @IsDateString()
   effectiveDate: string;
 
-  @ApiProperty({ example: 'Winter seasonal menu', description: 'Menu description', required: false })
+  @ApiProperty({
+    example: 'Winter seasonal menu',
+    description: 'Menu description',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -36,7 +37,11 @@ export class UpdateMenuDto {
   @IsString()
   name?: string;
 
-  @ApiProperty({ example: 'https://example.com/updated-menu.pdf', description: 'Menu file URL', required: false })
+  @ApiProperty({
+    example: 'https://example.com/updated-menu.pdf',
+    description: 'Menu file URL',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   menuUrl?: string;

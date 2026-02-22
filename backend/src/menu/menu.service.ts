@@ -28,7 +28,7 @@ export class MenuService {
 
   async getAllMenus(branchId?: string) {
     const supabase = this.supabaseService.getClient();
-    
+
     let query = supabase
       .from('menus')
       .select('*, branches(name)')
@@ -82,10 +82,7 @@ export class MenuService {
   async deleteMenu(id: string) {
     const supabase = this.supabaseService.getAdminClient();
 
-    const { error } = await supabase
-      .from('menus')
-      .update({ is_active: false })
-      .eq('id', id);
+    const { error } = await supabase.from('menus').update({ is_active: false }).eq('id', id);
 
     if (error) throw new Error(`Failed to delete menu: ${error.message}`);
     return { message: 'Menu deleted successfully' };

@@ -159,11 +159,19 @@ describe('Gym Subscriptions Integration Tests', () => {
 
   afterAll(async () => {
     if (testGymSubscriptionId) {
-      await supabase.getAdminClient().from('gym_subscriptions').delete().eq('id', testGymSubscriptionId);
+      await supabase
+        .getAdminClient()
+        .from('gym_subscriptions')
+        .delete()
+        .eq('id', testGymSubscriptionId);
     }
 
     if (testServiceBookingId) {
-      await supabase.getAdminClient().from('service_bookings').delete().eq('id', testServiceBookingId);
+      await supabase
+        .getAdminClient()
+        .from('service_bookings')
+        .delete()
+        .eq('id', testServiceBookingId);
     }
 
     if (testServiceId) {

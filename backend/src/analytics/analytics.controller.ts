@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Query,
-  UseGuards,
-  Res,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards, Res } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -27,7 +19,10 @@ export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
   @Get('revenue')
-  @ApiOperation({ summary: 'Get revenue report', description: 'Get revenue analytics for a date range. Admin/Manager only.' })
+  @ApiOperation({
+    summary: 'Get revenue report',
+    description: 'Get revenue analytics for a date range. Admin/Manager only.',
+  })
   @ApiQuery({ name: 'startDate', description: 'Start date (ISO format)', example: '2026-01-01' })
   @ApiQuery({ name: 'endDate', description: 'End date (ISO format)', example: '2026-01-31' })
   @ApiQuery({ name: 'branchId', required: false, description: 'Filter by branch ID' })
@@ -43,7 +38,10 @@ export class AnalyticsController {
   }
 
   @Get('occupancy')
-  @ApiOperation({ summary: 'Get occupancy report', description: 'Get room occupancy analytics. Admin/Manager only.' })
+  @ApiOperation({
+    summary: 'Get occupancy report',
+    description: 'Get room occupancy analytics. Admin/Manager only.',
+  })
   @ApiQuery({ name: 'branchId', required: false, description: 'Filter by branch ID' })
   @ApiQuery({ name: 'startDate', required: false, description: 'Start date (ISO format)' })
   @ApiQuery({ name: 'endDate', required: false, description: 'End date (ISO format)' })
@@ -58,7 +56,10 @@ export class AnalyticsController {
   }
 
   @Get('services')
-  @ApiOperation({ summary: 'Get service report', description: 'Get service booking analytics. Admin/Manager only.' })
+  @ApiOperation({
+    summary: 'Get service report',
+    description: 'Get service booking analytics. Admin/Manager only.',
+  })
   @ApiQuery({ name: 'branchId', required: false, description: 'Filter by branch ID' })
   @ApiQuery({ name: 'startDate', required: false, description: 'Start date (ISO format)' })
   @ApiQuery({ name: 'endDate', required: false, description: 'End date (ISO format)' })
@@ -73,29 +74,32 @@ export class AnalyticsController {
   }
 
   @Post('export')
-  @ApiOperation({ summary: 'Export report', description: 'Export analytics report to PDF or Excel. Admin only.' })
+  @ApiOperation({
+    summary: 'Export report',
+    description: 'Export analytics report to PDF or Excel. Admin only.',
+  })
   @ApiBody({ type: ExportReportDto })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Report file generated and returned',
     headers: {
       'Content-Type': {
         description: 'MIME type of the exported file',
-        schema: { type: 'string' }
+        schema: { type: 'string' },
       },
       'Content-Disposition': {
         description: 'File download disposition',
-        schema: { type: 'string' }
-      }
-    }
+        schema: { type: 'string' },
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 400, description: 'Invalid export parameters' })
   async exportReport(@Body() exportDto: ExportReportDto, @Res() res: any) {
     const fileBuffer = await this.analyticsService.exportReport(exportDto);
-    
+
     const filename = `${exportDto.reportType}-report-${new Date().toISOString().split('T')[0]}`;
-    
+
     if (exportDto.format === 'pdf') {
       res.set({
         'Content-Type': 'application/pdf',

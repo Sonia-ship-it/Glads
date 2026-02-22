@@ -1,5 +1,12 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { BranchesService } from './branches.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateBranchDto, UpdateBranchDto } from './dto/branch.dto';

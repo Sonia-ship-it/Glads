@@ -7,7 +7,11 @@ export class InitiatePaymentDto {
   @IsUUID()
   bookingId?: string;
 
-  @ApiProperty({ example: 'uuid-service-booking-id', description: 'Service booking ID', required: false })
+  @ApiProperty({
+    example: 'uuid-service-booking-id',
+    description: 'Service booking ID',
+    required: false,
+  })
   @IsOptional()
   @IsUUID()
   serviceBookingId?: string;
@@ -34,12 +38,20 @@ export class InitiatePaymentDto {
   @IsString()
   customerName?: string;
 
-  @ApiProperty({ example: 'Hotel booking payment', description: 'Payment description', required: false })
+  @ApiProperty({
+    example: 'Hotel booking payment',
+    description: 'Payment description',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiProperty({ example: 'http://localhost:3000/booking/success', description: 'Success callback URL', required: false })
+  @ApiProperty({
+    example: 'http://localhost:3000/booking/success',
+    description: 'Success callback URL',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   callbackUrl?: string;

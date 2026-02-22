@@ -1,6 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
-import { UpdateNotificationPreferencesDto, MarkNotificationReadDto } from '../common/dto/notification.dto';
+import {
+  UpdateNotificationPreferencesDto,
+  MarkNotificationReadDto,
+} from '../common/dto/notification.dto';
 
 @Injectable()
 export class NotificationsService {
@@ -8,11 +11,8 @@ export class NotificationsService {
 
   async findAllForUser(userId: string, isRead?: boolean) {
     const supabase = this.supabaseService.getAdminClient();
-    
-    let query = supabase
-      .from('notifications')
-      .select('*')
-      .eq('recipient_id', userId);
+
+    let query = supabase.from('notifications').select('*').eq('recipient_id', userId);
 
     if (isRead !== undefined) {
       query = query.eq('is_read', isRead);
@@ -26,20 +26,21 @@ export class NotificationsService {
 
   async markAsRead(markDto: MarkNotificationReadDto) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('notifications')
       .update({ is_read: true, read_at: new Date().toISOString() })
       .in('id', markDto.notificationIds)
       .select();
 
-    if (error) throw new BadRequestException(`Failed to mark notifications as read: ${error.message}`);
+    if (error)
+      throw new BadRequestException(`Failed to mark notifications as read: ${error.message}`);
     return data;
   }
 
   async markAllAsRead(userId: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('notifications')
       .update({ is_read: true, read_at: new Date().toISOString() })
@@ -47,13 +48,14 @@ export class NotificationsService {
       .eq('is_read', false)
       .select();
 
-    if (error) throw new BadRequestException(`Failed to mark all notifications as read: ${error.message}`);
+    if (error)
+      throw new BadRequestException(`Failed to mark all notifications as read: ${error.message}`);
     return data;
   }
 
   async getUnreadCount(userId: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { count, error } = await supabase
       .from('notifications')
       .select('*', { count: 'exact', head: true })
@@ -66,7 +68,7 @@ export class NotificationsService {
 
   async updatePreferences(userId: string, updateDto: UpdateNotificationPreferencesDto) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('users')
       .update({ notification_preferences: updateDto })

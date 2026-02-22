@@ -52,14 +52,17 @@ describe('Notifications Integration Tests', () => {
 
     authToken = session.access_token;
 
-    await supabase.getAdminClient().from('users').insert({
-      id: actorUserId,
-      email: actorEmail,
-      full_name: 'Notifications User',
-      role: 'super-admin',
-      is_active: true,
-      notification_preferences: { email: true, inApp: true },
-    });
+    await supabase
+      .getAdminClient()
+      .from('users')
+      .insert({
+        id: actorUserId,
+        email: actorEmail,
+        full_name: 'Notifications User',
+        role: 'super-admin',
+        is_active: true,
+        notification_preferences: { email: true, inApp: true },
+      });
 
     const { data: seeded, error: seedError } = await supabase
       .getAdminClient()

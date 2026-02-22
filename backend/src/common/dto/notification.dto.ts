@@ -23,7 +23,11 @@ export class UpdateNotificationPreferencesDto {
 }
 
 export class MarkNotificationReadDto {
-  @ApiProperty({ example: ['uuid-notification-id-1', 'uuid-notification-id-2'], description: 'Notification IDs', type: [String] })
+  @ApiProperty({
+    example: ['uuid-notification-id-1', 'uuid-notification-id-2'],
+    description: 'Notification IDs',
+    type: [String],
+  })
   @IsArray()
   @IsUUID('4', { each: true })
   notificationIds: string[];

@@ -6,13 +6,27 @@ import { CreateNewsDto, UpdateNewsDto } from '../common/dto/news.dto';
 export class NewsService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
-  async create(createDto: CreateNewsDto) {
+  async create(createDto: CreateNewsDto, user: any) {
+    const userRole = user.role || user.user_metadata?.role;
+    const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
+
+    if (userRole === 'branch-manager') {
+      if (createDto.scope === 'global') {
+        throw new BadRequestException('Branch managers cannot create global news');
+      }
+      if (createDto.branchId !== userBranchId) {
+        throw new BadRequestException(
+          'Branch managers can only create news for their assigned branch',
+        );
+      }
+    }
+
     const supabase = this.supabaseService.getAdminClient();
 
     if (createDto.scope === 'branch-specific' && !createDto.branchId) {
       throw new BadRequestException('branchId is required for branch-specific news');
     }
-    
+
     const { data, error } = await supabase
       .from('news')
       .insert({
@@ -36,16 +50,21 @@ export class NewsService {
     return data;
   }
 
-  async findAll(scope?: string, category?: string) {
+  async findAll(scope?: string, category?: string, user?: any) {
     const supabase = this.supabaseService.getAdminClient();
-    
-    let query = supabase
-      .from('news')
-      .select('*')
-      .eq('status', 'published');
 
-    if (scope) {
-      query = query.eq('scope', scope);
+    let query = supabase.from('news').select('*').eq('status', 'published');
+
+    const userRole = user?.role || user?.user_metadata?.role;
+    const userBranchId = user?.branchId || user?.branch_id || user?.user_metadata?.branchId;
+
+    if (userRole === 'branch-manager' || userRole === 'receptionist') {
+      // In admin view, show global news OR news for their branch
+      query = query.or(`scope.eq.global,branch_id.eq.${userBranchId}`);
+    } else {
+      if (scope) {
+        query = query.eq('scope', scope);
+      }
     }
     if (category) {
       query = query.eq('category', category);
@@ -59,12 +78,8 @@ export class NewsService {
 
   async findOne(id: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
-    const { data, error } = await supabase
-      .from('news')
-      .select('*')
-      .eq('id', id)
-      .single();
+
+    const { data, error } = await supabase.from('news').select('*').eq('id', id).single();
 
     if (error || !data) throw new NotFoundException(`News not found: ${error?.message || id}`);
 
@@ -74,9 +89,31 @@ export class NewsService {
     return data;
   }
 
-  async update(id: string, updateDto: UpdateNewsDto) {
+  async update(id: string, updateDto: UpdateNewsDto, user: any) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
+    // Check permissions
+    const { data: existingNews } = await supabase
+      .from('news')
+      .select('branch_id, scope')
+      .eq('id', id)
+      .single();
+    if (existingNews) {
+      const userRole = user.role || user.user_metadata?.role;
+      const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
+
+      if (userRole === 'branch-manager') {
+        if (existingNews.scope === 'global') {
+          throw new BadRequestException('Branch managers cannot update global news');
+        }
+        if (existingNews.branch_id !== userBranchId) {
+          throw new BadRequestException(
+            'Branch managers can only update news for their assigned branch',
+          );
+        }
+      }
+    }
+
     const updateData: any = {};
     if (updateDto.title) updateData.title = updateDto.title;
     if (updateDto.content) updateData.content = updateDto.content;
@@ -106,13 +143,32 @@ export class NewsService {
     return data;
   }
 
-  async remove(id: string) {
+  async remove(id: string, user: any) {
     const supabase = this.supabaseService.getAdminClient();
-    
-    const { error } = await supabase
+
+    // Check permissions
+    const { data: existingNews } = await supabase
       .from('news')
-      .update({ status: 'unpublished' })
-      .eq('id', id);
+      .select('branch_id, scope')
+      .eq('id', id)
+      .single();
+    if (existingNews) {
+      const userRole = user.role || user.user_metadata?.role;
+      const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
+
+      if (userRole === 'branch-manager') {
+        if (existingNews.scope === 'global') {
+          throw new BadRequestException('Branch managers cannot delete global news');
+        }
+        if (existingNews.branch_id !== userBranchId) {
+          throw new BadRequestException(
+            'Branch managers can only delete news for their assigned branch',
+          );
+        }
+      }
+    }
+
+    const { error } = await supabase.from('news').update({ status: 'unpublished' }).eq('id', id);
 
     if (error) throw new BadRequestException(`Failed to delete news: ${error.message}`);
     return { message: 'News deleted successfully' };

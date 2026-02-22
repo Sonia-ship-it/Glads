@@ -7,7 +7,7 @@ export class BranchesService {
 
   async findAll() {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('branches')
       .select('*')
@@ -23,12 +23,8 @@ export class BranchesService {
 
   async findOne(id: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
-    const { data, error } = await supabase
-      .from('branches')
-      .select('*')
-      .eq('id', id)
-      .single();
+
+    const { data, error } = await supabase.from('branches').select('*').eq('id', id).single();
 
     if (error || !data) {
       throw new NotFoundException(`Branch with ID ${id} not found`);
@@ -39,7 +35,7 @@ export class BranchesService {
 
   async create(createBranchDto: any) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('branches')
       .insert([createBranchDto])
@@ -55,7 +51,7 @@ export class BranchesService {
 
   async update(id: string, updateBranchDto: any) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('branches')
       .update(updateBranchDto)
@@ -72,7 +68,7 @@ export class BranchesService {
 
   async remove(id: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     // Soft delete: set is_active to false instead of hard delete
     const { data, error } = await supabase
       .from('branches')
@@ -90,7 +86,7 @@ export class BranchesService {
 
   async getBranchStats(branchId: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     // Verify branch exists
     await this.findOne(branchId);
 
@@ -143,14 +139,16 @@ export class BranchesService {
       .lte('created_at', lastDay.toISOString());
 
     if (serviceBookingsError) {
-      throw new Error(`Failed to fetch service booking statistics: ${serviceBookingsError.message}`);
+      throw new Error(
+        `Failed to fetch service booking statistics: ${serviceBookingsError.message}`,
+      );
     }
 
     // Calculate statistics
     const totalRooms = rooms.length;
-    const availableRooms = rooms.filter(r => r.status === 'available').length;
-    const occupiedRooms = rooms.filter(r => r.status === 'occupied').length;
-    const maintenanceRooms = rooms.filter(r => r.status === 'maintenance').length;
+    const availableRooms = rooms.filter((r) => r.status === 'available').length;
+    const occupiedRooms = rooms.filter((r) => r.status === 'occupied').length;
+    const maintenanceRooms = rooms.filter((r) => r.status === 'maintenance').length;
 
     const roomTypeBreakdown = rooms.reduce((acc, room) => {
       acc[room.room_type] = (acc[room.room_type] || 0) + 1;
@@ -158,16 +156,22 @@ export class BranchesService {
     }, {});
 
     const totalBookings = bookings.length;
-    const confirmedBookings = bookings.filter(b => b.status === 'confirmed').length;
-    const cancelledBookings = bookings.filter(b => b.status === 'cancelled').length;
-    const paidBookings = bookings.filter(b => b.payment_status === 'paid').length;
+    const confirmedBookings = bookings.filter((b) => b.status === 'confirmed').length;
+    const cancelledBookings = bookings.filter((b) => b.status === 'cancelled').length;
+    const paidBookings = bookings.filter((b) => b.payment_status === 'paid').length;
 
     const totalNights = bookings.reduce((sum, booking) => sum + booking.number_of_nights, 0);
-    const occupancyRate = totalRooms > 0 ? (totalNights / (totalRooms * new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate())) * 100 : 0;
+    const occupancyRate =
+      totalRooms > 0
+        ? (totalNights /
+            (totalRooms *
+              new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate())) *
+          100
+        : 0;
 
     const roomRevenue = payments.reduce((sum, payment) => sum + payment.amount, 0);
     const serviceRevenue = serviceBookings
-      .filter(sb => sb.status === 'completed')
+      .filter((sb) => sb.status === 'completed')
       .reduce((sum, sb) => sum + sb.total_amount, 0);
     const totalRevenue = roomRevenue + serviceRevenue;
 
@@ -194,7 +198,8 @@ export class BranchesService {
         confirmed: confirmedBookings,
         cancelled: cancelledBookings,
         paid: paidBookings,
-        conversionRate: totalBookings > 0 ? Math.round((confirmedBookings / totalBookings) * 100 * 100) / 100 : 0,
+        conversionRate:
+          totalBookings > 0 ? Math.round((confirmedBookings / totalBookings) * 100 * 100) / 100 : 0,
       },
       revenue: {
         total: Math.round(totalRevenue * 100) / 100,
@@ -205,7 +210,8 @@ export class BranchesService {
       },
       performance: {
         totalNights,
-        averageStayDuration: totalBookings > 0 ? Math.round((totalNights / totalBookings) * 100) / 100 : 0,
+        averageStayDuration:
+          totalBookings > 0 ? Math.round((totalNights / totalBookings) * 100) / 100 : 0,
       },
     };
   }

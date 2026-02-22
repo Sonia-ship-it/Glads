@@ -146,7 +146,9 @@ describe('Branches Integration Tests', () => {
 
   describe('GET /branches/:id', () => {
     it('should return branch details', async () => {
-      const response = await request(app.getHttpServer()).get(`/branches/${testBranchId}`).expect(200);
+      const response = await request(app.getHttpServer())
+        .get(`/branches/${testBranchId}`)
+        .expect(200);
 
       expect(response.body.id).toBe(testBranchId);
       expect(response.body).toHaveProperty('name');

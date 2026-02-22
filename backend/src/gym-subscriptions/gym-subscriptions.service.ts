@@ -13,7 +13,9 @@ export class GymSubscriptionsService {
   private generateMembershipNumber(): string {
     const prefix = 'GYM';
     const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const random = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, '0');
     return `${prefix}${timestamp}${random}`;
   }
 

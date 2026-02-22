@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
-import {
-  CreateSystemSettingDto,
-  UpdateSystemSettingDto,
-} from '../common/dto/system-setting.dto';
+import { CreateSystemSettingDto, UpdateSystemSettingDto } from '../common/dto/system-setting.dto';
 
 @Injectable()
 export class SystemSettingsService {
@@ -72,10 +69,7 @@ export class SystemSettingsService {
   async remove(key: string) {
     const supabase = this.supabaseService.getAdminClient();
 
-    const { error } = await supabase
-      .from('system_settings')
-      .delete()
-      .eq('key', key);
+    const { error } = await supabase.from('system_settings').delete().eq('key', key);
 
     if (error) throw new Error(`Failed to delete system setting: ${error.message}`);
     return { message: 'System setting deleted successfully' };
@@ -89,4 +83,3 @@ export class SystemSettingsService {
     }, {});
   }
 }
-

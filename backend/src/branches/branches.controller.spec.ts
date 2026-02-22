@@ -65,7 +65,7 @@ describe('BranchesController', () => {
           currency: 'KES',
           timezone: 'Africa/Nairobi',
           taxRate: 0.16,
-          serviceChargeRate: 0.10,
+          serviceChargeRate: 0.1,
         },
       };
 

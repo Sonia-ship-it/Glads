@@ -1,10 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 
+const BODY_LIMIT = '50mb';
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+  app.use(json({ limit: BODY_LIMIT }));
+  app.use(urlencoded({ extended: true, limit: BODY_LIMIT }));
 
   // Enable CORS
   app.enableCors({
@@ -29,11 +34,7 @@ async function bootstrap() {
     .setTitle('GLADS Hotel Management API')
     .setDescription('Complete API documentation for GLADS Multi-Branch Hotel Management System')
     .setVersion('1.0')
-    .setContact(
-      'Ishukwe Fiacre',
-      'https://github.com/Iacre/glads',
-      'contact@glads.rw',
-    )
+    .setContact('Ishukwe Fiacre', 'https://github.com/Iacre/glads', 'contact@glads.rw')
     .addTag('Authentication', 'User authentication and authorization endpoints')
     .addTag('Branches', 'Branch management endpoints')
     .addTag('Rooms', 'Room management and availability endpoints')
@@ -69,7 +70,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
-  
+
   console.log(`🚀 GLADS Backend API running on: http://localhost:${port}/api`);
   console.log(`📚 API Documentation available at: http://localhost:${port}/api/docs`);
 }

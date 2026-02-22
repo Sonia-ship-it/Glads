@@ -9,10 +9,7 @@ export class AuditLogsService {
   async findAll(queryDto: QueryAuditLogsDto) {
     const supabase = this.supabaseService.getAdminClient();
 
-    let query = supabase
-      .from('audit_logs')
-      .select('*')
-      .order('created_at', { ascending: false });
+    let query = supabase.from('audit_logs').select('*').order('created_at', { ascending: false });
 
     if (queryDto.userId) {
       query = query.eq('user_id', queryDto.userId);
@@ -53,11 +50,7 @@ export class AuditLogsService {
   async findOne(id: string) {
     const supabase = this.supabaseService.getAdminClient();
 
-    const { data, error } = await supabase
-      .from('audit_logs')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const { data, error } = await supabase.from('audit_logs').select('*').eq('id', id).single();
 
     if (error) throw new Error(`Audit log not found: ${error.message}`);
     return data;
@@ -106,4 +99,3 @@ export class AuditLogsService {
     return data;
   }
 }
-
