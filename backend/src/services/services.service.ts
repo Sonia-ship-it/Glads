@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
-CreateServiceDto,
+import {
+  CreateServiceDto,
   UpdateServiceDto,
 } from '../common/dto/service.dto';
 

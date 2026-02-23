@@ -232,7 +232,8 @@ export const BRANCH_DATA: Record<Branch, BranchData> = {
             address: 'Ndera, Gasabo, Rwanda',
             phone: '+250 788 300 269',
             email: 'info@gladsapartment.rw'
-        }
+        },
+        teamMembers: []
     },
     [Branch.KANOMBE]: {
         id: Branch.KANOMBE,
@@ -333,7 +334,8 @@ export const BRANCH_DATA: Record<Branch, BranchData> = {
             address: 'Kanombe, Kicukiro, Rwanda',
             phone: '+250 788 300 269',
             email: 'info@gladsapartment.rw'
-        }
+        },
+        teamMembers: []
     },
     [Branch.KABEZA]: {
         id: Branch.KABEZA,
@@ -367,6 +369,7 @@ export const BRANCH_DATA: Record<Branch, BranchData> = {
             address: 'Kabeza (Rubirizi), Kicukiro, Rwanda',
             phone: '+250 788 300 269',
             email: 'info@gladsapartment.rw'
-        }
+        },
+        teamMembers: []
     }
 };

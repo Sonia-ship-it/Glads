@@ -17,6 +17,7 @@ import { RoomsSection } from './sections/RoomsSection';
 import { ServicesSection } from './sections/ServicesSection';
 import { GallerySection } from './sections/GallerySection';
 import { ContactSection } from './sections/ContactSection';
+import { FeedbackSection } from './sections/FeedbackSection';
 import { AdminSection } from './sections/AdminSection';
 
 // Modal & Experience Components
@@ -43,7 +44,7 @@ import { getStoredBranch, setStoredBranch, subscribeToBranchChanges } from '@/li
 type Role = 'Customer' | 'HQ Admin' | 'Branch Admin';
 type LegalDocKey = 'privacy' | 'terms' | 'booking';
 type LegalDoc = 'dashboard' | 'bookings' | 'services' | 'operations' | 'profile';
-type Tab = 'Home' | 'About' | 'Rooms' | 'Services' | 'Gallery' | 'Contact' | 'Admin';
+type Tab = 'Home' | 'About' | 'Rooms' | 'Services' | 'Gallery' | 'Contact' | 'Admin' | 'Feedback';
 type AuthUser = {
   id?: string;
   email?: string;
@@ -236,8 +237,70 @@ const App: React.FC = () => {
       const saved = localStorage.getItem('glads-theme');
       return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
     }
+<<<<<<< HEAD
     return false;
   });
+=======
+    if (Array.isArray(parsed?.message) && parsed.message.length > 0) {
+      return String(parsed.message[0]);
+    }
+  } catch {
+    // rawBody is not JSON
+  }
+
+  return rawBody;
+};
+
+const decodeAuthUserFromToken = (token: string): AuthUser | null => {
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = payload.padEnd(Math.ceil(payload.length / 4) * 4, '=');
+    const raw = atob(padded);
+    const parsed = JSON.parse(raw) as any;
+    return {
+      id: parsed?.sub,
+      email: parsed?.email,
+      role: parsed?.role || parsed?.user_metadata?.role || 'receptionist',
+      firstName: parsed?.user_metadata?.first_name || parsed?.user_metadata?.firstName || '',
+      lastName: parsed?.user_metadata?.last_name || parsed?.user_metadata?.lastName || '',
+    };
+  } catch {
+    return null;
+  }
+};
+
+const TAB_TO_PATH: Record<Tab, string> = {
+  Home: '/',
+  About: '/about',
+  Rooms: '/rooms',
+  Services: '/services',
+  Gallery: '/gallery',
+  Contact: '/contact',
+  Admin: '/admin',
+  Feedback: '/feedback',
+};
+
+const PATH_TO_TAB: Record<string, Tab> = {
+  '/': 'Home',
+  '/about': 'About',
+  '/rooms': 'Rooms',
+  '/services': 'Services',
+  '/gallery': 'Gallery',
+  '/contact': 'Contact',
+  '/admin': 'Admin',
+  '/feedback': 'Feedback',
+};
+
+type MainAppProps = {
+  initialTab?: Tab;
+};
+
+const App: React.FC<MainAppProps> = ({ initialTab = 'Home' }) => {
+  const router = useRouter();
+  const pathname = usePathname();
+>>>>>>> 1ecfd46 (Resolved merge conflicts after pulling backend updates)
   const [activeBranch, setActiveBranch] = useState<Branch>(Branch.NDERA);
   const [isDark, setIsDark] = useState(false);
   const [isThemeReady, setIsThemeReady] = useState(false);
@@ -600,7 +663,7 @@ const App: React.FC = () => {
   }, [activeBranch]);
 
   useEffect(() => {
-    if (currentTab !== 'Admin' && !availableTabs.includes(currentTab as any)) {
+    if (currentTab !== 'Admin' && currentTab !== 'Feedback' && !availableTabs.includes(currentTab as any)) {
       setCurrentTab('Home');
     }
   }, [activeBranch, availableTabs, currentTab]);
@@ -656,8 +719,8 @@ const App: React.FC = () => {
 
   const allowedOpsTabs = useMemo(() => {
     if (adminRole === 'Super Admin') return allOpsTabs;
-    if (adminRole === 'Branch Manager') return ['branches', 'rooms', 'news', 'team', 'menu'] as const;
-    return [] as const;
+    if (adminRole === 'Branch Manager') return ['branches', 'rooms', 'news', 'team', 'menu'] as Array<typeof allOpsTabs[number]>;
+    return [] as Array<typeof allOpsTabs[number]>;
   }, [adminRole]);
 
   const formatAdminSectionLabel = (section: LegalDoc): string => {
@@ -1310,6 +1373,17 @@ const App: React.FC = () => {
     }
   };
 
+  const handleMenuEditFileUpload = async (file?: File | null) => {
+    try {
+      const dataUrl = await toDataUrl(file);
+      if (!dataUrl) return;
+      setMenuEditForm((prev) => prev ? { ...prev, menuUrl: dataUrl } : null);
+      setOpsMessage('Menu edit file selected.');
+    } catch (err: any) {
+      setOpsMessage(err?.message || 'Unable to process file.');
+    }
+  };
+
   const handleRoomEditImagesUpload = async (files: FileList | null) => {
     if (!files?.length || !roomEditForm) return;
     try {
@@ -1763,7 +1837,7 @@ const App: React.FC = () => {
         }),
       });
       setOpsMessage('Team member created successfully.');
-      setTeamCreateForm({ branchId: '', fullName: '', position: '', department: '', email: '', phone: '', bio: '', photoUrl: '' });
+      setTeamCreateForm({ branchId: '', fullName: '', position: '', department: '', email: '', phone: '', bio: '', photoUrl: '', displayOrder: 1 });
       await loadOperationsData();
       if (branchId) {
         const teamRes = await fetch(`${API_BASE}/team?branchId=${encodeURIComponent(branchId)}`);
@@ -2503,376 +2577,16 @@ const App: React.FC = () => {
       <main id="main-content" tabIndex={-1} className={`${isAdminWorkspace ? 'pt-0 min-h-screen' : 'pt-32 md:pt-44 min-h-screen'} transition-all duration-700 ease-in-out`} key={currentTab}>
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
           {currentTab === 'Home' && (
-            <div className="reveal">
-              {/* Hero Section - Full Width Video */}
-              <section className="relative min-h-screen flex items-center overflow-hidden -mt-32 md:-mt-44 bg-black">
-                <div className="absolute inset-0 z-0">
-                  <video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="metadata"
-                    poster={data.gallery[0]}
-                    className="w-full h-full object-cover"
-                  >
-                    <source src="/herovideo.mp4" type="video/mp4" />
-                  </video>
-                  <div className="absolute inset-0 bg-black/32" />
-                  <div className="absolute inset-0 bg-linear-to-r from-black/56 via-black/28 to-black/34" />
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_45%,rgba(255,255,255,0.12),transparent_52%)]" />
-                </div>
-
-                <div className="relative z-20 max-w-7xl mx-auto w-full px-6 md:px-14 pt-36 md:pt-44 pb-24">
-                  <div className="max-w-3xl space-y-7 text-white">
-                    <div className="inline-flex items-center bg-white/10 backdrop-blur-sm px-7 py-3 rounded-full border border-white/20">
-                      <span className="text-[11px] font-black tracking-[0.24em] uppercase text-white">GLADS APARTMENT {activeBranch}</span>
-                    </div>
-                    <h1 className="font-display text-[3rem] md:text-[6.5rem] font-black tracking-tight leading-[0.9] text-[#7a0016] dark:text-white drop-shadow-[0_8px_28px_rgba(0,0,0,0.45)] uppercase">
-                      ART OF
-                      <br />
-                      LIVING.
-                    </h1>
-                    <p className="text-[1rem] md:text-[1.08rem] text-white font-normal leading-relaxed max-w-2xl drop-shadow-[0_4px_16px_rgba(0,0,0,0.35)]">
-                      Lifestyle Branch - Connectivity Meets Comfort. Discover hospitality redefined through silence, space, and sophisticated materials.
-                    </p>
-                    <div className="flex flex-wrap gap-3 md:gap-4 items-center pt-4">
-                      <button
-                        onClick={() => setCurrentTab('Rooms')}
-                        className="bg-burgundy hover:bg-burgundy/90 text-white px-8 py-3.5 text-[10px] font-black tracking-[0.12em] uppercase border border-burgundy rounded-full transition-colors"
-                      >
-                        Check Availability
-                      </button>
-                      <button
-                        onClick={() => setCurrentTab('Services')}
-                        className="bg-white/10 hover:bg-white/20 text-white px-8 py-3.5 text-[10px] font-black tracking-[0.12em] uppercase border border-white/40 rounded-full transition-colors"
-                      >
-                        View Menu
-                      </button>
-                      <button
-                        onClick={() => setCurrentTab('Services')}
-                        className="bg-transparent hover:bg-white/10 text-white px-8 py-3.5 text-[10px] font-black tracking-[0.12em] uppercase border border-white/30 rounded-full transition-colors"
-                      >
-                        Explore Our Services
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4 text-white">
-                      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white mb-2">Locations</p>
-                        <p className="text-3xl font-black text-white"><Counter target={3} /></p>
-                      </div>
-                      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white mb-2">Suites</p>
-                        <p className="text-3xl font-black text-white"><Counter target={50} suffix="+" /></p>
-                      </div>
-                      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white mb-2">Satisfaction</p>
-                        <p className="text-3xl font-black text-white"><Counter target={94} suffix="%" /></p>
-                      </div>
-                      <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-white">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white mb-2">Concierge</p>
-                        <p className="text-3xl font-black text-white">24/7</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Service and Room Glimpse */}
-              <section className="reveal py-24 px-6 bg-neutral-50 dark:bg-neutral-950">
-                <div className="max-w-7xl mx-auto">
-                  <div className="text-center mb-14">
-                    <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-4 block">First Look</span>
-                    <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white">Service and Room Glimpse.</h2>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {data.services.slice(0, 3).map((service, i) => (
-                      <div
-                        key={service.id}
-                        className="group relative h-105 rounded-[2.5rem] overflow-hidden shadow-xl cursor-pointer hover:shadow-2xl transition-all duration-500 border border-neutral-200/60 dark:border-white/10"
-                        onClick={() => setCurrentTab('Services')}
-                      >
-                        <img src={service.icon} alt={service.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-700" loading="lazy" decoding="async" />
-                        <div className="absolute inset-0 bg-linear-to-t from-black/88 via-black/35 to-black/15" />
-                        <div className="absolute bottom-6 left-6 right-6 text-white">
-                          <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-80 block mb-2">
-                            <Counter target={i + 1} zeroPad /> • Service
-                          </span>
-                          <h3 className="text-3xl font-black mb-2">{service.name}</h3>
-                          <p className="text-sm text-white line-clamp-2">{service.description}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-                    {data.rooms.slice(0, 2).map((room, i) => (
-                      <div
-                        key={room.id}
-                        className="group relative h-85 rounded-[2.5rem] overflow-hidden shadow-xl border border-neutral-200/60 dark:border-white/10 cursor-pointer hover:shadow-2xl transition-all duration-500"
-                        onClick={() => setCurrentTab('Rooms')}
-                      >
-                        <img src={room.image} alt={room.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" decoding="async" />
-                        <div className="absolute inset-0 bg-linear-to-t from-black/88 via-black/35 to-black/15" />
-                        <div className="absolute bottom-6 left-6 right-6 text-white">
-                          <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-80 block mb-2">
-                            <Counter target={i + 1} zeroPad /> • Room
-                          </span>
-                          <h3 className="text-3xl font-black mb-2 leading-tight">{room.name}</h3>
-                          <p className="text-sm text-white/85 line-clamp-2">{room.description}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-
-              {/* Why Choose Us */}
-              <section className="reveal py-24 px-6 bg-neutral-50 dark:bg-neutral-950">
-                <div className="max-w-7xl mx-auto">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                    <div>
-                      <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-6 block">The Glads Difference</span>
-                      <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white mb-8">Why Choose Us.</h2>
-                      <p className="text-neutral-600 dark:text-neutral-400 text-lg leading-relaxed mb-10">We do not just offer a room. We deliver a complete lifestyle experience designed around comfort, care, and consistency.</p>
-                      <div className="space-y-6">
-                        {[
-                          { icon: Trophy, title: 'All-in-One Destination', desc: 'Accommodation, dining, wellness, and shopping under one roof.' },
-                          { icon: Users, title: 'Professional Staff', desc: 'Customer-first approach with trained hospitality professionals.' },
-                          { icon: MapPin, title: 'Strategic Locations', desc: 'Three branches across Kigali for maximum convenience.' },
-                          { icon: Leaf, title: 'Sustainability Commitment', desc: 'Eco-conscious practices and community-driven initiatives.' },
-                        ].map((item, i) => (
-                          <div key={i} className="flex gap-5 items-start">
-                            <div className="w-14 h-14 rounded-2xl bg-burgundy/10 text-burgundy flex items-center justify-center shrink-0">
-                              <item.icon className="w-7 h-7" strokeWidth={2.2} />
-                            </div>
-                            <div>
-                              <h4 className="font-heading font-bold text-lg text-neutral-900 dark:text-white mb-1">{item.title}</h4>
-                              <p className="text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed">{item.desc}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="relative h-150 hidden lg:block">
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-44 h-44 rounded-full bg-white/90 dark:bg-black/70 backdrop-blur-xl border border-white/70 dark:border-white/15 shadow-2xl flex flex-col items-center justify-center p-4">
-                        <div className="flex -space-x-3 mb-3">
-                          <img
-                            src="/hero.jpeg"
-                            alt="Ndera Branch"
-                            className="w-11 h-11 rounded-full object-cover border-2 border-white dark:border-black"
-                            loading="lazy"
-                          />
-                          <img
-                            src="/OKK_5908-1-720x520.jpg.jpeg"
-                            alt="Kanombe Branch"
-                            className="w-11 h-11 rounded-full object-cover border-2 border-white dark:border-black"
-                            loading="lazy"
-                          />
-                          <img
-                            src="/DSC_0996-1-720x470.jpg.jpeg"
-                            alt="Kabeza Branch"
-                            className="w-11 h-11 rounded-full object-cover border-2 border-white dark:border-black"
-                            loading="lazy"
-                          />
-                        </div>
-                        <p className="text-3xl font-black text-burgundy leading-none">3</p>
-                        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-neutral-700 dark:text-white/80 mt-1 text-center">
-                          Branches
-                        </p>
-                      </div>
-                      <div className="absolute top-0 right-0 w-[80%] h-[75%] rounded-[3rem] overflow-hidden shadow-2xl">
-                        <img src="/OKK_5838-1-scaled.jpg.jpeg" alt="Glads Experience" className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                      </div>
-                      <div className="absolute bottom-0 left-0 w-[55%] h-[50%] rounded-[3rem] overflow-hidden shadow-2xl border-8 border-neutral-50 dark:border-neutral-950">
-                        <img src="/food.jpeg" alt="Glads Dining" className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Our Locations */}
-              <section className="reveal py-24 px-6 bg-white dark:bg-black">
-                <div className="max-w-7xl mx-auto">
-                  <div className="text-center mb-16">
-                    <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-4 block">Find Us</span>
-                    <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white">Our Locations.</h2>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {[
-                      { branch: Branch.NDERA, name: 'Ndera', subtitle: 'Flagship Location', address: 'Near 15 Road, Ndera, Gasabo', tag: 'Business and Relaxation', color: 'from-burgundy/90 to-red-900/90', img: '/hero.jpeg' },
-                      { branch: Branch.KANOMBE, name: 'Kanombe', subtitle: 'Vibrant Complex', address: 'Kanombe (KMH), Kicukiro', tag: 'Lifestyle and Wellness', color: 'from-neutral-800/90 to-neutral-900/90', img: '/OKK_5908-1-720x520.jpg.jpeg' },
-                      { branch: Branch.KABEZA, name: 'Kabeza', subtitle: 'Residential Living', address: 'Kabeza (Rubirizi), Kicukiro', tag: 'Quiet and Affordable', color: 'from-stone-700/90 to-stone-900/90', img: '/DSC_0996-1-720x470.jpg.jpeg' },
-                    ].map((loc, i) => (
-                      <div key={i} className="group relative rounded-[3rem] overflow-hidden h-115 shadow-2xl cursor-pointer" onClick={() => handleBranchSwitch(loc.branch)}>
-                        <img src={loc.img} alt={loc.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" decoding="async" />
-                        <div className={`absolute inset-0 bg-linear-to-t ${loc.color}`}></div>
-                        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/35 to-transparent" />
-                        <div className="absolute inset-0 p-8 md:p-10 flex flex-col justify-end">
-                          <div className="bg-black/45 backdrop-blur-md border border-white/20 rounded-2xl p-5 md:p-6">
-                            <span className="text-white! text-[10px] font-black uppercase tracking-[0.26em] mb-2 block">{loc.subtitle}</span>
-                            <h3 className="font-display text-3xl md:text-4xl font-bold text-white! mb-2 leading-tight uppercase">Glads Apartment {loc.name}</h3>
-                            <p className="text-white! text-sm mb-4">{loc.address}</p>
-                            <span className="inline-block bg-white/20 backdrop-blur-sm text-white! text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-full border border-white/30">{loc.tag}</span>
-                            <div className="mt-4">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (activeBranch !== loc.branch) handleBranchSwitch(loc.branch);
-                                }}
-                                className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.16em] border transition-all ${activeBranch === loc.branch
-                                  ? 'bg-white/15 text-white! border-white/40 cursor-default'
-                                  : 'bg-burgundy text-white! border-burgundy hover:brightness-110'
-                                  }`}
-                              >
-                                {activeBranch === loc.branch ? 'Current Branch' : 'Switch to this branch'}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-
-              {/* Glimpse Inside */}
-              <section className="reveal py-24 px-6 bg-white dark:bg-black overflow-hidden">
-                <div className="max-w-7xl mx-auto">
-                  <div className="text-center mb-16">
-                    <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-4 block">Visual Journey</span>
-                    <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white">A Glimpse Inside.</h2>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {data.gallery.slice(0, 6).map((img, i) => (
-                      <div
-                        key={i}
-                        className={`relative rounded-4xl overflow-hidden cursor-pointer group shadow-xl ${i === 0 ? 'md:col-span-2 md:row-span-2 h-64 md:h-full' : 'h-48 md:h-56'}`}
-                        onClick={() => openImmersive(img, `${activeBranch} - Highlight ${i + 1}`)}
-                        onMouseEnter={() => setCursorLabel('View')}
-                        onMouseLeave={() => setCursorLabel(null)}
-                      >
-                        <img src={img} alt={`Highlight ${i + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" decoding="async" />
-                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                          <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-
-              {/* Special Offers */}
-              <section className="reveal py-20 px-6 bg-neutral-50 dark:bg-neutral-950">
-                <div className="max-w-7xl mx-auto">
-                  <div className="flex items-end justify-between gap-4 mb-10">
-                    <div>
-                      <span className="text-burgundy font-black tracking-[0.5em] uppercase text-[11px] block mb-3">Special Offers</span>
-                      <h3 className="text-4xl md:text-6xl font-black tracking-tight">Limited Deals.</h3>
-                    </div>
-                    <button onClick={() => setCurrentTab('Rooms')} className="border border-neutral-300 dark:border-neutral-700 px-5 py-3 text-[10px] font-black uppercase tracking-[0.14em] hover:border-burgundy hover:text-burgundy transition-colors">
-                      Check Availability
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {[
-                      { title: 'Weekend Escape', detail: 'Save 15% on two-night stays at Ndera and Kanombe.', cta: 'Book Weekend' },
-                      { title: 'Family Stay Package', detail: 'Complimentary breakfast and pool access for family bookings.', cta: 'View Package' },
-                      { title: 'Business Traveler Rate', detail: 'Preferential weekday rates with fast check-in and workspace setup.', cta: 'Apply Offer' },
-                    ].map((offer, i) => (
-                      <article key={i} className="bg-white dark:bg-neutral-900/40 border border-neutral-200 dark:border-white/10 p-7 rounded-4xl shadow-lg hover:shadow-xl transition-all">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-burgundy mb-3">Offer {String(i + 1).padStart(2, '0')}</p>
-                        <h4 className="text-2xl font-black mb-3">{offer.title}</h4>
-                        <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-6">{offer.detail}</p>
-                        <button className="text-[10px] font-black uppercase tracking-[0.12em] border border-neutral-300 dark:border-neutral-700 px-4 py-2 hover:border-burgundy hover:text-burgundy transition-colors">
-                          {offer.cta}
-                        </button>
-                      </article>
-                    ))}
-                  </div>
-                </div>
-              </section>
-
-              {/* Testimonials */}
-              <section className="reveal max-w-7xl mx-auto px-6 py-20">
-                <div className="text-center mb-16">
-                  <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-6 block">Guest Experiences</span>
-                  <h3 className="text-5xl md:text-7xl font-black uppercase tracking-tighter">What They Say.</h3>
-                </div>
-                <div className="relative">
-                  <div className="overflow-hidden">
-                    <div className="testimonials-slider flex gap-6 w-max py-1">
-                      {[...testimonials, ...testimonials].map((item, i) => (
-                        <article key={i} className="w-[86vw] md:w-110 lg:w-105 bg-neutral-50 dark:bg-neutral-900/40 p-8 md:p-10 border border-neutral-100 dark:border-white/5 rounded-[2.2rem] shadow-lg">
-                          <div className="flex gap-1 mb-5">
-                            {[...Array(5)].map((_, j) => (
-                              <svg key={j} className="w-5 h-5 text-burgundy" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                            ))}
-                          </div>
-                          <p className="text-base text-neutral-700 dark:text-neutral-300 mb-8 leading-relaxed">{item.quote}</p>
-                          <div className="flex items-center gap-4">
-                            <div className="w-11 h-11 rounded-full bg-burgundy/10 flex items-center justify-center">
-                              <span className="font-black text-burgundy text-sm">{item.initials}</span>
-                            </div>
-                            <div>
-                              <p className="font-bold text-sm">{item.name}</p>
-                              <p className="text-xs text-neutral-500">{item.role}</p>
-                            </div>
-                          </div>
-                        </article>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* News */}
-              <section className="reveal py-20 px-6 bg-white dark:bg-black">
-                <div className="max-w-7xl mx-auto">
-                  <div className="text-center mb-12">
-                    <span className="text-burgundy font-black tracking-[0.5em] uppercase text-[11px] block mb-3">News</span>
-                    <h3 className="text-4xl md:text-6xl font-black tracking-tight">Latest Updates.</h3>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {(mappedNews.length > 0 ? mappedNews : [
-                      { title: 'New Dining Menu Launch', text: 'Our updated food menu now includes expanded local favorites and chef specials.', image: '/food.jpeg' },
-                      { title: 'Wellness Program Upgrade', text: 'Spa and fitness sessions now include structured weekly wellness routines.', image: '/hero.jpeg' },
-                      { title: 'Conference Space Expansion', text: 'Kanombe branch adds enhanced event facilities for corporate bookings.', image: '/OKK_5908-1-720x520.jpg.jpeg' },
-                    ]).map((news, i) => (
-                      <article key={i} className="border border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-neutral-900/30 rounded-4xl overflow-hidden shadow-md hover:shadow-xl transition-all">
-                        <div className="h-44 relative">
-                          <img src={news.image} alt={news.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                          <div className="absolute inset-0 bg-linear-to-t from-black/55 to-black/10" />
-                        </div>
-                        <div className="p-7">
-                          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 mb-3">Update</p>
-                          <h4 className="text-2xl font-black mb-3">{news.title}</h4>
-                          <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">{news.text}</p>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                </div>
-              </section>
-
-              {/* Contact Us */}
-              <section className="reveal max-w-5xl mx-auto px-6 py-20">
-                <div className="bg-linear-to-br from-burgundy to-red-900 rounded-[4rem] p-16 text-center text-white shadow-2xl">
-                  <h3 className="font-display text-5xl md:text-6xl font-bold tracking-tight mb-6">Contact Us.</h3>
-                  <p className="text-lg text-white/80 mb-10 max-w-2xl mx-auto">Talk to our team for room availability, menu details, services, and special requests.</p>
-                  <div className="flex flex-wrap gap-6 justify-center">
-                    <button onClick={() => setCurrentTab('Contact')} className="bg-white text-burgundy px-12 py-5 rounded-full text-sm font-black uppercase tracking-wider hover:scale-105 transition-all shadow-xl">
-                      Contact Us
-                    </button>
-                    <button onClick={() => setCurrentTab('Rooms')} className="border-2 border-white text-white px-12 py-5 rounded-full text-sm font-black uppercase tracking-wider hover:bg-white hover:text-burgundy transition-all">
-                      View Suites
-                    </button>
-                  </div>
-                </div>
-              </section>
-            </div>
+            <HomeSection
+              data={data}
+              activeBranch={activeBranch}
+              setCurrentTab={setCurrentTab}
+              handleBranchSwitch={handleBranchSwitch}
+              openImmersive={openImmersive}
+              setCursorLabel={setCursorLabel}
+              testimonials={testimonials}
+              mappedNews={mappedNews}
+            />
           )}
           {currentTab === 'About' && (
             <AboutSection
@@ -2885,63 +2599,7 @@ const App: React.FC = () => {
           )}
 
           {currentTab === 'Rooms' && (
-            <section className="reveal max-w-7xl mx-auto px-6 py-20">
-              <div className="mb-24">
-                <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-6 block">Our Collection</span>
-                <h2 className="text-7xl md:text-9xl font-black uppercase tracking-tighter mb-10 leading-[0.8]">Master <br /> Suites.</h2>
-                <p className="text-neutral-400 text-xl max-w-xl font-light">Hand-picked residences at {activeBranch}. Built for those who appreciate the finer details of spatial design.</p>
-              </div>
-              {data.roomsLoading ? (
-                <LoadingScreen message="Loading rooms..." variant="section" />
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-                  {data.rooms.map((room) => (
-                    <div key={room.id} className="group flex flex-col h-full bg-neutral-50 dark:bg-neutral-900/40 rounded-[3rem] p-8 border border-neutral-100 dark:border-white/5 shadow-lg hover:shadow-2xl transition-all duration-700">
-                      <div
-                        className="relative aspect-[1.2/1] rounded-[2.5rem] overflow-hidden mb-8 shadow-xl cursor-none transition-transform duration-500 ease-out preserve-3d"
-                        onMouseEnter={() => setCursorLabel('View Suite')}
-                        onMouseLeave={(e) => {
-                          setCursorLabel(null);
-                          (e.currentTarget as HTMLElement).style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
-                        }}
-                        onMouseMove={(e) => {
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          const x = e.clientX - rect.left;
-                          const y = e.clientY - rect.top;
-                          const centerX = rect.width / 2;
-                          const centerY = rect.height / 2;
-                          const rotateX = (y - centerY) / 10;
-                          const rotateY = (centerX - x) / 10;
-                          (e.currentTarget as HTMLElement).style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-                        }}
-                      >
-                        <img src={room.image} alt={room.name} className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110" />
-                        <div className="absolute top-6 left-6 bg-burgundy/90 backdrop-blur-xl text-white px-5 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-xl animate-pulse-slow">${room.price} <span className="opacity-60">/ NT</span></div>
-                      </div>
-                      <h3 className="text-4xl font-sans italic mb-4 leading-none">{room.name}</h3>
-                      <p className="text-base text-neutral-400 font-light mb-8 grow leading-relaxed">{room.description}</p>
-                      <div className="flex flex-wrap gap-2 mb-8">
-                        {room.features.map(f => <span key={f} className="text-[9px] uppercase tracking-widest bg-white dark:bg-neutral-800 px-3 py-1.5 rounded-lg text-neutral-500 font-bold border border-neutral-100 dark:border-white/5">{f}</span>)}
-                      </div>
-                      <div className="flex gap-4">
-                        <button onClick={(e) => { e.stopPropagation(); setSelectedRoomImage(null); setSelectedRoom(room); }} className="flex-1 py-4 rounded-3xl border border-neutral-200 dark:border-neutral-800 text-[10px] font-black uppercase tracking-widest hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all">View Details</button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            openRoomBooking(room);
-                          }}
-                          className="flex-1 py-4 rounded-3xl bg-black dark:bg-white text-white dark:text-black text-[10px] font-black uppercase tracking-widest hover:bg-burgundy dark:hover:bg-burgundy dark:hover:text-white transition-all shadow-xl"
-                        >
-                          Book Now
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
+            <RoomsSection data={data} activeBranch={activeBranch} setCurrentTab={setCurrentTab} show3DView={show3DView} setCursorLabel={setCursorLabel} openImmersive={openImmersive} openRoomBooking={openRoomBooking} setRotation={setRotation} setShow3DView={setShow3DView} start360Rotation={start360Rotation} />
           )}
 
           {currentTab === 'Services' && activeBranch !== Branch.KABEZA && (
@@ -3035,183 +2693,15 @@ const App: React.FC = () => {
           )}
 
           {currentTab === 'Gallery' && (
-            <section className="reveal max-w-full px-6 py-20">
-              <div className="max-w-7xl mx-auto mb-24 text-center">
-                <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-6 block">{data.fullName} Collection</span>
-                <h2 className="text-7xl md:text-9xl font-black uppercase tracking-tighter mb-10 leading-[0.8] bg-linear-to-r from-burgundy to-neutral-600 bg-clip-text text-transparent">Visual.</h2>
-                <p className="text-neutral-500 text-xl max-w-2xl mx-auto leading-relaxed">Every space tells a story. Explore our curated collection of moments, spaces, and experiences.</p>
-              </div>
-
-              {/* Enhanced Gallery Grid */}
-              <div className="max-w-8xl mx-auto px-6">
-                <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-8 space-y-8">
-                  {data.gallery.map((img, i) => (
-                    <div
-                      key={i}
-                      className="break-inside-avoid relative rounded-[2.5rem] overflow-hidden group cursor-none shadow-xl transition-all duration-700 hover:scale-[1.03] hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] bg-neutral-100 dark:bg-neutral-900 border border-black/5 dark:border-white/5"
-                      onClick={() => openImmersive(img, `${activeBranch} Gallery ${i + 1}`)}
-                      onMouseEnter={() => setCursorLabel('Enlarge')}
-                      onMouseLeave={() => setCursorLabel(null)}
-                    >
-                      <img
-                        src={img}
-                        alt={`Gallery ${i + 1}`}
-                        className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-[1.2s] group-hover:scale-110"
-                        loading="lazy"
-                      />
-
-                      {/* Overlay */}
-                      <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
-                        <div className="absolute bottom-0 left-0 right-0 p-6">
-                          <div className="text-white space-y-2">
-                            <div className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">
-                              {activeBranch} Collection
-                            </div>
-                            <div className="text-lg font-sans italic">
-                              Perspective <Counter target={i + 1} />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Hover Effect */}
-                      <div className="absolute inset-0 bg-burgundy/20 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center backdrop-blur-[1px]">
-                        <div className="transform scale-75 group-hover:scale-100 transition-all duration-300">
-                          <div className="text-white text-center">
-                            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
-                              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
-                              </svg>
-                            </div>
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em] border border-white/30 px-4 py-2 rounded-full backdrop-blur-sm">
-                              View Full
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Corner Badge */}
-                      <div className="absolute top-4 right-4 bg-burgundy/90 text-white px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm">
-                        #{String(i + 1).padStart(2, '0')}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Gallery Stats */}
-              <div className="max-w-4xl mx-auto mt-24 text-center">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                  <div className="group hover:scale-105 transition-all duration-300">
-                    <div className="text-4xl md:text-6xl font-black text-burgundy mb-4">{data.gallery.length}</div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-neutral-400">Curated Images</div>
-                  </div>
-                  <div className="group hover:scale-105 transition-all duration-300">
-                    <div className="text-4xl md:text-6xl font-black text-burgundy mb-4">{data.services.length}</div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-neutral-400">Premium Services</div>
-                  </div>
-                  <div className="group hover:scale-105 transition-all duration-300">
-                    <div className="text-4xl md:text-6xl font-black text-burgundy mb-4">{data.rooms.length}</div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-neutral-400">Exclusive Suites</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Call to Action */}
-              <div className="max-w-4xl mx-auto mt-24 text-center">
-                <div className="bg-linear-to-r from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800 p-12 rounded-[3rem] border border-neutral-200 dark:border-neutral-700">
-                  <h3 className="text-3xl md:text-5xl font-sans italic mb-6">Experience Beyond Images</h3>
-                  <p className="text-neutral-500 text-lg mb-8 max-w-2xl mx-auto">
-                    Every photograph captures a moment, but nothing compares to experiencing {activeBranch} in person.
-                  </p>
-                  <div className="flex flex-wrap gap-6 justify-center">
-                    <button
-                      onClick={() => setCurrentTab('Rooms')}
-                      className="bg-burgundy text-white px-8 py-4 rounded-full text-sm font-bold hover:scale-105 transition-all shadow-lg hover:shadow-xl"
-                    >
-                      Explore Suites
-                    </button>
-                    <button
-                      onClick={() => setCurrentTab('Services')}
-                      className="border border-burgundy text-burgundy px-8 py-4 rounded-full text-sm font-bold hover:bg-burgundy hover:text-white transition-all"
-                    >
-                      Discover Services
-                    </button>
-                    <button
-                      onClick={() => setCurrentTab('Contact')}
-                      className="bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200 px-8 py-4 rounded-full text-sm font-bold hover:scale-105 transition-all"
-                    >
-                      Book Now
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </section>
+            <GallerySection data={data} activeBranch={activeBranch} setCursorLabel={setCursorLabel} openImmersive={openImmersive} setCurrentTab={setCurrentTab} />
           )}
 
           {currentTab === 'Contact' && (
-            <section className="reveal max-w-7xl mx-auto px-6 py-20">
-              <div className="text-center mb-24">
-                <span className="text-burgundy font-black tracking-[0.6em] uppercase text-[11px] mb-6 block">Our Network</span>
-                <h2 className="text-7xl md:text-[8rem] font-black uppercase tracking-tighter leading-[0.8] mb-8">Reach Out.</h2>
-                <p className="text-xl text-neutral-500 font-light max-w-2xl mx-auto">From Ndera to Kanombe, our concierge team is ready to assist you across all our locations.</p>
-              </div>
+            <ContactSection activeBranch={activeBranch} data={data} />
+          )}
 
-              {/* Branch Contacts Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-32">
-                {Object.values(BRANCH_DATA).map((branch) => (
-                  <div key={branch.id} className="bg-neutral-50 dark:bg-neutral-900/40 p-12 rounded-[3.5rem] border border-neutral-100 dark:border-white/5 shadow-xl group hover:scale-[1.02] transition-all duration-500">
-                    <div className="mb-8">
-                      <span className="text-burgundy font-black tracking-[0.4em] uppercase text-[10px] block mb-2">{branch.id}</span>
-                      <h3 className="text-2xl font-black uppercase tracking-tight">{branch.fullName.split(/[–-]/)[1] || branch.fullName}</h3>
-                    </div>
-
-                    <div className="space-y-6">
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">Location</p>
-                        <p className="text-sm font-light text-neutral-600 dark:text-neutral-400">{branch.contact.address}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">Hotline</p>
-                        <a href={`tel:${branch.contact.phone}`} className="text-lg font-bold hover:text-burgundy transition-colors">{branch.contact.phone}</a>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">Email</p>
-                        <a href={`mailto:${branch.contact.email}`} className="text-sm font-medium text-burgundy underline underline-offset-4">{branch.contact.email}</a>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-24 items-start">
-                <div className="lg:col-span-12 bg-neutral-50 dark:bg-neutral-900/40 p-12 md:p-24 rounded-[4rem] h-fit shadow-3xl border border-neutral-100 dark:border-white/5 relative overflow-hidden group">
-                  <div className="max-w-3xl mx-auto">
-                    <div className="text-center mb-16">
-                      <h3 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-4">Inquiry Form</h3>
-                      <p className="text-neutral-500">Send a direct message to our central concierge desk</p>
-                    </div>
-                    <form className="space-y-12" onSubmit={(e) => e.preventDefault()}>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                        <div className="space-y-4">
-                          <label className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30">Identity</label>
-                          <input placeholder="Your Name" type="text" className="w-full bg-transparent border-b border-neutral-200 dark:border-neutral-800 py-4 outline-none focus:border-burgundy transition-all text-xl font-light" />
-                        </div>
-                        <div className="space-y-4">
-                          <label className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30">Contact</label>
-                          <input placeholder="Your Email" type="email" className="w-full bg-transparent border-b border-neutral-200 dark:border-neutral-800 py-4 outline-none focus:border-burgundy transition-all text-xl font-light" />
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30">Message</label>
-                        <textarea placeholder="How can we assist you today?" rows={1} className="w-full bg-transparent border-b border-neutral-200 dark:border-neutral-800 py-4 outline-none focus:border-burgundy transition-all text-xl font-light resize-none" />
-                      </div>
-                      <button type="submit" className="w-full bg-burgundy text-white py-8 rounded-4xl text-[11px] font-black tracking-[0.5em] uppercase hover:brightness-125 transition-all shadow-xl active:scale-[0.98]">Send Message</button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </section>
+          {currentTab === 'Feedback' && (
+            <FeedbackSection />
           )}
 
           {currentTab === 'Admin' && authUser && (
@@ -4208,6 +3698,7 @@ const App: React.FC = () => {
                   <button onClick={() => setLegalDoc('privacy')} className="block text-white/90! hover:text-white! transition-all text-xs font-bold hover:translate-x-1 text-left">Privacy Policy</button>
                   <button onClick={() => setLegalDoc('terms')} className="block text-white/90! hover:text-white! transition-all text-xs font-bold hover:translate-x-1 text-left">Terms of Service</button>
                   <button onClick={() => setLegalDoc('booking')} className="block text-white/90! hover:text-white! transition-all text-xs font-bold hover:translate-x-1 text-left">Booking Terms</button>
+                  <button onClick={() => setCurrentTab('Feedback')} className="block text-white/90! hover:text-white! transition-all text-xs font-bold hover:translate-x-1 text-left">Feedback</button>
                 </div>
               </div>
             </div>
@@ -4394,10 +3885,4 @@ const App: React.FC = () => {
     </div>
   );
 };
-
 export default App;
-
-
-
-
-

@@ -67,7 +67,7 @@ describe('RoomsController', () => {
 
       mockRoomsService.create.mockResolvedValue(mockRoom);
 
-      const result = await controller.create(branchId, createDto);
+      const result = await controller.create(branchId, createDto, {} as any);
 
       expect(result).toEqual(mockRoom);
       expect(mockRoomsService.create).toHaveBeenCalledWith(branchId, createDto);
@@ -149,7 +149,7 @@ describe('RoomsController', () => {
 
       mockRoomsService.update.mockResolvedValue(mockUpdatedRoom);
 
-      const result = await controller.update(roomId, updateDto);
+      const result = await controller.update(roomId, updateDto, {} as any);
 
       expect(result).toEqual(mockUpdatedRoom);
       expect(mockRoomsService.update).toHaveBeenCalledWith(roomId, updateDto);
@@ -163,7 +163,7 @@ describe('RoomsController', () => {
 
       mockRoomsService.remove.mockResolvedValue(mockResponse);
 
-      const result = await controller.remove(roomId);
+      const result = await controller.remove(roomId, {} as any);
 
       expect(result).toEqual(mockResponse);
       expect(mockRoomsService.remove).toHaveBeenCalledWith(roomId);
@@ -182,7 +182,7 @@ describe('RoomsController', () => {
 
       mockRoomsService.getRoomStats.mockResolvedValue(mockStats);
 
-      const result = await controller.getRoomStats(branchId);
+      const result = await controller.getRoomStats(branchId, {} as any);
 
       expect(result).toEqual(mockStats);
       expect(mockRoomsService.getRoomStats).toHaveBeenCalledWith(branchId);
