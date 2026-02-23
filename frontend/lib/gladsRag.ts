@@ -33,7 +33,7 @@ const SECTION_HEADER_REGEX = /^##\s+(.+)\n([\s\S]*?)(?=^##\s+|\s*$)/gm;
 
 function resolveKnowledgePath(): string {
   const candidates = [
-    join(process.cwd(), 'data', 'glads-info'),
+    join(process.cwd(), 'data', 'glads-info.md'),
     join(process.cwd(), 'frontend', 'data', 'glads-info'),
   ];
 

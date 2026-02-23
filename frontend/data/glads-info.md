@@ -106,6 +106,7 @@ Purpose: Canonical data source for branch-aware assistant answers.
   - Meeting Rooms
   - Salon (Men and Women)
   - Supermarket
+  - Office rentals
 - Not available in Ndera:
   - Milkzone
   - Kitchen as a separate service

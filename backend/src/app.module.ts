@@ -18,6 +18,10 @@ import { RoomAvailabilityModule } from './room-availability/room-availability.mo
 import { GymSubscriptionsModule } from './gym-subscriptions/gym-subscriptions.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { SystemSettingsModule } from './system-settings/system-settings.module';
+import { TestimonialsModule } from './testimonials/testimonials.module';
+import { FeedbackModule } from './feedback/feedback.module';
+import { SpecialOffersModule } from './special-offers/special-offers.module';
+import { ContactModule } from './contact/contact.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -45,6 +49,10 @@ import { AppService } from './app.service';
     AuditLogsModule,
     SystemSettingsModule,
     UsersModule,
+    TestimonialsModule,
+    FeedbackModule,
+    SpecialOffersModule,
+    ContactModule,
   ],
   controllers: [AppController],
   providers: [AppService],

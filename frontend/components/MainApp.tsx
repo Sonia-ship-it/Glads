@@ -59,8 +59,6 @@ const App: React.FC = () => {
     }
     return false;
   });
-  const [activeBranch, setActiveBranch] = useState<Branch>(Branch.NDERA);
-  const [isDark, setIsDark] = useState(false);
 
   const [currentTab, setCurrentTab] = useState<'Home' | 'About' | 'Rooms' | 'Services' | 'Gallery' | 'Contact' | 'Admin'>('Home');
   const [selectedRoom, setSelectedRoom] = useState<RoomType | null>(null);

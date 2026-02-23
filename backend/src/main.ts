@@ -47,6 +47,10 @@ async function bootstrap() {
     .addTag('Payments', 'Payment processing endpoints')
     .addTag('Analytics', 'Analytics and reporting endpoints')
     .addTag('Users', 'User management endpoints')
+    .addTag('Testimonials', 'Guest testimonials endpoints')
+    .addTag('Feedback', 'Guest feedback endpoints')
+    .addTag('Special Offers', 'Promotions and special offers endpoints')
+    .addTag('Contact', 'Contact and inquiry endpoints')
     .addBearerAuth(
       {
         type: 'http',
