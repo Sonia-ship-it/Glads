@@ -30,7 +30,10 @@ export class ServicesController {
   @Post(':branchId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Create a new service', description: 'Create a new service (spa, gym, etc.) in a branch. Admin only.' })
+  @ApiOperation({
+    summary: 'Create a new service',
+    description: 'Create a new service (spa, gym, etc.) in a branch. Admin only.',
+  })
   @ApiParam({ name: 'branchId', description: 'Branch ID', example: 'uuid-branch-id' })
   @ApiBody({ type: CreateServiceDto })
   @ApiResponse({ status: 201, description: 'Service created successfully' })
@@ -40,16 +43,26 @@ export class ServicesController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all services', description: 'Retrieve all active services, optionally filtered by branch and category' })
+  @ApiOperation({
+    summary: 'Get all services',
+    description: 'Retrieve all active services, optionally filtered by branch and category',
+  })
   @ApiQuery({ name: 'branchId', required: false, description: 'Filter by branch ID' })
-  @ApiQuery({ name: 'category', required: false, description: 'Filter by category (spa, gym, restaurant, laundry, transportation)' })
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    description: 'Filter by category (spa, gym, restaurant, laundry, transportation)',
+  })
   @ApiResponse({ status: 200, description: 'Services retrieved successfully' })
   findAll(@Query('branchId') branchId?: string, @Query('category') category?: string) {
     return this.servicesService.findAll(branchId, category);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get service by ID', description: 'Retrieve detailed information about a specific service' })
+  @ApiOperation({
+    summary: 'Get service by ID',
+    description: 'Retrieve detailed information about a specific service',
+  })
   @ApiParam({ name: 'id', description: 'Service ID', example: 'uuid-service-id' })
   @ApiResponse({ status: 200, description: 'Service retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Service not found' })
@@ -60,7 +73,10 @@ export class ServicesController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Update service', description: 'Update service details. Staff/Admin only.' })
+  @ApiOperation({
+    summary: 'Update service',
+    description: 'Update service details. Staff/Admin only.',
+  })
   @ApiParam({ name: 'id', description: 'Service ID', example: 'uuid-service-id' })
   @ApiBody({ type: UpdateServiceDto })
   @ApiResponse({ status: 200, description: 'Service updated successfully' })

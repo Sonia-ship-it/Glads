@@ -8,7 +8,7 @@ import { DUMMY_BRANCH_REVENUE, DUMMY_BOOKINGS, DUMMY_SERVICE_BOOKINGS, DUMMY_SER
 interface AdminSectionProps {
     adminRole: AdminRole;
     setAdminRole: (role: AdminRole) => void;
-    adminSection: 'dashboard' | 'bookings' | 'services' | 'reports';
+    adminSection: 'dashboard' | 'bookings' | 'services' | 'operations' | 'profile';
     setAdminSection: (sec: any) => void;
     activeBranch: Branch;
     services: any[];
@@ -44,7 +44,15 @@ export const AdminSection: React.FC<AdminSectionProps> = ({
             </div>
 
             {adminSection === 'dashboard' && (
-                <AdminDashboard role={adminRole} branch={activeBranch} branchRevenues={DUMMY_BRANCH_REVENUE} roomBookings={DUMMY_BOOKINGS} serviceBookings={DUMMY_SERVICE_BOOKINGS} />
+                <AdminDashboard
+                    role={adminRole}
+                    branchId={activeBranch}
+                    branch={activeBranch}
+                    branchOptions={Object.values(Branch).map((b) => ({ id: b, name: b }))}
+                    branchRevenues={DUMMY_BRANCH_REVENUE}
+                    roomBookings={DUMMY_BOOKINGS}
+                    serviceBookings={DUMMY_SERVICE_BOOKINGS}
+                />
             )}
 
             {adminSection === 'bookings' && (
@@ -52,7 +60,23 @@ export const AdminSection: React.FC<AdminSectionProps> = ({
             )}
 
             {adminSection === 'services' && (
-                <ServiceManagement branch={activeBranch} services={services} isSuperAdmin={adminRole === 'Super Admin'} bookings={DUMMY_SERVICE_BOOKINGS} revenue={DUMMY_SERVICE_REVENUE} />
+                <ServiceManagement
+                    branch={activeBranch}
+                    services={services}
+                    isSuperAdmin={adminRole === 'Super Admin'}
+                    bookings={DUMMY_SERVICE_BOOKINGS}
+                    revenue={DUMMY_SERVICE_REVENUE}
+                    createForm={{}}
+                    setCreateForm={() => { }}
+                    onSubmitCreate={(e) => e.preventDefault()}
+                    editForm={null}
+                    setEditForm={() => { }}
+                    onSubmitUpdate={(e) => e.preventDefault()}
+                    onDelete={() => { }}
+                    onIconUpload={() => { }}
+                    onEditIconUpload={() => { }}
+                    loading={false}
+                />
             )}
         </section>
     );

@@ -35,7 +35,10 @@ export class CreateRoomDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ example: 'Spacious suite with king bed and city view', description: 'Room description' })
+  @ApiProperty({
+    example: 'Spacious suite with king bed and city view',
+    description: 'Room description',
+  })
   @IsString()
   description: string;
 
@@ -195,6 +198,10 @@ export class SearchAvailableRoomsDto {
   minOccupancy?: number;
 
   // Aliases for compatibility with services
-  get checkIn() { return this.checkInDate; }
-  get checkOut() { return this.checkOutDate; }
+  get checkIn() {
+    return this.checkInDate;
+  }
+  get checkOut() {
+    return this.checkOutDate;
+  }
 }

@@ -56,12 +56,16 @@ export class CreateBookingDto {
   @Min(1)
   numberOfGuests: number;
 
-  @ApiProperty({ example: 300.00, description: 'Total booking amount' })
+  @ApiProperty({ example: 300.0, description: 'Total booking amount' })
   @IsNumber()
   @Min(0)
   totalAmount: number;
 
-  @ApiProperty({ example: 'Late check-in expected', description: 'Special requests', required: false })
+  @ApiProperty({
+    example: 'Late check-in expected',
+    description: 'Special requests',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   specialRequests?: string;
@@ -76,12 +80,20 @@ export class CreateBookingDto {
 }
 
 export class UpdateBookingDto {
-  @ApiProperty({ example: '2026-02-21T14:00:00Z', description: 'New check-in date', required: false })
+  @ApiProperty({
+    example: '2026-02-21T14:00:00Z',
+    description: 'New check-in date',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   checkInDate?: string;
 
-  @ApiProperty({ example: '2026-02-23T11:00:00Z', description: 'New check-out date', required: false })
+  @ApiProperty({
+    example: '2026-02-23T11:00:00Z',
+    description: 'New check-out date',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   checkOutDate?: string;
@@ -116,7 +128,7 @@ export class UpdateBookingDto {
   @IsEnum(['pending', 'paid', 'failed', 'refunded'])
   paymentStatus?: string;
 
-  @ApiProperty({ example: 150.00, description: 'Total amount', required: false })
+  @ApiProperty({ example: 150.0, description: 'Total amount', required: false })
   @IsOptional()
   @IsNumber()
   totalAmount?: number;
@@ -141,12 +153,20 @@ export class CheckAvailabilityDto {
   checkOutDate: string;
 
   // Aliases for compatibility
-  @ApiProperty({ example: '2026-02-20T14:00:00Z', description: 'Check-in date (alias)', required: false })
+  @ApiProperty({
+    example: '2026-02-20T14:00:00Z',
+    description: 'Check-in date (alias)',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   checkIn?: string;
 
-  @ApiProperty({ example: '2026-02-22T11:00:00Z', description: 'Check-out date (alias)', required: false })
+  @ApiProperty({
+    example: '2026-02-22T11:00:00Z',
+    description: 'Check-out date (alias)',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   checkOut?: string;
@@ -182,7 +202,7 @@ export class OtaManualBookingDto {
   @Min(1)
   numberOfGuests: number;
 
-  @ApiProperty({ example: 300.00, description: 'Total amount' })
+  @ApiProperty({ example: 300.0, description: 'Total amount' })
   @IsNumber()
   @Min(0)
   totalAmount: number;

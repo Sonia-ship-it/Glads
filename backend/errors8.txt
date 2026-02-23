@@ -1,0 +1,4 @@
+﻿src/rooms/rooms.controller.spec.ts(70,39): error TS2554: Expected 3 arguments, but got 2.
+src/rooms/rooms.controller.spec.ts(152,39): error TS2554: Expected 3 arguments, but got 2.
+src/rooms/rooms.controller.spec.ts(166,39): error TS2554: Expected 2 arguments, but got 1.
+src/rooms/rooms.controller.spec.ts(185,39): error TS2554: Expected 2 arguments, but got 1.

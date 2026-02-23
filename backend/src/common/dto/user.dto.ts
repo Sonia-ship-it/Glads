@@ -44,7 +44,11 @@ export class UpdateUserDto {
   @IsString()
   phone?: string;
 
-  @ApiProperty({ example: 'https://example.com/profile.jpg', description: 'Profile picture URL', required: false })
+  @ApiProperty({
+    example: 'https://example.com/profile.jpg',
+    description: 'Profile picture URL',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   profilePicture?: string;
@@ -73,7 +77,11 @@ export class ChangeUserRoleDto {
   @IsEnum(['super-admin', 'super-manager', 'branch-manager', 'receptionist'])
   newRole: string;
 
-  @ApiProperty({ example: 'uuid-branch-id', description: 'Branch ID (required for branch-specific roles)', required: false })
+  @ApiProperty({
+    example: 'uuid-branch-id',
+    description: 'Branch ID (required for branch-specific roles)',
+    required: false,
+  })
   @IsOptional()
   @IsUUID()
   branchId?: string;

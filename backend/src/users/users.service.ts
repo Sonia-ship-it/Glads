@@ -8,7 +8,7 @@ export class UsersService {
 
   async create(createDto: CreateUserDto) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     // Create user in Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: createDto.email,
@@ -42,11 +42,8 @@ export class UsersService {
 
   async findAll(role?: string, branchId?: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
-    let query = supabase
-      .from('users')
-      .select('*, branches(name)')
-      .eq('is_active', true);
+
+    let query = supabase.from('users').select('*, branches(name)').eq('is_active', true);
 
     if (role) {
       query = query.eq('role', role);
@@ -63,7 +60,7 @@ export class UsersService {
 
   async findOne(id: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('users')
       .select('*, branches(name, address)')
@@ -76,7 +73,7 @@ export class UsersService {
 
   async update(id: string, updateDto: UpdateUserDto) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const updateData: any = {};
     if (updateDto.fullName) updateData.full_name = updateDto.fullName;
     if (updateDto.phone) updateData.phone = updateDto.phone;
@@ -96,7 +93,7 @@ export class UsersService {
 
   async changeRole(changeRoleDto: ChangeUserRoleDto) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('users')
       .update({ role: changeRoleDto.newRole })
@@ -116,7 +113,7 @@ export class UsersService {
 
   async deactivate(id: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('users')
       .update({ is_active: false })
@@ -130,7 +127,7 @@ export class UsersService {
 
   async activate(id: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('users')
       .update({ is_active: true })
@@ -142,4 +139,3 @@ export class UsersService {
     return data;
   }
 }
-

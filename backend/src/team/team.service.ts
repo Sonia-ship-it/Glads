@@ -8,7 +8,7 @@ export class TeamService {
 
   async create(branchId: string, createDto: CreateTeamMemberDto) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('team_members')
       .insert({
@@ -31,11 +31,8 @@ export class TeamService {
 
   async findAll(branchId?: string, department?: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
-    let query = supabase
-      .from('team_members')
-      .select('*, branches(name)')
-      .eq('is_active', true);
+
+    let query = supabase.from('team_members').select('*, branches(name)').eq('is_active', true);
 
     if (branchId) {
       query = query.eq('branch_id', branchId);
@@ -52,7 +49,7 @@ export class TeamService {
 
   async findOne(id: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('team_members')
       .select('*, branches(name, address)')
@@ -67,7 +64,7 @@ export class TeamService {
 
   async update(id: string, updateDto: UpdateTeamMemberDto) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const updateData: any = {};
     if (updateDto.fullName) updateData.full_name = updateDto.fullName;
     if (updateDto.position) updateData.position = updateDto.position;
@@ -94,11 +91,8 @@ export class TeamService {
 
   async remove(id: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
-    const { error } = await supabase
-      .from('team_members')
-      .update({ is_active: false })
-      .eq('id', id);
+
+    const { error } = await supabase.from('team_members').update({ is_active: false }).eq('id', id);
 
     if (error) throw new Error(`Failed to delete team member: ${error.message}`);
     return { message: 'Team member deleted successfully' };

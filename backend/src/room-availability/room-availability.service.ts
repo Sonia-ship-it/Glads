@@ -99,10 +99,7 @@ export class RoomAvailabilityService {
   async remove(id: string) {
     const supabase = this.supabaseService.getAdminClient();
 
-    const { error } = await supabase
-      .from('room_availability')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('room_availability').delete().eq('id', id);
 
     if (error) throw new Error(`Failed to delete availability: ${error.message}`);
     return { message: 'Room availability deleted successfully' };

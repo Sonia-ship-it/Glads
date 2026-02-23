@@ -15,9 +15,17 @@ export class RoomsService {
     return normalized;
   }
 
-  async create(branchId: string, createRoomDto: CreateRoomDto) {
+  async create(branchId: string, createRoomDto: CreateRoomDto, user: any) {
+    // Branch managers can only create rooms for their own branch
+    const userRole = user.role || user.user_metadata?.role;
+    const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
+
+    if (userRole === 'branch-manager' && branchId !== userBranchId) {
+      throw new Error('Forbidden: Branch managers can only create rooms for their assigned branch');
+    }
+
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('rooms')
       .insert({
@@ -44,15 +52,20 @@ export class RoomsService {
     return data;
   }
 
-  async findAll(branchId?: string) {
+  async findAll(branchId?: string, user?: any) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     let query = supabase
       .from('rooms')
       .select('*, branches(name, coordinates)')
       .eq('is_active', true);
 
-    if (branchId) {
+    const userRole = user?.role || user?.user_metadata?.role;
+    const userBranchId = user?.branchId || user?.branch_id || user?.user_metadata?.branchId;
+
+    if (userRole === 'branch-manager' || userRole === 'receptionist') {
+      query = query.eq('branch_id', userBranchId);
+    } else if (branchId) {
       query = query.eq('branch_id', branchId);
     }
 
@@ -64,7 +77,7 @@ export class RoomsService {
 
   async findOne(id: string) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('rooms')
       .select('*, branches(name, coordinates, address)')
@@ -77,7 +90,7 @@ export class RoomsService {
 
   async searchAvailable(searchDto: SearchAvailableRoomsDto) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
     // Get all rooms matching criteria
     let query = supabase
       .from('rooms')
@@ -107,31 +120,50 @@ export class RoomsService {
     // Check availability for date range if provided
     if (searchDto.checkIn && searchDto.checkOut) {
       const availableRooms = [];
-      
+
       for (const room of rooms) {
         const { data: bookings, error: bookingsError } = await supabase
           .from('bookings')
           .select('id')
           .eq('room_id', room.id)
           .in('status', ['confirmed', 'checked-in', 'checked_in'])
-          .or(`and(check_in_date.lte.${searchDto.checkOut},check_out_date.gte.${searchDto.checkIn})`);
+          .or(
+            `and(check_in_date.lte.${searchDto.checkOut},check_out_date.gte.${searchDto.checkIn})`,
+          );
 
         if (bookingsError) continue;
-        
+
         if (bookings.length === 0) {
           availableRooms.push(room);
         }
       }
-      
+
       return availableRooms;
     }
 
     return rooms;
   }
 
-  async update(id: string, updateRoomDto: UpdateRoomDto) {
+  async update(id: string, updateRoomDto: UpdateRoomDto, user: any) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
+    // Check permissions
+    const { data: existingRoom } = await supabase
+      .from('rooms')
+      .select('branch_id')
+      .eq('id', id)
+      .single();
+    if (existingRoom) {
+      const userRole = user.role || user.user_metadata?.role;
+      const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
+      if (
+        (userRole === 'branch-manager' || userRole === 'receptionist') &&
+        existingRoom.branch_id !== userBranchId
+      ) {
+        throw new Error('Forbidden: You can only update rooms in your assigned branch');
+      }
+    }
+
     const updateData: any = {};
     if (updateRoomDto.roomNumber) updateData.room_number = updateRoomDto.roomNumber;
     if (updateRoomDto.roomType) updateData.room_type = updateRoomDto.roomType;
@@ -157,13 +189,28 @@ export class RoomsService {
       .select()
       .single();
 
-    if (error || !data) throw new NotFoundException(`Failed to update room: ${error?.message || id}`);
+    if (error || !data)
+      throw new NotFoundException(`Failed to update room: ${error?.message || id}`);
     return data;
   }
 
-  async remove(id: string) {
+  async remove(id: string, user: any) {
     const supabase = this.supabaseService.getAdminClient();
-    
+
+    // Check permissions
+    const { data: existingRoom } = await supabase
+      .from('rooms')
+      .select('branch_id')
+      .eq('id', id)
+      .single();
+    if (existingRoom) {
+      const userRole = user.role || user.user_metadata?.role;
+      const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
+      if (userRole === 'branch-manager' && existingRoom.branch_id !== userBranchId) {
+        throw new Error('Forbidden: You can only delete rooms in your assigned branch');
+      }
+    }
+
     const { error } = await supabase
       .from('rooms')
       .update({ is_active: false, status: 'blocked' })
@@ -173,9 +220,19 @@ export class RoomsService {
     return { message: 'Room deleted successfully' };
   }
 
-  async getRoomStats(branchId: string) {
+  async getRoomStats(branchId: string, user: any) {
+    const userRole = user.role || user.user_metadata?.role;
+    const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
+
+    if (
+      (userRole === 'branch-manager' || userRole === 'receptionist') &&
+      branchId !== userBranchId
+    ) {
+      throw new Error('Forbidden: You can only view stats for your assigned branch');
+    }
+
     const supabase = this.supabaseService.getAdminClient();
-    
+
     const { data, error } = await supabase
       .from('rooms')
       .select('status, room_type')
@@ -186,10 +243,10 @@ export class RoomsService {
 
     const stats = {
       total: data.length,
-      available: data.filter(r => r.status === 'available').length,
-      occupied: data.filter(r => r.status === 'occupied').length,
-      maintenance: data.filter(r => r.status === 'maintenance').length,
-      blocked: data.filter(r => r.status === 'blocked').length,
+      available: data.filter((r) => r.status === 'available').length,
+      occupied: data.filter((r) => r.status === 'occupied').length,
+      maintenance: data.filter((r) => r.status === 'maintenance').length,
+      blocked: data.filter((r) => r.status === 'blocked').length,
       byType: data.reduce((acc, room) => {
         acc[room.room_type] = (acc[room.room_type] || 0) + 1;
         return acc;

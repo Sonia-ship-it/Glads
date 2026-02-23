@@ -30,7 +30,10 @@ export class TeamController {
   @Post(':branchId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Create team member', description: 'Add a new team member. Admin only.' })
+  @ApiOperation({
+    summary: 'Create team member',
+    description: 'Add a new team member. Admin only.',
+  })
   @ApiParam({ name: 'branchId', description: 'Branch ID', example: 'uuid-branch-id' })
   @ApiBody({ type: CreateTeamMemberDto })
   @ApiResponse({ status: 201, description: 'Team member created successfully' })
@@ -40,7 +43,10 @@ export class TeamController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all team members', description: 'Retrieve all active team members' })
+  @ApiOperation({
+    summary: 'Get all team members',
+    description: 'Retrieve all active team members',
+  })
   @ApiQuery({ name: 'branchId', required: false, description: 'Filter by branch ID' })
   @ApiQuery({ name: 'department', required: false, description: 'Filter by department' })
   @ApiResponse({ status: 200, description: 'Team members retrieved successfully' })
@@ -49,7 +55,10 @@ export class TeamController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get team member by ID', description: 'Retrieve detailed team member information' })
+  @ApiOperation({
+    summary: 'Get team member by ID',
+    description: 'Retrieve detailed team member information',
+  })
   @ApiParam({ name: 'id', description: 'Team member ID', example: 'uuid-member-id' })
   @ApiResponse({ status: 200, description: 'Team member retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Team member not found' })
@@ -60,7 +69,10 @@ export class TeamController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Update team member', description: 'Update team member details. Admin only.' })
+  @ApiOperation({
+    summary: 'Update team member',
+    description: 'Update team member details. Admin only.',
+  })
   @ApiParam({ name: 'id', description: 'Team member ID', example: 'uuid-member-id' })
   @ApiBody({ type: UpdateTeamMemberDto })
   @ApiResponse({ status: 200, description: 'Team member updated successfully' })
@@ -73,7 +85,10 @@ export class TeamController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Delete team member', description: 'Soft delete team member. Admin only.' })
+  @ApiOperation({
+    summary: 'Delete team member',
+    description: 'Soft delete team member. Admin only.',
+  })
   @ApiParam({ name: 'id', description: 'Team member ID', example: 'uuid-member-id' })
   @ApiResponse({ status: 200, description: 'Team member deleted successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })

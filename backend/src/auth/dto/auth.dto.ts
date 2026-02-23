@@ -98,7 +98,11 @@ export class ChangePasswordDto {
   @IsString()
   currentPassword: string;
 
-  @ApiProperty({ example: 'NewPassword123!', description: 'New password (min 8 characters)', minLength: 8 })
+  @ApiProperty({
+    example: 'NewPassword123!',
+    description: 'New password (min 8 characters)',
+    minLength: 8,
+  })
   @IsString()
   @MinLength(8)
   newPassword: string;
@@ -115,7 +119,11 @@ export class ResetPasswordDto {
   @IsString()
   token: string;
 
-  @ApiProperty({ example: 'NewPassword123!', description: 'New password (min 8 characters)', minLength: 8 })
+  @ApiProperty({
+    example: 'NewPassword123!',
+    description: 'New password (min 8 characters)',
+    minLength: 8,
+  })
   @IsString()
   @MinLength(8)
   newPassword: string;

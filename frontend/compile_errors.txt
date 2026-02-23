@@ -1,0 +1,1 @@
+components/MainApp.tsx(2601,12): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?

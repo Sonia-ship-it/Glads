@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { RoomAvailabilityService } from './room-availability.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -28,10 +18,7 @@ export class RoomAvailabilityController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create room availability entry (Staff only)' })
-  create(
-    @Param('branchId') branchId: string,
-    @Body() createDto: CreateRoomAvailabilityDto,
-  ) {
+  create(@Param('branchId') branchId: string, @Body() createDto: CreateRoomAvailabilityDto) {
     return this.service.create(branchId, createDto);
   }
 

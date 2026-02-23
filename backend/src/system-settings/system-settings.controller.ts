@@ -1,20 +1,8 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { SystemSettingsService } from './system-settings.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import {
-  CreateSystemSettingDto,
-  UpdateSystemSettingDto,
-} from '../common/dto/system-setting.dto';
+import { CreateSystemSettingDto, UpdateSystemSettingDto } from '../common/dto/system-setting.dto';
 
 @ApiTags('System Settings')
 @Controller('system-settings')

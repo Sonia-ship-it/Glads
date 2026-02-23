@@ -65,11 +65,14 @@ export class ServiceBookingsService {
       .single();
 
     if (serviceError || !service) {
-      throw new NotFoundException(`Service not found: ${serviceError?.message || createDto.serviceId}`);
+      throw new NotFoundException(
+        `Service not found: ${serviceError?.message || createDto.serviceId}`,
+      );
     }
 
     const serviceDate = this.buildServiceDate(createDto.bookingDate, createDto.bookingTime);
-    const quantity = createDto.numberOfPeople && createDto.numberOfPeople > 0 ? createDto.numberOfPeople : 1;
+    const quantity =
+      createDto.numberOfPeople && createDto.numberOfPeople > 0 ? createDto.numberOfPeople : 1;
     const unitPrice = Number(service.price || 0);
     const totalAmount = createDto.totalAmount || unitPrice * quantity;
     const subscriptionStartDate = service.billing_type === 'subscription' ? serviceDate : null;
@@ -127,7 +130,9 @@ export class ServiceBookingsService {
       });
 
       if (gymError) {
-        throw new BadRequestException(`Failed to create linked gym subscription: ${gymError.message}`);
+        throw new BadRequestException(
+          `Failed to create linked gym subscription: ${gymError.message}`,
+        );
       }
     }
 
@@ -162,7 +167,9 @@ export class ServiceBookingsService {
 
     const { data, error } = await supabase
       .from('service_bookings')
-      .select('*, services(name, category, price, description), branches(name, address, contact_info)')
+      .select(
+        '*, services(name, category, price, description), branches(name, address, contact_info)',
+      )
       .eq('id', id)
       .single();
 
