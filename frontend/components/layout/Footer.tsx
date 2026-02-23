@@ -45,6 +45,7 @@ export const Footer: React.FC<FooterProps> = ({
                         <p className="text-white mb-8 text-sm font-black opacity-100">Legal</p>
                         <a href="#" className="block opacity-80 hover:opacity-100 transition-opacity text-xs font-bold">Privacy Policy</a>
                         <a href="#" className="block opacity-80 hover:opacity-100 transition-opacity text-xs font-bold">Terms of Service</a>
+                        <button onClick={() => { onTabSwitch('Feedback'); }} className="block opacity-80 hover:opacity-100 transition-opacity text-left text-xs font-bold">Feedback</button>
                     </div>
                 </div>
             </div>
