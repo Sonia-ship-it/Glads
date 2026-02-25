@@ -1,3 +1,4 @@
+export type LegalDocKey = 'privacy' | 'terms' | 'booking';
 
 export enum Branch {
   NDERA = 'Ndera',

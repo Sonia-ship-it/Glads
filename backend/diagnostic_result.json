@@ -1,0 +1,92 @@
+{
+  "branches": [
+    {
+      "id": "b589d269-2ddd-4c1b-a52c-8b4abd011d1c",
+      "name": "Test Branch for Rooms",
+      "code": "TEST-ROOMS",
+      "is_active": false
+    },
+    {
+      "id": "c088bf4b-cb7c-4a6f-889a-4fb46e3ee581",
+      "name": "Test Branch for Services",
+      "code": "TEST-SERV",
+      "is_active": false
+    },
+    {
+      "id": "592f329f-f62d-4bc1-ac4d-ebe58ea5cb53",
+      "name": "Test Branch for Payments",
+      "code": "TEST-PAY",
+      "is_active": false
+    },
+    {
+      "id": "f1d0d1d1-ee46-4592-8888-dc70dc618a07",
+      "name": "Test Branch for Bookings",
+      "code": "TEST-BOOK",
+      "is_active": false
+    },
+    {
+      "id": "ad70a739-48ba-48ec-81d5-a06899ea7c71",
+      "name": "Ndera",
+      "code": "GL-NDERA",
+      "is_active": true
+    },
+    {
+      "id": "23caf9e5-c477-4315-af74-cc9547dff1ea",
+      "name": "Kanombe",
+      "code": "GL-KANOMBE",
+      "is_active": true
+    },
+    {
+      "id": "891be96d-b245-4b9b-8e26-cd3fc40e3ecf",
+      "name": "Kabeza",
+      "code": "GL-KABEZA",
+      "is_active": true
+    },
+    {
+      "id": "7dc80a10-0797-455d-8b2a-9bf253a7a06d",
+      "name": "Updated Test Branch",
+      "code": "TEST-ND",
+      "is_active": false
+    }
+  ],
+  "team": [
+    {
+      "id": "1bd733c2-3430-4d9f-bc0f-1c45fc1cfd22",
+      "full_name": "Patrick Mugisha",
+      "branch_id": "ad70a739-48ba-48ec-81d5-a06899ea7c71",
+      "is_active": true
+    }
+  ],
+  "rooms": [
+    {
+      "id": "04669919-6d46-4635-b698-2d7d5c2b49dd",
+      "room_number": "101",
+      "branch_id": "ad70a739-48ba-48ec-81d5-a06899ea7c71",
+      "is_active": true
+    },
+    {
+      "id": "24397d2e-4d8d-4054-8ddf-098a265400cd",
+      "room_number": "301",
+      "branch_id": "ad70a739-48ba-48ec-81d5-a06899ea7c71",
+      "is_active": true
+    },
+    {
+      "id": "a076bb8c-37cf-45a1-b1f2-dec01d1f4233",
+      "room_number": "101-ALT",
+      "branch_id": "ad70a739-48ba-48ec-81d5-a06899ea7c71",
+      "is_active": true
+    },
+    {
+      "id": "8c7eff43-11c8-4d32-9088-b152089f6c55",
+      "room_number": "201",
+      "branch_id": "ad70a739-48ba-48ec-81d5-a06899ea7c71",
+      "is_active": true
+    },
+    {
+      "id": "6875c28e-8502-478b-b3f9-4913a0775e6b",
+      "room_number": "102",
+      "branch_id": "ad70a739-48ba-48ec-81d5-a06899ea7c71",
+      "is_active": false
+    }
+  ]
+}
