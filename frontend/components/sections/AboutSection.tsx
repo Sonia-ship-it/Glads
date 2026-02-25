@@ -75,12 +75,12 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
     activeBranch,
     activeFeatureIndex,
     setActiveFeatureIndex,
-    teamMembers = [],
+    teamMembers,
     isLoading = false,
 }) => {
     const selectedTeam = BRANCH_TEAMS[activeBranch];
-    // Use dynamic members if available, otherwise fallback to hardcoded
-    const members = teamMembers.length > 0 ? teamMembers : selectedTeam.members;
+    // teamMembers comes from MainApp which already handles fallback if no API branch
+    const members = teamMembers === undefined ? selectedTeam.members : (teamMembers || []);
 
     const [selectedMember, setSelectedMember] = useState<TeamMember | (typeof BRANCH_TEAMS[Branch.NDERA]['members'])[0] | null>(null);
     const [mounted, setMounted] = useState(false);

@@ -13,13 +13,19 @@ export const BranchSelectorModal: React.FC<BranchSelectorModalProps> = ({
     isOpen,
     activeBranch,
     onClose,
-    onBranchSwitch
+    onBranchSwitch,
 }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[160] bg-black/40 backdrop-blur-[40px] flex items-center justify-center p-6 animate-fadeIn" onClick={onClose}>
-            <div className="bg-white/90 dark:bg-neutral-900/90 rounded-[4rem] p-12 max-w-5xl w-full shadow-[0_0_150px_rgba(0,0,0,0.3)] border border-white/20 dark:border-white/5 animate-in zoom-in-95 duration-700 font-sans" onClick={(e) => e.stopPropagation()}>
+        <div
+            className="fixed inset-0 z-160 bg-black/40 backdrop-blur-2xl flex items-center justify-center p-6 animate-fadeIn"
+            onClick={onClose}
+        >
+            <div
+                className="bg-white/90 dark:bg-neutral-900/90 rounded-[4rem] p-12 max-w-5xl w-full shadow-[0_0_150px_rgba(0,0,0,0.3)] border border-white/20 dark:border-white/5 animate-in zoom-in-95 duration-700 font-sans"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="text-center mb-12">
                     <h3 className="text-6xl font-black uppercase tracking-tighter mb-4">Where Can We Take You?</h3>
                     <p className="text-neutral-500 text-lg">Select your preferred GLADS location</p>
@@ -30,20 +36,32 @@ export const BranchSelectorModal: React.FC<BranchSelectorModalProps> = ({
                         <button
                             key={branchData.id}
                             onClick={() => {
-                                onBranchSwitch(branchData.id);
+                                onBranchSwitch(branchData.id as Branch);
                                 onClose();
                             }}
-                            className="group relative h-[400px] rounded-[3rem] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105"
+                            className="group relative h-100 rounded-[3rem] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105"
                         >
-                            <img src={branchData.gallery[0]} alt={branchData.fullName} className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+                            <img
+                                src={branchData.gallery[0]}
+                                alt={branchData.fullName}
+                                className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                            />
+                            <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-transparent"></div>
 
                             <div className="absolute inset-0 flex flex-col justify-end p-8">
                                 <div className="mb-4">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white/60">{branchData.location.distance}</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white/60">
+                                        {branchData.location.distance}
+                                    </span>
                                 </div>
                                 <h4 className="text-3xl font-black uppercase text-white mb-2">{branchData.id}</h4>
                                 <p className="text-sm text-white/80 mb-4">{branchData.tagline}</p>
+                                <div className="flex items-center gap-2 text-white/60 text-xs">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                    </svg>
+                                    <span>{branchData.location.address}</span>
+                                </div>
                             </div>
 
                             {activeBranch === branchData.id && (
@@ -55,7 +73,12 @@ export const BranchSelectorModal: React.FC<BranchSelectorModalProps> = ({
                     ))}
                 </div>
 
-                <button onClick={onClose} className="mt-12 w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 py-4 rounded-[2rem] text-sm font-black uppercase tracking-wider hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all">Close</button>
+                <button
+                    onClick={onClose}
+                    className="mt-12 w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 py-4 rounded-4xl text-sm font-black uppercase tracking-wider hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all"
+                >
+                    Close
+                </button>
             </div>
         </div>
     );
