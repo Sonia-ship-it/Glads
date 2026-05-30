@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,13 +20,16 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { ServicesService } from './services.service';
+import { RolesGuard } from '../common/guards/roles.guard';
 import { CreateServiceDto, UpdateServiceDto } from '../common/dto/service.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 
 @ApiTags('Services')
 @Controller('services')
+@UseGuards(RolesGuard)
 export class ServicesController {
-  constructor(private readonly servicesService: ServicesService) {}
+  constructor(private readonly servicesService: ServicesService) { }
 
   @Post(':branchId')
   @UseGuards(JwtAuthGuard)
@@ -54,8 +58,10 @@ export class ServicesController {
     description: 'Filter by category (spa, gym, restaurant, laundry, transportation)',
   })
   @ApiResponse({ status: 200, description: 'Services retrieved successfully' })
-  findAll(@Query('branchId') branchId?: string, @Query('category') category?: string) {
-    return this.servicesService.findAll(branchId, category);
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  findAll(@Query('branchId') branchId?: string, @Query('category') category?: string, @Request() req?: any) {
+    return this.servicesService.findAll(branchId, category, req?.user);
   }
 
   @Get(':id')

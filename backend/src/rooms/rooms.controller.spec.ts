@@ -7,6 +7,10 @@ describe('RoomsController', () => {
   let controller: RoomsController;
   let service: RoomsService;
 
+  const mockRequest = {
+    user: { id: 'user-123', role: 'super-admin', branchId: 'branch-123' },
+  } as any;
+
   const mockRoomsService = {
     create: jest.fn(),
     findAll: jest.fn(),
@@ -67,10 +71,10 @@ describe('RoomsController', () => {
 
       mockRoomsService.create.mockResolvedValue(mockRoom);
 
-      const result = await controller.create(branchId, createDto, {} as any);
+      const result = await controller.create(branchId, createDto, mockRequest);
 
       expect(result).toEqual(mockRoom);
-      expect(mockRoomsService.create).toHaveBeenCalledWith(branchId, createDto);
+      expect(mockRoomsService.create).toHaveBeenCalledWith(branchId, createDto, mockRequest.user);
     });
   });
 
@@ -83,10 +87,10 @@ describe('RoomsController', () => {
 
       mockRoomsService.findAll.mockResolvedValue(mockRooms);
 
-      const result = await controller.findAll();
+      const result = await controller.findAll(undefined, mockRequest);
 
       expect(result).toEqual(mockRooms);
-      expect(mockRoomsService.findAll).toHaveBeenCalled();
+      expect(mockRoomsService.findAll).toHaveBeenCalledWith(undefined, mockRequest.user);
     });
   });
 
@@ -149,10 +153,10 @@ describe('RoomsController', () => {
 
       mockRoomsService.update.mockResolvedValue(mockUpdatedRoom);
 
-      const result = await controller.update(roomId, updateDto, {} as any);
+      const result = await controller.update(roomId, updateDto, mockRequest);
 
       expect(result).toEqual(mockUpdatedRoom);
-      expect(mockRoomsService.update).toHaveBeenCalledWith(roomId, updateDto);
+      expect(mockRoomsService.update).toHaveBeenCalledWith(roomId, updateDto, mockRequest.user);
     });
   });
 
@@ -163,10 +167,10 @@ describe('RoomsController', () => {
 
       mockRoomsService.remove.mockResolvedValue(mockResponse);
 
-      const result = await controller.remove(roomId, {} as any);
+      const result = await controller.remove(roomId, mockRequest);
 
       expect(result).toEqual(mockResponse);
-      expect(mockRoomsService.remove).toHaveBeenCalledWith(roomId);
+      expect(mockRoomsService.remove).toHaveBeenCalledWith(roomId, mockRequest.user);
     });
   });
 
@@ -182,10 +186,10 @@ describe('RoomsController', () => {
 
       mockRoomsService.getRoomStats.mockResolvedValue(mockStats);
 
-      const result = await controller.getRoomStats(branchId, {} as any);
+      const result = await controller.getRoomStats(branchId, mockRequest);
 
       expect(result).toEqual(mockStats);
-      expect(mockRoomsService.getRoomStats).toHaveBeenCalledWith(branchId);
+      expect(mockRoomsService.getRoomStats).toHaveBeenCalledWith(branchId, mockRequest.user);
     });
   });
 });

@@ -23,11 +23,14 @@ import {
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto, UpdateRoomDto, SearchAvailableRoomsDto } from '../common/dto/room.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
 
 @ApiTags('Rooms')
 @Controller('rooms')
+@UseGuards(RolesGuard)
 export class RoomsController {
-  constructor(private readonly roomsService: RoomsService) {}
+  constructor(private readonly roomsService: RoomsService) { }
 
   @Post(':branchId')
   @UseGuards(JwtAuthGuard)
@@ -57,7 +60,9 @@ export class RoomsController {
   })
   @ApiQuery({ name: 'branchId', required: false, description: 'Filter by branch ID' })
   @ApiResponse({ status: 200, description: 'Rooms retrieved successfully' })
-  findAll(@Query('branchId') branchId?: string, @RequestDecorator() req?: Request) {
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  findAll(@Query('branchId') branchId?: string, @RequestDecorator() req?: any) {
     return this.roomsService.findAll(branchId, req?.user);
   }
 

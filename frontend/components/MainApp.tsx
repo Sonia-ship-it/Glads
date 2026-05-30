@@ -47,7 +47,7 @@ import { LegalModal, LEGAL_CONTENT } from './modals/LegalModal';
 
 type Role = 'Customer' | 'HQ Admin' | 'Branch Admin';
 type LegalDocKey = 'privacy' | 'terms' | 'booking';
-type LegalDoc = 'dashboard' | 'bookings' | 'services' | 'operations' | 'profile';
+type LegalDoc = 'dashboard' | 'bookings' | 'services' | 'operations' | 'profile' | 'feedback';
 type Tab = 'Home' | 'About' | 'Rooms' | 'Services' | 'Gallery' | 'Contact' | 'Admin' | 'Feedback';
 type AuthUser = {
   id?: string;
@@ -282,7 +282,7 @@ const App: React.FC<MainAppProps> = ({ initialTab = 'Home' }) => {
     setRoomSearchLoading, roomEditForm, setRoomEditForm,
     teamEditForm, setTeamEditForm, newsEditForm,
     setNewsEditForm, serviceEditForm, setServiceEditForm,
-    menuEditForm, setMenuEditForm, settingCreateForm,
+    menuEditForm, setMenuEditForm, feedbackEditForm, setFeedbackEditForm, settingCreateForm,
     setSettingCreateForm, tabFromPath, setCurrentTab,
     activeBranchOption, data, mappedNews, allowedAdminSections,
     roleCapabilities, isAdminWorkspace, testimonials,
@@ -306,7 +306,10 @@ const App: React.FC<MainAppProps> = ({ initialTab = 'Home' }) => {
     submitCreateTeamMember, submitUpdateTeamMember,
     submitDeleteTeamMember, submitCreateMenu, submitUpdateMenu,
     submitDeleteMenu, submitCreateService, submitUpdateService,
-    submitDeleteService, submitCreateSetting, handleBranchSwitch,
+    submitDeleteService, submitUpdateFeedback, submitDeleteFeedback,
+    submitCreateTestimonial, submitUpdateTestimonial, submitDeleteTestimonial,
+    testimonialCreateForm, setTestimonialCreateForm, testimonialEditForm, setTestimonialEditForm,
+    submitCreateSetting, handleBranchSwitch,
     openImmersive, handleBookingSubmit, openBooking,
     openRoomBooking, start360Rotation, startLocationAnimation
   } = useMainAppState(initialTab);
@@ -841,7 +844,7 @@ const App: React.FC<MainAppProps> = ({ initialTab = 'Home' }) => {
           )}
 
           {currentTab === 'Feedback' && (
-            <FeedbackSection />
+            <FeedbackSection branchId={activeBranchOption?.id} />
           )}
 
           {currentTab === 'Admin' && authUser && (
@@ -1033,8 +1036,8 @@ const App: React.FC<MainAppProps> = ({ initialTab = 'Home' }) => {
                     {adminSection === 'services' && (
                       <ServiceManagement
                         branch={activeBranch}
-                        services={data.services}
-                        isSuperAdmin={adminRole === 'Super Admin'}
+                        services={opsData.services.length > 0 ? opsData.services : data.services}
+                        isSuperAdmin={false}
                         bookings={adminServiceBookings}
                         revenue={adminServiceRevenue}
                         createForm={serviceCreateForm}
@@ -1050,6 +1053,180 @@ const App: React.FC<MainAppProps> = ({ initialTab = 'Home' }) => {
                       />
                     )}
 
+                    {adminSection === 'feedback' && (
+                      <section className="space-y-6">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                          <div>
+                            <h3 className="text-4xl font-black tracking-tight">Guest Feedback</h3>
+                            <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-1">Review and manage guest experiences across all branches.</p>
+                          </div>
+                          <button
+                            onClick={() => loadOperationsData(true)}
+                            disabled={opsLoading || !authToken}
+                            className="px-5 py-3 rounded-xl bg-burgundy text-white text-[11px] font-black uppercase tracking-[0.16em] disabled:opacity-60"
+                          >
+                            {opsLoading ? 'Refreshing...' : 'Refresh Feedback'}
+                          </button>
+                        </div>
+
+                        <div className="rounded-3xl border border-neutral-200 dark:border-white/10 bg-white dark:bg-neutral-900/40 p-6">
+                          {opsData.feedback.length > 0 ? (
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-left text-sm">
+                                <thead>
+                                  <tr className="text-[10px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400 border-b border-neutral-200 dark:border-white/10">
+                                    <th className="py-3 pr-4">Guest</th>
+                                    <th className="py-3 pr-4">Rating</th>
+                                    <th className="py-3 pr-4">Category</th>
+                                    <th className="py-3 pr-4">Subject & Message</th>
+                                    <th className="py-3 pr-4">Branch</th>
+                                    <th className="py-3 pr-4">Status</th>
+                                    <th className="py-3 text-right">Actions</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {opsData.feedback.map((f: any, idx: number) => (
+                                    <tr key={f.id || idx} className="border-b border-neutral-100 dark:border-white/5 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+                                      <td className="py-4 pr-4">
+                                        <div className="font-bold">{f.fullName}</div>
+                                        <div className="text-[10px] text-neutral-500">{f.email}</div>
+                                        {f.phone && <div className="text-[10px] text-neutral-400">{f.phone}</div>}
+                                      </td>
+                                      <td className="py-4 pr-4">
+                                        <div className="flex text-yellow-500 text-xs">
+                                          {Array.from({ length: 5 }).map((_, i) => (
+                                            <span key={i}>{i < (f.rating || 0) ? '★' : '☆'}</span>
+                                          ))}
+                                        </div>
+                                      </td>
+                                      <td className="py-4 pr-4 text-[10px] uppercase font-bold tracking-tight text-neutral-500">{f.category}</td>
+                                      <td className="py-4 pr-4">
+                                        <div className="font-bold text-neutral-800 dark:text-neutral-200">{f.subject}</div>
+                                        <div className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5 line-clamp-2 max-w-md">{f.message}</div>
+                                      </td>
+                                      <td className="py-4 pr-4 text-xs font-medium">{f.branches?.name || 'Unknown'}</td>
+                                      <td className="py-4">
+                                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${f.status === 'resolved' ? 'bg-green-100 text-green-700' :
+                                          f.status === 'in-review' ? 'bg-blue-100 text-blue-700' :
+                                            'bg-neutral-100 text-neutral-600'
+                                          }`}>
+                                          {f.status || 'new'}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 text-right">
+                                        <div className="flex justify-end gap-3">
+                                          <button
+                                            onClick={() => setFeedbackEditForm({
+                                              id: f.id,
+                                              status: f.status || 'new',
+                                              response: f.response || '',
+                                              fullName: f.fullName,
+                                              email: f.email,
+                                              message: f.message,
+                                              subject: f.subject,
+                                            })}
+                                            className="text-[10px] font-black uppercase tracking-widest text-burgundy hover:underline"
+                                          >
+                                            Respond
+                                          </button>
+                                          <button
+                                            onClick={() => submitDeleteFeedback(f.id)}
+                                            className="text-[10px] font-black uppercase tracking-widest text-red-600 hover:text-red-800 hover:underline"
+                                            disabled={opsLoading}
+                                          >
+                                            Delete
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : (
+                            <div className="text-center py-12">
+                              <Leaf size={40} className="mx-auto text-neutral-300 mb-4 opacity-20" />
+                              <p className="text-neutral-500 dark:text-neutral-400 font-medium">No guest feedback entries found.</p>
+                              <p className="text-xs text-neutral-400 mt-1">Feedback submitted via the website will appear here.</p>
+                            </div>
+                          )}
+                        </div>
+                      </section>
+                    )}
+
+                    {feedbackEditForm && (
+                      <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <div className="w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-[2rem] shadow-2xl overflow-hidden border border-neutral-200 dark:border-white/10 animate-in fade-in zoom-in duration-300">
+                          <div className="p-8 border-b border-neutral-100 dark:border-white/5 flex items-center justify-between">
+                            <div>
+                              <h3 className="text-2xl font-black">Respond to Feedback</h3>
+                              <p className="text-xs text-neutral-500 mt-1 uppercase tracking-widest font-bold">From: {feedbackEditForm.fullName} ({feedbackEditForm.email})</p>
+                            </div>
+                            <button onClick={() => setFeedbackEditForm(null)} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
+                              <LogOut className="rotate-45 text-neutral-400" size={20} />
+                            </button>
+                          </div>
+                          <form onSubmit={submitUpdateFeedback} className="p-8 space-y-6">
+                            <div className="space-y-4">
+                              <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-white/5">
+                                <span className="text-[10px] font-black uppercase text-neutral-400 tracking-widest block mb-1">{feedbackEditForm.subject}</span>
+                                <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed italic">"{feedbackEditForm.message}"</p>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                  <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500 ml-1">Status</label>
+                                  <select
+                                    value={feedbackEditForm.status}
+                                    onChange={(e) => setFeedbackEditForm({ ...feedbackEditForm, status: e.target.value })}
+                                    className="w-full h-12 px-4 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 focus:ring-2 focus:ring-burgundy/20 outline-none transition-all text-sm font-medium"
+                                  >
+                                    <option value="new">New</option>
+                                    <option value="in-review">In Review</option>
+                                    <option value="resolved">Resolved</option>
+                                  </select>
+                                </div>
+                                <div className="space-y-1.5 opacity-40 cursor-not-allowed">
+                                  <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500 ml-1">Category (Read Only)</label>
+                                  <div className="w-full h-12 px-4 flex items-center rounded-xl bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-white/10 text-xs font-bold text-neutral-500 uppercase tracking-tight">
+                                    {opsData.feedback.find(f => f.id === feedbackEditForm.id)?.category || 'General'}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500 ml-1">Staff Response</label>
+                                <textarea
+                                  value={feedbackEditForm.response}
+                                  onChange={(e) => setFeedbackEditForm({ ...feedbackEditForm, response: e.target.value })}
+                                  placeholder="Type your response to the guest..."
+                                  className="w-full h-40 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 focus:ring-2 focus:ring-burgundy/20 outline-none transition-all text-sm resize-none"
+                                />
+                                <p className="text-[10px] text-neutral-400 italic">This response will be saved and visible to staff. Internal resolution notes can also be recorded here.</p>
+                              </div>
+                            </div>
+
+                            <div className="flex gap-3">
+                              <button
+                                type="button"
+                                onClick={() => setFeedbackEditForm(null)}
+                                className="flex-1 h-14 rounded-2xl border border-neutral-200 dark:border-white/10 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="submit"
+                                disabled={opsLoading}
+                                className="flex-[2] h-14 rounded-2xl bg-burgundy text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-lg shadow-burgundy/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                              >
+                                {opsLoading ? 'Saving...' : 'Save Response'}
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    )}
+
                     {adminSection === 'operations' && (
                       <section className="space-y-6">
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -1058,7 +1235,7 @@ const App: React.FC<MainAppProps> = ({ initialTab = 'Home' }) => {
                             <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-1">Live API control panel for admin modules.</p>
                           </div>
                           <button
-                            onClick={loadOperationsData}
+                            onClick={() => loadOperationsData(true)}
                             disabled={opsLoading || !authToken}
                             className="px-5 py-3 rounded-xl bg-burgundy text-white text-[11px] font-black uppercase tracking-[0.16em] disabled:opacity-60"
                           >
@@ -1527,6 +1704,121 @@ const App: React.FC<MainAppProps> = ({ initialTab = 'Home' }) => {
                           </div>
                         )}
 
+                        {opsTab === 'testimonials' && (
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <form onSubmit={submitCreateTestimonial} className="rounded-3xl border border-neutral-200 dark:border-white/10 bg-white dark:bg-neutral-900/40 p-6 space-y-3">
+                              <h4 className="text-xl font-black">Create Testimonial</h4>
+                              <input value={testimonialCreateForm.guestName} onChange={(e) => setTestimonialCreateForm(prev => ({ ...prev, guestName: e.target.value }))} placeholder="Guest Name" className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-3 text-sm outline-none" required />
+                              <input value={testimonialCreateForm.guestRole} onChange={(e) => setTestimonialCreateForm(prev => ({ ...prev, guestRole: e.target.value }))} placeholder="Guest Role/Title (Optional)" className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-3 text-sm outline-none" />
+                              <textarea value={testimonialCreateForm.quote} onChange={(e) => setTestimonialCreateForm(prev => ({ ...prev, quote: e.target.value }))} placeholder="Testimonial Quote" rows={4} className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-3 text-sm outline-none resize-none" required />
+                              <div className="grid grid-cols-2 gap-3">
+                                <select value={testimonialCreateForm.rating} onChange={(e) => setTestimonialCreateForm(prev => ({ ...prev, rating: parseInt(e.target.value) || 5 }))} className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-3 text-sm outline-none">
+                                  <option value={5}>5 Stars</option>
+                                  <option value={4}>4 Stars</option>
+                                  <option value={3}>3 Stars</option>
+                                  <option value={2}>2 Stars</option>
+                                  <option value={1}>1 Star</option>
+                                </select>
+                                <select value={testimonialCreateForm.source} onChange={(e) => setTestimonialCreateForm(prev => ({ ...prev, source: e.target.value }))} className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-3 text-sm outline-none">
+                                  <option value="direct">Direct</option>
+                                  <option value="website">Website</option>
+                                  <option value="google">Google</option>
+                                  <option value="booking">Booking</option>
+                                  <option value="other">Other</option>
+                                </select>
+                              </div>
+                              <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300 py-2">
+                                <input type="checkbox" checked={testimonialCreateForm.isFeatured} onChange={(e) => setTestimonialCreateForm(prev => ({ ...prev, isFeatured: e.target.checked }))} className="w-4 h-4 rounded" />
+                                Feature on Homepage
+                              </label>
+                              <button type="submit" disabled={opsLoading} className="px-5 py-2.5 rounded-xl bg-burgundy text-white text-[11px] font-black uppercase tracking-[0.16em] disabled:opacity-60">Create Testimonial</button>
+                            </form>
+
+                            {testimonialEditForm && (
+                              <form onSubmit={submitUpdateTestimonial} className="rounded-3xl border-2 border-burgundy/50 dark:border-burgundy/30 bg-white dark:bg-neutral-900/40 p-6 space-y-3">
+                                <h4 className="text-xl font-black">Edit Testimonial</h4>
+                                <input value={testimonialEditForm.guestName} onChange={(e) => setTestimonialEditForm(prev => prev ? ({ ...prev, guestName: e.target.value }) : null)} placeholder="Guest Name" className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-3 text-sm outline-none" required />
+                                <input value={testimonialEditForm.guestRole || ''} onChange={(e) => setTestimonialEditForm(prev => prev ? ({ ...prev, guestRole: e.target.value }) : null)} placeholder="Guest Role/Title (Optional)" className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-3 text-sm outline-none" />
+                                <textarea value={testimonialEditForm.quote} onChange={(e) => setTestimonialEditForm(prev => prev ? ({ ...prev, quote: e.target.value }) : null)} placeholder="Testimonial Quote" rows={4} className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-3 text-sm outline-none resize-none" required />
+                                <div className="grid grid-cols-2 gap-3">
+                                  <select value={testimonialEditForm.rating || 5} onChange={(e) => setTestimonialEditForm(prev => prev ? ({ ...prev, rating: parseInt(e.target.value) || 5 }) : null)} className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-3 text-sm outline-none">
+                                    <option value={5}>5 Stars</option>
+                                    <option value={4}>4 Stars</option>
+                                    <option value={3}>3 Stars</option>
+                                    <option value={2}>2 Stars</option>
+                                    <option value={1}>1 Star</option>
+                                  </select>
+                                  <select value={testimonialEditForm.source || 'direct'} onChange={(e) => setTestimonialEditForm(prev => prev ? ({ ...prev, source: e.target.value }) : null)} className="w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-3 text-sm outline-none">
+                                    <option value="direct">Direct</option>
+                                    <option value="website">Website</option>
+                                    <option value="google">Google</option>
+                                    <option value="booking">Booking</option>
+                                    <option value="other">Other</option>
+                                  </select>
+                                </div>
+                                <div className="flex gap-4">
+                                  <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300 py-2">
+                                    <input type="checkbox" checked={testimonialEditForm.isFeatured || false} onChange={(e) => setTestimonialEditForm(prev => prev ? ({ ...prev, isFeatured: e.target.checked }) : null)} className="w-4 h-4 rounded" />
+                                    Featured
+                                  </label>
+                                  <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300 py-2">
+                                    <input type="checkbox" checked={testimonialEditForm.isActive !== false} onChange={(e) => setTestimonialEditForm(prev => prev ? ({ ...prev, isActive: e.target.checked }) : null)} className="w-4 h-4 rounded" />
+                                    Active
+                                  </label>
+                                </div>
+                                <div className="flex gap-2">
+                                  <button type="submit" disabled={opsLoading} className="px-5 py-2.5 rounded-xl bg-burgundy text-white text-[11px] font-black uppercase tracking-[0.16em] disabled:opacity-60">Save</button>
+                                  <button type="button" onClick={() => setTestimonialEditForm(null)} className="px-5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 text-[11px] font-black uppercase tracking-[0.16em]">Cancel</button>
+                                </div>
+                              </form>
+                            )}
+
+                            <div className="rounded-3xl border border-neutral-200 dark:border-white/10 bg-white dark:bg-neutral-900/40 p-6">
+                              <h4 className="text-xl font-black mb-4">Testimonials ({opsData.testimonials?.length || 0})</h4>
+                              <div className="space-y-3 max-h-[420px] overflow-auto pr-1">
+                                {!opsData.testimonials?.length ? (
+                                  <p className="text-sm text-neutral-500 dark:text-neutral-400 py-4">No testimonials yet. Create one above.</p>
+                                ) : (
+                                  opsData.testimonials.map((t: any, idx: number) => (
+                                    <div key={t.id || idx} className="rounded-xl border border-neutral-200 dark:border-white/10 p-3 flex items-center justify-between gap-3">
+                                      <div className="flex-1 min-w-0">
+                                        <p className="font-bold truncate">{t.guestName} <span className="text-xs text-neutral-500 ml-2">({t.rating}★)</span></p>
+                                        <p className="text-[10px] text-neutral-500 dark:text-neutral-400 truncate tracking-wider">{t.quote}</p>
+                                      </div>
+                                      <div className="flex gap-2 shrink-0">
+                                        <button
+                                          type="button"
+                                          onClick={() => setTestimonialEditForm({
+                                            id: t.id,
+                                            guestName: t.guestName,
+                                            guestRole: t.guestRole,
+                                            quote: t.quote,
+                                            rating: t.rating,
+                                            source: t.source,
+                                            isFeatured: t.isFeatured,
+                                            isActive: t.isActive,
+                                          })}
+                                          className="px-2 py-1 rounded border border-neutral-300 dark:border-neutral-700 text-[11px] font-bold uppercase transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => submitDeleteTestimonial(t.id)}
+                                          disabled={opsLoading}
+                                          className="px-2 py-1 rounded border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 text-[11px] font-bold uppercase transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         {opsTab === 'team' && (
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="space-y-6">
@@ -1740,6 +2032,7 @@ const App: React.FC<MainAppProps> = ({ initialTab = 'Home' }) => {
                             </div>
                           </div>
                         )}
+
 
                         {(['payments', 'audit'] as const).includes(opsTab as any) && (
                           <div className="rounded-3xl border border-neutral-200 dark:border-white/10 bg-white dark:bg-neutral-900/40 p-6">

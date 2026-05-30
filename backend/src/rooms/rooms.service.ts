@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CreateRoomDto, UpdateRoomDto, SearchAvailableRoomsDto } from '../common/dto/room.dto';
 
 @Injectable()
 export class RoomsService {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(private readonly supabaseService: SupabaseService) { }
 
   private normalizeRoomStatus(status?: string): string | undefined {
     if (!status) return undefined;
@@ -17,11 +17,11 @@ export class RoomsService {
 
   async create(branchId: string, createRoomDto: CreateRoomDto, user: any) {
     // Branch managers can only create rooms for their own branch
-    const userRole = user.role || user.user_metadata?.role;
+    const userRole = (user.role || user.user_metadata?.role || '').toLowerCase();
     const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
 
-    if (userRole === 'branch-manager' && branchId !== userBranchId) {
-      throw new Error('Forbidden: Branch managers can only create rooms for their assigned branch');
+    if (userRole.includes('manager') && branchId !== userBranchId) {
+      throw new ForbiddenException('Forbidden: Branch managers can only create rooms for their assigned branch');
     }
 
     const supabase = this.supabaseService.getAdminClient();
@@ -60,10 +60,10 @@ export class RoomsService {
       .select('*, branches(name, coordinates)')
       .eq('is_active', true);
 
-    const userRole = user?.role || user?.user_metadata?.role;
+    const userRole = (user?.role || user?.user_metadata?.role || '').toLowerCase();
     const userBranchId = user?.branchId || user?.branch_id || user?.user_metadata?.branchId;
 
-    if (userRole === 'branch-manager' || userRole === 'receptionist') {
+    if (userRole.includes('manager') || userRole.includes('reception') || userRole.includes('staff')) {
       query = query.eq('branch_id', userBranchId);
     } else if (branchId) {
       query = query.eq('branch_id', branchId);
@@ -154,13 +154,13 @@ export class RoomsService {
       .eq('id', id)
       .single();
     if (existingRoom) {
-      const userRole = user.role || user.user_metadata?.role;
+      const userRole = (user.role || user.user_metadata?.role || '').toLowerCase();
       const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
       if (
-        (userRole === 'branch-manager' || userRole === 'receptionist') &&
+        (userRole.includes('manager') || userRole.includes('reception') || userRole.includes('staff')) &&
         existingRoom.branch_id !== userBranchId
       ) {
-        throw new Error('Forbidden: You can only update rooms in your assigned branch');
+        throw new ForbiddenException('Forbidden: You can only update rooms in your assigned branch');
       }
     }
 
@@ -204,10 +204,10 @@ export class RoomsService {
       .eq('id', id)
       .single();
     if (existingRoom) {
-      const userRole = user.role || user.user_metadata?.role;
+      const userRole = (user.role || user.user_metadata?.role || '').toLowerCase();
       const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
-      if (userRole === 'branch-manager' && existingRoom.branch_id !== userBranchId) {
-        throw new Error('Forbidden: You can only delete rooms in your assigned branch');
+      if (userRole.includes('manager') && existingRoom.branch_id !== userBranchId) {
+        throw new ForbiddenException('Forbidden: You can only delete rooms in your assigned branch');
       }
     }
 
@@ -221,14 +221,14 @@ export class RoomsService {
   }
 
   async getRoomStats(branchId: string, user: any) {
-    const userRole = user.role || user.user_metadata?.role;
+    const userRole = (user.role || user.user_metadata?.role || '').toLowerCase();
     const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
 
     if (
-      (userRole === 'branch-manager' || userRole === 'receptionist') &&
+      (userRole.includes('manager') || userRole.includes('reception') || userRole.includes('staff')) &&
       branchId !== userBranchId
     ) {
-      throw new Error('Forbidden: You can only view stats for your assigned branch');
+      throw new ForbiddenException('Forbidden: You can only view stats for your assigned branch');
     }
 
     const supabase = this.supabaseService.getAdminClient();

@@ -25,12 +25,13 @@ import {
 import { NewsService } from './news.service';
 import { CreateNewsDto, UpdateNewsDto } from '../common/dto/news.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 
 @ApiTags('News')
 @Controller('news')
 @UseGuards(RolesGuard)
 export class NewsController {
-  constructor(private readonly newsService: NewsService) {}
+  constructor(private readonly newsService: NewsService) { }
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -60,6 +61,8 @@ export class NewsController {
     description: 'Filter by category (announcement, event, promotion, update)',
   })
   @ApiResponse({ status: 200, description: 'News retrieved successfully' })
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   findAll(
     @Query('scope') scope?: string,
     @Query('category') category?: string,

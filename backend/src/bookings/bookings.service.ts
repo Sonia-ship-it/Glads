@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import {
   CreateBookingDto,
@@ -9,7 +9,7 @@ import {
 
 @Injectable()
 export class BookingsService {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(private readonly supabaseService: SupabaseService) { }
 
   private generateBookingReference(prefix = 'BKG'): string {
     const stamp = Date.now().toString().slice(-8);
@@ -103,14 +103,14 @@ export class BookingsService {
   }
 
   async createOtaManualBooking(otaBookingDto: OtaManualBookingDto, user: any) {
-    const userRole = user.role || user.user_metadata?.role;
+    const userRole = (user.role || user.user_metadata?.role || '').toLowerCase();
     const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
 
     if (
-      (userRole === 'branch-manager' || userRole === 'receptionist') &&
+      (userRole.includes('manager') || userRole.includes('reception') || userRole.includes('staff')) &&
       otaBookingDto.branchId !== userBranchId
     ) {
-      throw new BadRequestException(
+      throw new ForbiddenException(
         'Forbidden: You can only create OTA bookings for your assigned branch',
       );
     }
@@ -167,10 +167,10 @@ export class BookingsService {
       .from('bookings')
       .select('*, rooms(room_number, room_type), branches(name)');
 
-    const userRole = user?.role || user?.user_metadata?.role;
+    const userRole = (user?.role || user?.user_metadata?.role || '').toLowerCase();
     const userBranchId = user?.branchId || user?.branch_id || user?.user_metadata?.branchId;
 
-    if (userRole === 'branch-manager' || userRole === 'receptionist') {
+    if (userRole.includes('manager') || userRole.includes('reception') || userRole.includes('staff')) {
       query = query.eq('branch_id', userBranchId);
     } else if (branchId) {
       query = query.eq('branch_id', branchId);
@@ -235,13 +235,13 @@ export class BookingsService {
       .eq('id', id)
       .single();
     if (existingBooking) {
-      const userRole = user.role || user.user_metadata?.role;
+      const userRole = (user.role || user.user_metadata?.role || '').toLowerCase();
       const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
       if (
-        (userRole === 'branch-manager' || userRole === 'receptionist') &&
+        (userRole.includes('manager') || userRole.includes('reception') || userRole.includes('staff')) &&
         existingBooking.branch_id !== userBranchId
       ) {
-        throw new BadRequestException(
+        throw new ForbiddenException(
           'Forbidden: You can only update bookings in your assigned branch',
         );
       }
@@ -282,13 +282,13 @@ export class BookingsService {
       .eq('id', id)
       .single();
     if (existingBooking) {
-      const userRole = user.role || user.user_metadata?.role;
+      const userRole = (user.role || user.user_metadata?.role || '').toLowerCase();
       const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
       if (
-        (userRole === 'branch-manager' || userRole === 'receptionist') &&
+        (userRole.includes('manager') || userRole.includes('reception') || userRole.includes('staff')) &&
         existingBooking.branch_id !== userBranchId
       ) {
-        throw new BadRequestException(
+        throw new ForbiddenException(
           'Forbidden: You can only check in bookings in your assigned branch',
         );
       }
@@ -324,13 +324,13 @@ export class BookingsService {
       .eq('id', id)
       .single();
     if (existingBooking) {
-      const userRole = user.role || user.user_metadata?.role;
+      const userRole = (user.role || user.user_metadata?.role || '').toLowerCase();
       const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
       if (
-        (userRole === 'branch-manager' || userRole === 'receptionist') &&
+        (userRole.includes('manager') || userRole.includes('reception') || userRole.includes('staff')) &&
         existingBooking.branch_id !== userBranchId
       ) {
-        throw new BadRequestException(
+        throw new ForbiddenException(
           'Forbidden: You can only check out bookings in your assigned branch',
         );
       }
@@ -366,13 +366,13 @@ export class BookingsService {
       .eq('id', id)
       .single();
     if (existingBooking) {
-      const userRole = user.role || user.user_metadata?.role;
+      const userRole = (user.role || user.user_metadata?.role || '').toLowerCase();
       const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
       if (
-        (userRole === 'branch-manager' || userRole === 'receptionist') &&
+        (userRole.includes('manager') || userRole.includes('reception') || userRole.includes('staff')) &&
         existingBooking.branch_id !== userBranchId
       ) {
-        throw new BadRequestException(
+        throw new ForbiddenException(
           'Forbidden: You can only cancel bookings in your assigned branch',
         );
       }
@@ -392,14 +392,14 @@ export class BookingsService {
   }
 
   async getBookingStats(branchId: string, startDate?: string, endDate?: string, user?: any) {
-    const userRole = user?.role || user?.user_metadata?.role;
+    const userRole = (user?.role || user?.user_metadata?.role || '').toLowerCase();
     const userBranchId = user?.branchId || user?.branch_id || user?.user_metadata?.branchId;
 
     if (
-      (userRole === 'branch-manager' || userRole === 'receptionist') &&
+      (userRole.includes('manager') || userRole.includes('reception') || userRole.includes('staff')) &&
       branchId !== userBranchId
     ) {
-      throw new BadRequestException('Forbidden: You can only view stats for your assigned branch');
+      throw new ForbiddenException('Forbidden: You can only view stats for your assigned branch');
     }
 
     const supabase = this.supabaseService.getAdminClient();

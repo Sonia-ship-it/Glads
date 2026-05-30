@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CreateMenuDto, UpdateMenuDto } from '../common/dto/menu.dto';
 
 @Injectable()
 export class MenuService {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(private readonly supabaseService: SupabaseService) { }
 
   async createMenu(createDto: CreateMenuDto) {
     const supabase = this.supabaseService.getAdminClient();
@@ -22,11 +22,11 @@ export class MenuService {
       .select()
       .single();
 
-    if (error) throw new Error(`Failed to create menu: ${error.message}`);
+    if (error) throw new BadRequestException(`Failed to create menu: ${error.message}`);
     return data;
   }
 
-  async getAllMenus(branchId?: string) {
+  async getAllMenus(branchId?: string, user?: any) {
     const supabase = this.supabaseService.getClient();
 
     let query = supabase
@@ -35,13 +35,19 @@ export class MenuService {
       .eq('is_active', true)
       .order('effective_date', { ascending: false });
 
-    if (branchId) {
+    // Handle role-based filtering
+    const userRole = (user?.role || user?.user_metadata?.role || '').toLowerCase();
+    const userBranchId = user?.branchId || user?.branch_id || user?.user_metadata?.branchId;
+
+    if (userRole.includes('manager') || userRole.includes('reception') || userRole.includes('staff')) {
+      query = query.eq('branch_id', userBranchId);
+    } else if (branchId) {
       query = query.eq('branch_id', branchId);
     }
 
     const { data, error } = await query;
 
-    if (error) throw new Error(`Failed to fetch menus: ${error.message}`);
+    if (error) throw new BadRequestException(`Failed to fetch menus: ${error.message}`);
     return data;
   }
 

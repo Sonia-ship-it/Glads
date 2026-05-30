@@ -8,6 +8,7 @@ import {
   Post,
   Query,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -19,13 +20,15 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
 import { CreateFeedbackDto, UpdateFeedbackDto } from '../common/dto/feedback.dto';
 import { FeedbackService } from './feedback.service';
 
 @ApiTags('Feedback')
 @Controller('feedback')
+@UseGuards(RolesGuard)
 export class FeedbackController {
-  constructor(private readonly feedbackService: FeedbackService) {}
+  constructor(private readonly feedbackService: FeedbackService) { }
 
   @Post()
   @ApiOperation({ summary: 'Submit feedback', description: 'Public endpoint to submit guest feedback.' })
@@ -44,8 +47,13 @@ export class FeedbackController {
   @ApiQuery({ name: 'status', required: false, description: 'Filter by feedback status' })
   @ApiResponse({ status: 200, description: 'Feedback records retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  findAll(@Query('branchId') branchId?: string, @Query('category') category?: string, @Query('status') status?: string) {
-    return this.feedbackService.findAll(branchId, category, status);
+  findAll(
+    @Query('branchId') branchId?: string,
+    @Query('category') category?: string,
+    @Query('status') status?: string,
+    @Request() req?: any
+  ) {
+    return this.feedbackService.findAll(branchId, category, status, req?.user);
   }
 
   @Get(':id')

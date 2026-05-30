@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import {
   CreateServiceDto,
@@ -30,25 +30,32 @@ export class ServicesService {
       .select()
       .single();
 
-    if (error) throw new Error(`Failed to create service: ${error.message}`);
+    if (error) throw new BadRequestException(`Failed to create service: ${error.message}`);
     return data;
   }
 
-  async findAll(branchId?: string, category?: string) {
+  async findAll(branchId?: string, category?: string, user?: any) {
     const supabase = this.supabaseService.getAdminClient();
 
     let query = supabase.from('services').select('*, branches(name)').eq('is_active', true);
 
-    if (branchId) {
+    // Handle role-based filtering
+    const userRole = (user?.role || user?.user_metadata?.role || '').toLowerCase();
+    const userBranchId = user?.branchId || user?.branch_id || user?.user_metadata?.branchId;
+
+    if (userRole.includes('manager') || userRole.includes('reception') || userRole.includes('staff')) {
+      query = query.eq('branch_id', userBranchId);
+    } else if (branchId) {
       query = query.eq('branch_id', branchId);
     }
+
     if (category) {
       query = query.eq('category', category);
     }
 
     const { data, error } = await query.order('name');
 
-    if (error) throw new Error(`Failed to fetch services: ${error.message}`);
+    if (error) throw new BadRequestException(`Failed to fetch services: ${error.message}`);
     return data;
   }
 

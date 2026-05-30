@@ -1,23 +1,59 @@
 import * as React from 'react';
 import { useState } from 'react';
 
-export const FeedbackSection: React.FC = () => {
+interface FeedbackProps {
+    branchId?: string;
+}
+
+export const FeedbackSection: React.FC<FeedbackProps> = ({ branchId }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [category, setCategory] = useState<'stay' | 'service' | 'facility' | 'staff' | 'other'>('service');
+    const [rating, setRating] = useState(5);
+    const [subject, setSubject] = useState('');
     const [message, setMessage] = useState('');
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setStatus('submitting');
-        // Simulate API call for feedback submission
-        setTimeout(() => {
+
+        try {
+            const response = await fetch('http://localhost:3001/api/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    branchId: branchId || undefined,
+                    fullName: name,
+                    email,
+                    phone,
+                    category,
+                    rating,
+                    subject,
+                    message,
+                    metadata: { source: 'website' }
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to submit feedback');
+            }
+
             setStatus('success');
             setName('');
             setEmail('');
+            setPhone('');
+            setSubject('');
             setMessage('');
-            setTimeout(() => setStatus('idle'), 3000);
-        }, 1000);
+            setTimeout(() => setStatus('idle'), 5000);
+        } catch (error) {
+            console.error('Feedback submission error:', error);
+            setStatus('error');
+            setTimeout(() => setStatus('idle'), 5000);
+        }
     };
 
     return (
@@ -56,7 +92,62 @@ export const FeedbackSection: React.FC = () => {
                                 required
                             />
                         </div>
+                        <div>
+                            <label className="block text-xs font-black uppercase tracking-widest mb-3 text-neutral-400">Phone (Optional)</label>
+                            <input
+                                type="text"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                className="w-full bg-neutral-100 dark:bg-black/50 border border-neutral-200 dark:border-white/10 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-red-900 transition-colors"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-black uppercase tracking-widest mb-3 text-neutral-400">Category</label>
+                            <select
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value as any)}
+                                className="w-full bg-neutral-100 dark:bg-black/50 border border-neutral-200 dark:border-white/10 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-red-900 transition-colors appearance-none"
+                            >
+                                <option value="stay">Stay Experience</option>
+                                <option value="service">Service Quality</option>
+                                <option value="facility">Facilities</option>
+                                <option value="staff">Staff Conduct</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
                     </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label className="block text-xs font-black uppercase tracking-widest mb-3 text-neutral-400">Rating</label>
+                            <div className="flex gap-4">
+                                {[1, 2, 3, 4, 5].map((num) => (
+                                    <button
+                                        key={num}
+                                        type="button"
+                                        onClick={() => setRating(num)}
+                                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border transition-all ${rating >= num
+                                            ? 'bg-red-900 border-red-900 text-white'
+                                            : 'border-neutral-200 text-neutral-400 hover:border-red-900'
+                                            }`}
+                                    >
+                                        {num}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-black uppercase tracking-widest mb-3 text-neutral-400">Subject</label>
+                            <input
+                                type="text"
+                                value={subject}
+                                onChange={(e) => setSubject(e.target.value)}
+                                className="w-full bg-neutral-100 dark:bg-black/50 border border-neutral-200 dark:border-white/10 rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-red-900 transition-colors"
+                                placeholder="Summary of your feedback"
+                            />
+                        </div>
+                    </div>
+
                     <div>
                         <label className="block text-xs font-black uppercase tracking-widest mb-3 text-neutral-400">Your Message</label>
                         <textarea
@@ -69,13 +160,13 @@ export const FeedbackSection: React.FC = () => {
                     </div>
 
                     {status === 'success' && (
-                        <div className="p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-sm tracking-wider uppercase font-bold text-center rounded-sm">
-                            Thank you for your feedback!
+                        <div className="p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-sm tracking-wider uppercase font-bold text-center rounded-sm border border-green-200 dark:border-green-900/50">
+                            Thank you for your feedback! It has been submitted successfully.
                         </div>
                     )}
                     {status === 'error' && (
-                        <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm tracking-wider uppercase font-bold text-center rounded-sm">
-                            Failed to submit feedback. Please try again.
+                        <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm tracking-wider uppercase font-bold text-center rounded-sm border border-red-200 dark:border-red-900/50">
+                            Failed to submit feedback. Please check your connection and try again.
                         </div>
                     )}
 

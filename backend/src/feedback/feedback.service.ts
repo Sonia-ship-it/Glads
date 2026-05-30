@@ -4,10 +4,10 @@ import { CreateFeedbackDto, UpdateFeedbackDto } from '../common/dto/feedback.dto
 
 @Injectable()
 export class FeedbackService {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(private readonly supabaseService: SupabaseService) { }
 
   async create(createDto: CreateFeedbackDto) {
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
 
     const { data, error } = await supabase
       .from('feedback')
@@ -31,7 +31,7 @@ export class FeedbackService {
     return data;
   }
 
-  async findAll(branchId?: string, category?: string, status?: string) {
+  async findAll(branchId?: string, category?: string, status?: string, user?: any) {
     const supabase = this.supabaseService.getAdminClient();
 
     let query = supabase
@@ -40,7 +40,17 @@ export class FeedbackService {
       .eq('is_active', true)
       .order('created_at', { ascending: false });
 
-    if (branchId) query = query.eq('branch_id', branchId);
+    // Handle role-based filtering
+    const userRole = (user?.role || user?.user_metadata?.role || '').toLowerCase();
+    const userBranchId = user?.branchId || user?.branch_id || user?.user_metadata?.branchId;
+
+    if (userRole.includes('manager') || userRole.includes('reception') || userRole.includes('staff')) {
+      // Staff only see feedback from their own branch
+      query = query.eq('branch_id', userBranchId);
+    } else if (branchId) {
+      query = query.eq('branch_id', branchId);
+    }
+
     if (category) query = query.eq('category', category);
     if (status) query = query.eq('status', status);
 

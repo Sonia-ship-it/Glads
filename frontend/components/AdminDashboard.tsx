@@ -54,31 +54,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   }, [branchOptions, branchRevenues]);
 
   useEffect(() => {
+    if (isSuperAdmin && selectedBranch === 'all' && !branchId) return;
     if (branchId) {
       setSelectedBranch(branchId);
-      return;
-    }
-    if (!selectedBranch && availableBranches[0]?.id) {
+    } else if (isSuperAdmin && !selectedBranch) {
+      setSelectedBranch('all');
+    } else if (!selectedBranch && availableBranches[0]?.id) {
       setSelectedBranch(availableBranches[0].id);
     }
-  }, [branchId, availableBranches, selectedBranch]);
+  }, [branchId, availableBranches, isSuperAdmin, selectedBranch]);
 
   const branchLabel = useMemo(() => {
     return availableBranches.find((b) => b.id === branchId)?.name || branch || 'Branch';
   }, [availableBranches, branchId, branch]);
 
   const filteredRoomBookings = useMemo(() => {
-    if (isSuperAdmin) return roomBookings;
-    return roomBookings.filter((b) => b.branch === branch);
-  }, [roomBookings, branch, isSuperAdmin]);
+    if (isSuperAdmin && selectedBranch === 'all') return roomBookings;
+    const targetBranch = isSuperAdmin ? selectedBranch : branch;
+    return roomBookings.filter((b) => isSuperAdmin ? String(b.rawBranchId) === String(targetBranch) : b.branch === targetBranch);
+  }, [roomBookings, branch, isSuperAdmin, selectedBranch]);
 
   const filteredServiceBookings = useMemo(() => {
-    if (isSuperAdmin) return serviceBookings;
-    return serviceBookings.filter((b) => b.branchId === branch);
-  }, [serviceBookings, branch, isSuperAdmin]);
+    if (isSuperAdmin && selectedBranch === 'all') return serviceBookings;
+    const targetBranch = isSuperAdmin ? selectedBranch : branch;
+    return serviceBookings.filter((b) => isSuperAdmin ? String(b.rawBranchId) === String(targetBranch) : b.branchId === targetBranch);
+  }, [serviceBookings, branch, isSuperAdmin, selectedBranch]);
 
   const relevantRevenues = useMemo(
     () => {
+      if (isSuperAdmin && selectedBranch === 'all') return branchRevenues;
       const scopeBranch = isSuperAdmin ? selectedBranch : branchId;
       return branchRevenues.filter((row) => row.branchId === scopeBranch);
     },
@@ -269,11 +273,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <select
-              value={isSuperAdmin ? selectedBranch : branchId}
+              value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
               disabled={!isSuperAdmin || availableBranches.length === 0}
               className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.18em] border border-neutral-300 dark:border-white/20 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-200 disabled:opacity-70"
             >
+              {isSuperAdmin && <option value="all">All Branches</option>}
               {availableBranches.map((b) => (
                 <option key={b.id} value={b.id}>{b.name}</option>
               ))}
@@ -282,11 +287,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.18em] transition-all ${
-                  timeRange === range
+                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.18em] transition-all ${timeRange === range
                     ? 'bg-neutral-900 text-white dark:bg-white dark:text-black'
                     : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-                }`}
+                  }`}
               >
                 {range}
               </button>

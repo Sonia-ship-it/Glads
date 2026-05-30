@@ -1,21 +1,21 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CreateNewsDto, UpdateNewsDto } from '../common/dto/news.dto';
 
 @Injectable()
 export class NewsService {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(private readonly supabaseService: SupabaseService) { }
 
   async create(createDto: CreateNewsDto, user: any) {
-    const userRole = user.role || user.user_metadata?.role;
+    const userRole = (user.role || user.user_metadata?.role || '').toLowerCase();
     const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
 
-    if (userRole === 'branch-manager') {
+    if (userRole.includes('manager')) {
       if (createDto.scope === 'global') {
-        throw new BadRequestException('Branch managers cannot create global news');
+        throw new ForbiddenException('Branch managers cannot create global news');
       }
       if (createDto.branchId !== userBranchId) {
-        throw new BadRequestException(
+        throw new ForbiddenException(
           'Branch managers can only create news for their assigned branch',
         );
       }
@@ -55,10 +55,10 @@ export class NewsService {
 
     let query = supabase.from('news').select('*').eq('status', 'published');
 
-    const userRole = user?.role || user?.user_metadata?.role;
+    const userRole = (user?.role || user?.user_metadata?.role || '').toLowerCase();
     const userBranchId = user?.branchId || user?.branch_id || user?.user_metadata?.branchId;
 
-    if (userRole === 'branch-manager' || userRole === 'receptionist') {
+    if (userRole.includes('manager') || userRole.includes('reception') || userRole.includes('staff')) {
       // In admin view, show global news OR news for their branch
       query = query.or(`scope.eq.global,branch_id.eq.${userBranchId}`);
     } else {
@@ -99,15 +99,15 @@ export class NewsService {
       .eq('id', id)
       .single();
     if (existingNews) {
-      const userRole = user.role || user.user_metadata?.role;
+      const userRole = (user.role || user.user_metadata?.role || '').toLowerCase();
       const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
 
-      if (userRole === 'branch-manager') {
+      if (userRole.includes('manager')) {
         if (existingNews.scope === 'global') {
-          throw new BadRequestException('Branch managers cannot update global news');
+          throw new ForbiddenException('Branch managers cannot update global news');
         }
         if (existingNews.branch_id !== userBranchId) {
-          throw new BadRequestException(
+          throw new ForbiddenException(
             'Branch managers can only update news for their assigned branch',
           );
         }
@@ -153,15 +153,15 @@ export class NewsService {
       .eq('id', id)
       .single();
     if (existingNews) {
-      const userRole = user.role || user.user_metadata?.role;
+      const userRole = (user.role || user.user_metadata?.role || '').toLowerCase();
       const userBranchId = user.branchId || user.branch_id || user.user_metadata?.branchId;
 
-      if (userRole === 'branch-manager') {
+      if (userRole.includes('manager')) {
         if (existingNews.scope === 'global') {
-          throw new BadRequestException('Branch managers cannot delete global news');
+          throw new ForbiddenException('Branch managers cannot delete global news');
         }
         if (existingNews.branch_id !== userBranchId) {
-          throw new BadRequestException(
+          throw new ForbiddenException(
             'Branch managers can only delete news for their assigned branch',
           );
         }

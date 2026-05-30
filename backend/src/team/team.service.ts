@@ -4,7 +4,7 @@ import { CreateTeamMemberDto, UpdateTeamMemberDto } from '../common/dto/team.dto
 
 @Injectable()
 export class TeamService {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(private readonly supabaseService: SupabaseService) { }
 
   async create(branchId: string, createDto: CreateTeamMemberDto) {
     const supabase = this.supabaseService.getAdminClient();
@@ -29,14 +29,21 @@ export class TeamService {
     return data;
   }
 
-  async findAll(branchId?: string, department?: string) {
+  async findAll(branchId?: string, department?: string, user?: any) {
     const supabase = this.supabaseService.getAdminClient();
 
     let query = supabase.from('team_members').select('*, branches(name)').eq('is_active', true);
 
-    if (branchId) {
+    // Handle role-based filtering
+    const userRole = (user?.role || user?.user_metadata?.role || '').toLowerCase();
+    const userBranchId = user?.branchId || user?.branch_id || user?.user_metadata?.branchId;
+
+    if (userRole.includes('manager') || userRole.includes('reception') || userRole.includes('staff')) {
+      query = query.eq('branch_id', userBranchId);
+    } else if (branchId) {
       query = query.eq('branch_id', branchId);
     }
+
     if (department) {
       query = query.eq('department', department);
     }

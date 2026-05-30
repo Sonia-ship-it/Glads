@@ -3,10 +3,10 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Branch, RoomType, AdminRole, Service, TeamMember } from '../types';
 import { BRANCH_DATA } from '../constants';
 import { subscribeToBranchChanges, setStoredBranch } from '@/lib/branchSelection';
-import { LayoutDashboard, CalendarCheck2, Settings2, UserCircle2 } from 'lucide-react';
+import { LayoutDashboard, CalendarCheck2, Settings2, UserCircle2, Leaf, MessageSquareQuote } from 'lucide-react';
 
 type Tab = 'Home' | 'About' | 'Rooms' | 'Services' | 'Gallery' | 'Contact' | 'Admin' | 'Feedback';
-type LegalDoc = 'dashboard' | 'bookings' | 'services' | 'operations' | 'profile';
+type LegalDoc = 'dashboard' | 'bookings' | 'services' | 'operations' | 'profile' | 'feedback';
 type LegalDocKey = 'privacy' | 'terms' | 'booking';
 type BranchOption = { id: string; name: string; code?: string; isActive?: boolean };
 type AuthUser = {
@@ -158,6 +158,7 @@ const decodeAuthUserFromToken = (token: string): AuthUser | null => {
       role: parsed?.role || parsed?.user_metadata?.role || 'receptionist',
       firstName: parsed?.user_metadata?.first_name || parsed?.user_metadata?.firstName || '',
       lastName: parsed?.user_metadata?.last_name || parsed?.user_metadata?.lastName || '',
+      branchId: parsed?.branch_id || parsed?.branchId || parsed?.user_metadata?.branch_id || parsed?.user_metadata?.branchId,
     };
   } catch {
     return null;
@@ -183,6 +184,8 @@ const PATH_TO_TAB: Record<string, Tab> = {
   '/gallery': 'Gallery',
   '/contact': 'Contact',
   '/admin': 'Admin',
+  '/receptionist': 'Admin',
+  '/branchmanager': 'Admin',
   '/feedback': 'Feedback',
 };
 
@@ -201,7 +204,7 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
   const [immersivePhoto, setImmersivePhoto] = useState<{ src: string; title: string } | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [adminRole, setAdminRole] = useState<AdminRole>('Super Admin');
-  const [adminSection, setAdminSection] = useState<'dashboard' | 'bookings' | 'services' | 'operations' | 'profile'>('dashboard');
+  const [adminSection, setAdminSection] = useState<LegalDoc>('dashboard');
   const [serviceCategory, setServiceCategory] = useState<string>('all');
   const [showBranchSelector, setShowBranchSelector] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
@@ -257,6 +260,7 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
   const [liveRoomBookings, setLiveRoomBookings] = useState<any[]>([]);
   const [liveServiceBookings, setLiveServiceBookings] = useState<any[]>([]);
   const [liveNews, setLiveNews] = useState<any[]>([]);
+  const [liveTestimonials, setLiveTestimonials] = useState<any[]>([]);
   const [apiLoading, setApiLoading] = useState(false);
   const [branchesLoaded, setBranchesLoaded] = useState(false);
   const [profileForm, setProfileForm] = useState({ fullName: '', phone: '', profilePicture: '' });
@@ -265,7 +269,7 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '' });
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
-  const [opsTab, setOpsTab] = useState<'branches' | 'rooms' | 'users' | 'news' | 'team' | 'menu' | 'payments' | 'analytics' | 'settings' | 'audit'>('branches');
+  const [opsTab, setOpsTab] = useState<'branches' | 'rooms' | 'users' | 'news' | 'testimonials' | 'team' | 'menu' | 'payments' | 'analytics' | 'settings' | 'audit'>('branches');
   const [opsLoading, setOpsLoading] = useState(false);
   const [opsMessage, setOpsMessage] = useState<string | null>(null);
   const [opsData, setOpsData] = useState({
@@ -280,6 +284,9 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
     analytics: null as any,
     settings: [] as any[],
     audit: [] as any[],
+    feedback: [] as any[],
+    testimonials: [] as any[],
+    services: [] as any[],
   });
   const [branchCreateForm, setBranchCreateForm] = useState({
     name: '',
@@ -409,6 +416,35 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
     description?: string;
     branchId: string;
   } | null>(null);
+  const [feedbackEditForm, setFeedbackEditForm] = useState<{
+    id: string;
+    status: string;
+    response: string;
+    fullName: string;
+    email: string;
+    message: string;
+    subject: string;
+  } | null>(null);
+
+  const [testimonialCreateForm, setTestimonialCreateForm] = useState({
+    guestName: '',
+    guestRole: '',
+    quote: '',
+    rating: 5,
+    source: 'direct',
+    isFeatured: true,
+  });
+
+  const [testimonialEditForm, setTestimonialEditForm] = useState<{
+    id: string;
+    guestName: string;
+    guestRole?: string;
+    quote: string;
+    rating?: number;
+    source?: string;
+    isFeatured?: boolean;
+    isActive?: boolean;
+  } | null>(null);
 
   const [settingCreateForm, setSettingCreateForm] = useState({
     key: '',
@@ -528,10 +564,10 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
 
     return {
       ...base,
-      // Seamlessly prioritize live data if it exists, otherwise use base data.
-      rooms: useApiData ? liveRooms : base.rooms,
-      services: useApiData ? liveServices : base.services,
-      teamMembers: useApiData ? liveTeamMembers : undefined,
+      // Force display of ONLY API data (do not use hardcoded local files)
+      rooms: useApiData ? liveRooms : [],
+      services: useApiData ? liveServices : [],
+      teamMembers: useApiData ? liveTeamMembers : [],
       roomsLoading,
       servicesLoading,
       teamLoading,
@@ -548,11 +584,21 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
   const allowedAdminSections = useMemo(() => getAllowedAdminSections(adminRole), [adminRole]);
   const roleCapabilities = useMemo(() => getRoleCapabilities(adminRole), [adminRole]);
   const isAdminWorkspace = currentTab === 'Admin' && !!authUser;
-  const testimonials = useMemo(() => ([
-    { quote: 'An exceptional experience. The attention to detail and level of service exceeded all expectations.', initials: 'JD', name: 'James Davidson', role: 'Business Executive' },
-    { quote: 'The perfect blend of luxury and comfort with impeccable hospitality from check-in to check-out.', initials: 'SM', name: 'Sarah Mitchell', role: 'Travel Blogger' },
-    { quote: 'Outstanding location, elegant rooms, and a team that consistently goes above and beyond.', initials: 'MC', name: 'Michael Chen', role: 'Entrepreneur' },
-  ]), []);
+  const testimonials = useMemo(() => {
+    if (liveTestimonials.length > 0) {
+      return liveTestimonials.map(t => ({
+        quote: t.quote,
+        initials: (t.guestName || 'G').substring(0, 2).toUpperCase(),
+        name: t.guestName,
+        role: t.guestRole || 'Guest'
+      }));
+    }
+    return [
+      { quote: 'An exceptional experience. The attention to detail and level of service exceeded all expectations.', initials: 'JD', name: 'James Davidson', role: 'Business Executive' },
+      { quote: 'The perfect blend of luxury and comfort with impeccable hospitality from check-in to check-out.', initials: 'SM', name: 'Sarah Mitchell', role: 'Travel Blogger' },
+      { quote: 'Outstanding location, elegant rooms, and a team that consistently goes above and beyond.', initials: 'MC', name: 'Michael Chen', role: 'Entrepreneur' },
+    ];
+  }, [liveTestimonials]);
 
   const availableTabs = useMemo(() => {
     const tabs: Tab[] = ['Home', 'About', 'Rooms', 'Services', 'Gallery', 'Contact'];
@@ -579,8 +625,8 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
 
   function getAllowedAdminSections(role: AdminRole): LegalDoc[] {
     if (role === 'Reception') return ['dashboard', 'bookings', 'profile'];
-    if (role === 'Branch Manager') return ['dashboard', 'bookings', 'services', 'operations', 'profile'];
-    return ['dashboard', 'bookings', 'services', 'operations', 'profile'];
+    if (role === 'Branch Manager') return ['dashboard', 'bookings', 'services', 'operations', 'feedback', 'profile'];
+    return ['dashboard', 'bookings', 'services', 'operations', 'feedback', 'profile'];
   }
 
   function getRoleCapabilities(role: AdminRole): string[] {
@@ -613,13 +659,13 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
     return role;
   };
 
-  const allOpsTabs: Array<'branches' | 'rooms' | 'users' | 'news' | 'team' | 'menu' | 'payments' | 'analytics' | 'settings' | 'audit'> = [
-    'branches', 'rooms', 'users', 'news', 'team', 'menu', 'payments', 'analytics', 'settings', 'audit',
+  const allOpsTabs: Array<'branches' | 'rooms' | 'users' | 'news' | 'testimonials' | 'team' | 'menu' | 'payments' | 'analytics' | 'settings' | 'audit'> = [
+    'branches', 'rooms', 'users', 'news', 'testimonials', 'team', 'menu', 'payments', 'analytics', 'settings', 'audit',
   ];
 
   const allowedOpsTabs = useMemo(() => {
     if (adminRole === 'Super Admin') return allOpsTabs;
-    if (adminRole === 'Branch Manager') return ['branches', 'rooms', 'news', 'team', 'menu'] as Array<typeof allOpsTabs[number]>;
+    if (adminRole === 'Branch Manager') return ['branches', 'rooms', 'news', 'testimonials', 'team', 'menu'] as Array<typeof allOpsTabs[number]>;
     return [] as Array<typeof allOpsTabs[number]>;
   }, [adminRole]);
 
@@ -628,6 +674,7 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
     if (section === 'services') return 'Services';
     if (section === 'operations') return 'Operations';
     if (section === 'profile') return 'My Profile';
+    if (section === 'feedback') return 'Feedback';
     return 'Dashboard';
   };
 
@@ -636,6 +683,7 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
     if (section === 'bookings') return CalendarCheck2;
     if (section === 'services') return Settings2;
     if (section === 'profile') return UserCircle2;
+    if (section === 'feedback') return Leaf;
     return Settings2;
   };
 
@@ -648,6 +696,7 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
   const adminRoomBookings = useMemo(() => {
     return liveRoomBookings.map((b: any) => ({
       id: b?.id || b?._id || '',
+      rawBranchId: b?.branchId,
       branch: mapBranchIdToEnum(b?.branchId),
       amount: Number(b?.totalAmount ?? b?.amount ?? 0),
       customer: [b?.guestInfo?.firstName, b?.guestInfo?.lastName].filter(Boolean).join(' ') || b?.guestName || 'Guest',
@@ -661,6 +710,7 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
   const adminServiceBookings = useMemo(() => {
     return liveServiceBookings.map((b: any) => ({
       id: b?.id || b?._id || '',
+      rawBranchId: b?.branchId,
       branchId: mapBranchIdToEnum(b?.branchId),
       serviceId: b?.serviceId || '',
       serviceName: b?.serviceName || b?.service?.name || 'Service',
@@ -762,11 +812,38 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
   };
 
   const applyAuthenticatedSession = (token: string, user: AuthUser) => {
+    // Normalize user object fields (snake_case from backend to camelCase for frontend)
+    const normalizedUser: AuthUser = {
+      ...user,
+      id: user.id || (user as any).sub,
+      role: (user as any).role || (user as any).user_metadata?.role,
+      firstName: user.firstName || (user as any).first_name || (user as any).user_metadata?.first_name || (user as any).user_metadata?.firstName || '',
+      lastName: user.lastName || (user as any).last_name || (user as any).user_metadata?.last_name || (user as any).user_metadata?.lastName || '',
+      branchId: user.branchId || (user as any).branch_id || (user as any).user_metadata?.branch_id || (user as any).user_metadata?.branchId,
+    };
+
     setAuthToken(token);
-    setAuthUser(user);
-    setAdminRole(mapBackendRoleToAdminRole(user.role));
+    setAuthUser(normalizedUser);
+    const role = mapBackendRoleToAdminRole(normalizedUser.role);
+    setAdminRole(role);
     localStorage.setItem('glads-auth-token', token);
+
+    // After login/restoration, check if we need to redirect to the correct role-based dashboard
+    if (pathname === '/admin' || pathname === '/receptionist' || pathname === '/branchmanager') {
+      if (role === 'Reception' && pathname !== '/receptionist') router.push('/receptionist');
+      else if (role === 'Branch Manager' && pathname !== '/branchmanager') router.push('/branchmanager');
+      else if (role === 'Super Admin' && pathname !== '/admin') router.push('/admin');
+    }
   };
+
+  useEffect(() => {
+    if (authHydrated && authUser && (pathname === '/admin' || pathname === '/receptionist' || pathname === '/branchmanager')) {
+      const role = mapBackendRoleToAdminRole(authUser.role);
+      if (role === 'Reception' && pathname !== '/receptionist') router.push('/receptionist');
+      else if (role === 'Branch Manager' && pathname !== '/branchmanager') router.push('/branchmanager');
+      else if (role === 'Super Admin' && pathname !== '/admin') router.push('/admin');
+    }
+  }, [authHydrated, authUser, pathname, router]);
 
   useEffect(() => {
     const restoreAuth = async () => {
@@ -855,35 +932,22 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
 
       setApiLoading(true);
       try {
-        const [roomsRes, servicesRes, teamRes] = await Promise.all([
-          fetch(`${API_BASE}/rooms?branchId=${encodeURIComponent(activeBranchOption.id)}`),
-          fetch(`${API_BASE}/services?branchId=${encodeURIComponent(activeBranchOption.id)}`),
-          fetch(`${API_BASE}/team?branchId=${encodeURIComponent(activeBranchOption.id)}`),
-        ]);
+        const pRooms = fetch(`${API_BASE}/rooms?branchId=${encodeURIComponent(activeBranchOption.id)}`)
+          .then(res => res.ok ? res.json() : [])
+          .then(roomsRaw => setLiveRooms((Array.isArray(roomsRaw) ? roomsRaw : []).map(mapApiRoomToUiRoom)))
+          .catch(console.error);
 
-        if (roomsRes.ok) {
-          const roomsRaw = await roomsRes.json();
-          const rooms = (Array.isArray(roomsRaw) ? roomsRaw : []).map(mapApiRoomToUiRoom);
-          setLiveRooms(rooms);
-        }
+        const pServices = fetch(`${API_BASE}/services?branchId=${encodeURIComponent(activeBranchOption.id)}`)
+          .then(res => res.ok ? res.json() : [])
+          .then(servicesRaw => setLiveServices((Array.isArray(servicesRaw) ? servicesRaw : []).map(mapApiServiceToUiService)))
+          .catch(console.error);
 
-        if (servicesRes.ok) {
-          const servicesRaw = await servicesRes.json();
-          const services = (Array.isArray(servicesRaw) ? servicesRaw : []).map(mapApiServiceToUiService);
-          setLiveServices(services);
-        }
+        const pTeam = fetch(`${API_BASE}/team?branchId=${encodeURIComponent(activeBranchOption.id)}`)
+          .then(res => res.ok ? res.json() : [])
+          .then(teamRaw => setLiveTeamMembers((Array.isArray(teamRaw) ? teamRaw : []).map(mapApiTeamToUiTeam)))
+          .catch(console.error);
 
-        if (teamRes.ok) {
-          const teamRaw = await teamRes.json();
-          const members = (Array.isArray(teamRaw) ? teamRaw : []).map(mapApiTeamToUiTeam);
-          setLiveTeamMembers(members);
-        }
-
-        console.log(`[useMainAppState] Loaded branch data for ${activeBranchOption.name} (${activeBranchOption.id}):`, {
-          rooms: liveRooms.length,
-          team: liveTeamMembers.length,
-          services: liveServices.length
-        });
+        await Promise.allSettled([pRooms, pServices, pTeam]);
       } catch (err) {
         console.error("Failed to refresh branch data:", err);
         // We do NOT clear liveRooms/liveServices here; we keep the existing or base data.
@@ -934,18 +998,30 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
         setLiveNews([]);
       }
     };
+    const loadTestimonials = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/testimonials`);
+        if (!res.ok) {
+          setLiveTestimonials([]);
+          return;
+        }
+        const raw = await res.json();
+        setLiveTestimonials(Array.isArray(raw) ? raw : []);
+      } catch {
+        setLiveTestimonials([]);
+      }
+    };
     loadNews();
+    loadTestimonials();
   }, []);
 
   useEffect(() => {
     if (!authToken) return;
     if (currentTab !== 'Admin') return;
 
-    // Staleness check: Only load if opsData from backend is empty
-    if (opsData.branches.length === 0) {
-      loadOperationsData();
-    }
-  }, [authToken, currentTab, opsData.branches.length]);
+    // Targeted fetch: drastically speeds up loading by only getting what is visible
+    loadOperationsData(false);
+  }, [authToken, currentTab, adminSection, opsTab, activeBranchOption?.id]);
 
   useEffect(() => {
     if (!authHydrated || authLoading) return;
@@ -1352,7 +1428,7 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
     return res.json();
   };
 
-  const loadOperationsData = async () => {
+  const loadOperationsData = async (forceAll = false) => {
     if (!authToken) return;
     setOpsLoading(true);
     setOpsMessage(null);
@@ -1361,40 +1437,73 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
       const branchId = activeBranchOption?.id;
       const queryParams = branchId ? `?branchId=${encodeURIComponent(branchId)}` : '';
 
-      const [branches, rooms, roomStats, users, news, team, menu, payments, settings, audit] = await Promise.all([
-        canAccess('branches') ? apiRequest('/branches') : Promise.resolve([]),
-        canAccess('rooms') ? apiRequest(`/rooms${queryParams}`) : Promise.resolve([]),
-        canAccess('rooms') && branchId ? apiRequest(`/rooms/${branchId}/stats`) : Promise.resolve(null),
-        canAccess('users') ? apiRequest('/users') : Promise.resolve([]),
-        canAccess('news') ? apiRequest(`/news${queryParams}`) : Promise.resolve([]),
-        canAccess('team') ? apiRequest(`/team${queryParams}`) : Promise.resolve([]),
-        canAccess('menu') ? apiRequest(`/menu${queryParams}`) : Promise.resolve([]),
-        canAccess('payments') ? apiRequest('/payments') : Promise.resolve([]),
-        canAccess('settings') ? apiRequest('/system-settings') : Promise.resolve([]),
-        canAccess('audit') ? apiRequest('/audit-logs') : Promise.resolve([]),
-      ]);
+      const promises = [];
 
-      setOpsData({
-        branches: Array.isArray(branches) ? branches : [],
-        rooms: Array.isArray(rooms) ? rooms : [],
-        roomStats,
-        users: Array.isArray(users) ? users : [],
-        news: (Array.isArray(news) ? news : []).map(mapApiNewsToUiNews),
-        team: (Array.isArray(team) ? team : []).map(mapApiTeamToUiTeam),
-        menu: Array.isArray(menu) ? menu : [],
-        payments: Array.isArray(payments) ? payments : [],
-        analytics: null,
-        settings: Array.isArray(settings) ? settings : [],
-        audit: Array.isArray(audit) ? audit : [],
-      });
+      const needsBranches = forceAll || (adminSection === 'operations' && opsTab === 'branches');
+      const needsRooms = forceAll || (adminSection === 'operations' && opsTab === 'rooms');
+      const needsUsers = forceAll || (adminSection === 'operations' && opsTab === 'users');
+      const needsNews = forceAll || (adminSection === 'operations' && opsTab === 'news');
+      const needsTeam = forceAll || (adminSection === 'operations' && opsTab === 'team');
+      const needsMenu = forceAll || (adminSection === 'operations' && opsTab === 'menu');
+      const needsPayments = forceAll || (adminSection === 'operations' && opsTab === 'payments');
+      const needsSettings = forceAll || (adminSection === 'operations' && opsTab === 'settings');
+      const needsAudit = forceAll || (adminSection === 'operations' && opsTab === 'audit');
+      const needsTestimonials = forceAll || (adminSection === 'operations' && opsTab === 'testimonials');
 
-      // Also update live lists for the public-facing state if we are filtered by branch
-      if (branchId) {
-        setLiveRooms((Array.isArray(rooms) ? rooms : []).map(mapApiRoomToUiRoom));
-        setLiveTeamMembers((Array.isArray(team) ? team : []).map(mapApiTeamToUiTeam));
-        // Note: liveServices is actually fetched via /services, not /team
+      const needsFeedback = forceAll || adminSection === 'feedback';
+      const needsServices = forceAll || adminSection === 'services';
+
+      if (needsBranches && canAccess('branches')) {
+        promises.push(apiRequest('/branches').then(d => setOpsData(p => ({ ...p, branches: Array.isArray(d) ? d : [] }))));
+      }
+      if (needsRooms && canAccess('rooms')) {
+        promises.push(apiRequest(`/rooms${queryParams}`).then(d => {
+          const rooms = Array.isArray(d) ? d : [];
+          setOpsData(p => ({ ...p, rooms }));
+          if (branchId) setLiveRooms(rooms.map(mapApiRoomToUiRoom));
+        }));
+        if (branchId) promises.push(apiRequest(`/rooms/${branchId}/stats`).then(d => setOpsData(p => ({ ...p, roomStats: d }))));
+      }
+      if (needsUsers && canAccess('users')) {
+        promises.push(apiRequest('/users').then(d => setOpsData(p => ({ ...p, users: Array.isArray(d) ? d : [] }))));
+      }
+      if (needsNews && canAccess('news')) {
+        promises.push(apiRequest(`/news${queryParams}`).then(d => setOpsData(p => ({ ...p, news: (Array.isArray(d) ? d : []).map(mapApiNewsToUiNews) }))));
+      }
+      if (needsTeam && canAccess('team')) {
+        promises.push(apiRequest(`/team${queryParams}`).then(d => {
+          const team = Array.isArray(d) ? d : [];
+          setOpsData(p => ({ ...p, team: team.map(mapApiTeamToUiTeam) }));
+          if (branchId) setLiveTeamMembers(team.map(mapApiTeamToUiTeam));
+        }));
+      }
+      if (needsMenu && canAccess('menu')) {
+        promises.push(apiRequest(`/menu${queryParams}`).then(d => setOpsData(p => ({ ...p, menu: Array.isArray(d) ? d : [] }))));
+      }
+      if (needsPayments && canAccess('payments')) {
+        promises.push(apiRequest('/payments').then(d => setOpsData(p => ({ ...p, payments: Array.isArray(d) ? d : [] }))));
+      }
+      if (needsSettings && canAccess('settings')) {
+        promises.push(apiRequest('/system-settings').then(d => setOpsData(p => ({ ...p, settings: Array.isArray(d) ? d : [] }))));
+      }
+      if (needsAudit && canAccess('audit')) {
+        promises.push(apiRequest('/audit-logs').then(d => setOpsData(p => ({ ...p, audit: Array.isArray(d) ? d : [] }))));
+      }
+      if (needsFeedback && getAllowedAdminSections(adminRole).includes('feedback')) {
+        promises.push(apiRequest(`/feedback${queryParams}`).then(d => setOpsData(p => ({ ...p, feedback: Array.isArray(d) ? d : [] }))));
+      }
+      if (needsTestimonials && canAccess('testimonials')) {
+        promises.push(apiRequest(`/testimonials${queryParams}`).then(d => setOpsData(p => ({ ...p, testimonials: Array.isArray(d) ? d : [] }))));
+      }
+      if (needsServices && getAllowedAdminSections(adminRole).includes('services')) {
+        promises.push(apiRequest(`/services${queryParams}`).then(d => {
+          const services = Array.isArray(d) ? d : [];
+          setOpsData(p => ({ ...p, services: services.map(mapApiServiceToUiService) }));
+          if (branchId) setLiveServices(services.map(mapApiServiceToUiService));
+        }));
       }
 
+      await Promise.allSettled(promises);
     } catch (err: any) {
       setOpsMessage(`Error loading data: ${err.message}`);
     } finally {
@@ -1899,7 +2008,7 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
           name: serviceCreateForm.name,
           description: serviceCreateForm.description,
           category: serviceCreateForm.category,
-          price: parseFloat(serviceCreateForm.pricing) || 0,
+          price: parseFloat(String(serviceCreateForm.pricing).replace(/[^0-9.]/g, '')) || 0,
           billingType: 'one-time',
           images: serviceCreateForm.icon ? [serviceCreateForm.icon] : [],
           amenities: [],
@@ -1942,12 +2051,12 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
     setOpsMessage(null);
     try {
       await apiRequest(`/services/${serviceEditForm.id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         body: JSON.stringify({
           name: serviceEditForm.name,
           description: serviceEditForm.description,
           category: serviceEditForm.category,
-          price: parseFloat(serviceEditForm.pricing) || 0,
+          price: parseFloat(String(serviceEditForm.pricing).replace(/[^0-9.]/g, '')) || 0,
           billingType: 'one-time',
           images: serviceEditForm.icon ? [serviceEditForm.icon] : [],
           amenities: [],
@@ -1991,6 +2100,116 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
       }
     } catch (err: any) {
       setOpsMessage(err?.message || 'Failed to delete service.');
+    } finally {
+      setOpsLoading(false);
+    }
+  };
+
+  const submitUpdateFeedback = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedbackEditForm) return;
+    setOpsLoading(true);
+    setOpsMessage(null);
+    try {
+      await apiRequest(`/feedback/${feedbackEditForm.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          status: feedbackEditForm.status,
+          response: feedbackEditForm.response,
+        }),
+      });
+      setOpsMessage('Feedback updated successfully.');
+      setFeedbackEditForm(null);
+      await loadOperationsData();
+    } catch (err: any) {
+      setOpsMessage(err?.message || 'Failed to update feedback.');
+    } finally {
+      setOpsLoading(false);
+    }
+  };
+
+  const submitDeleteFeedback = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this feedback?')) return;
+    setOpsLoading(true);
+    setOpsMessage(null);
+    try {
+      await apiRequest(`/feedback/${id}`, { method: 'DELETE' });
+      setOpsMessage('Feedback deleted successfully.');
+      await loadOperationsData();
+    } catch (err: any) {
+      setOpsMessage(err?.message || 'Failed to delete feedback.');
+    } finally {
+      setOpsLoading(false);
+    }
+  };
+
+  const submitCreateTestimonial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setOpsLoading(true);
+    setOpsMessage(null);
+    try {
+      const branchId = activeBranchOption?.id;
+      if (!branchId) throw new Error('You must have a branch assigned to create testimonials.');
+
+      await apiRequest(`/testimonials/${branchId}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          guestName: testimonialCreateForm.guestName,
+          guestRole: testimonialCreateForm.guestRole,
+          quote: testimonialCreateForm.quote,
+          rating: testimonialCreateForm.rating,
+          source: testimonialCreateForm.source,
+          isFeatured: testimonialCreateForm.isFeatured,
+        }),
+      });
+      setOpsMessage('Testimonial created successfully.');
+      setTestimonialCreateForm({ guestName: '', guestRole: '', quote: '', rating: 5, source: 'direct', isFeatured: true });
+      await loadOperationsData();
+    } catch (err: any) {
+      setOpsMessage(err?.message || 'Failed to create testimonial.');
+    } finally {
+      setOpsLoading(false);
+    }
+  };
+
+  const submitUpdateTestimonial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!testimonialEditForm) return;
+    setOpsLoading(true);
+    setOpsMessage(null);
+    try {
+      await apiRequest(`/testimonials/${testimonialEditForm.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          guestName: testimonialEditForm.guestName,
+          guestRole: testimonialEditForm.guestRole,
+          quote: testimonialEditForm.quote,
+          rating: testimonialEditForm.rating,
+          source: testimonialEditForm.source,
+          isFeatured: testimonialEditForm.isFeatured,
+          isActive: testimonialEditForm.isActive,
+        }),
+      });
+      setOpsMessage('Testimonial updated successfully.');
+      setTestimonialEditForm(null);
+      await loadOperationsData();
+    } catch (err: any) {
+      setOpsMessage(err?.message || 'Failed to update testimonial.');
+    } finally {
+      setOpsLoading(false);
+    }
+  };
+
+  const submitDeleteTestimonial = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this testimonial?')) return;
+    setOpsLoading(true);
+    setOpsMessage(null);
+    try {
+      await apiRequest(`/testimonials/${id}`, { method: 'DELETE' });
+      setOpsMessage('Testimonial deleted successfully.');
+      await loadOperationsData();
+    } catch (err: any) {
+      setOpsMessage(err?.message || 'Failed to delete testimonial.');
     } finally {
       setOpsLoading(false);
     }
@@ -2260,8 +2479,14 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
     setServiceEditForm,
     menuEditForm,
     setMenuEditForm,
+    feedbackEditForm,
+    setFeedbackEditForm,
     settingCreateForm,
     setSettingCreateForm,
+    testimonialCreateForm,
+    setTestimonialCreateForm,
+    testimonialEditForm,
+    setTestimonialEditForm,
     tabFromPath,
     setCurrentTab,
     activeBranchOption,
@@ -2326,6 +2551,11 @@ export const useMainAppState = (initialTab: Tab = 'Home') => {
     submitCreateService,
     submitUpdateService,
     submitDeleteService,
+    submitUpdateFeedback,
+    submitDeleteFeedback,
+    submitCreateTestimonial,
+    submitUpdateTestimonial,
+    submitDeleteTestimonial,
     submitCreateSetting,
     handleBranchSwitch,
     openImmersive,

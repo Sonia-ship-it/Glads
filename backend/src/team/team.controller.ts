@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -21,11 +22,14 @@ import {
 import { TeamService } from './team.service';
 import { CreateTeamMemberDto, UpdateTeamMemberDto } from '../common/dto/team.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
 
 @ApiTags('Team')
 @Controller('team')
+@UseGuards(RolesGuard)
 export class TeamController {
-  constructor(private readonly teamService: TeamService) {}
+  constructor(private readonly teamService: TeamService) { }
 
   @Post(':branchId')
   @UseGuards(JwtAuthGuard)
@@ -50,8 +54,10 @@ export class TeamController {
   @ApiQuery({ name: 'branchId', required: false, description: 'Filter by branch ID' })
   @ApiQuery({ name: 'department', required: false, description: 'Filter by department' })
   @ApiResponse({ status: 200, description: 'Team members retrieved successfully' })
-  findAll(@Query('branchId') branchId?: string, @Query('department') department?: string) {
-    return this.teamService.findAll(branchId, department);
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  findAll(@Query('branchId') branchId?: string, @Query('department') department?: string, @Request() req?: any) {
+    return this.teamService.findAll(branchId, department, req?.user);
   }
 
   @Get(':id')

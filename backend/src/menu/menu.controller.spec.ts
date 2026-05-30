@@ -7,6 +7,10 @@ describe('MenuController', () => {
   let controller: MenuController;
   let service: MenuService;
 
+  const mockRequest = {
+    user: { id: 'user-123', role: 'super-admin' },
+  };
+
   const mockMenuService = {
     createMenu: jest.fn(),
     getAllMenus: jest.fn(),
@@ -74,10 +78,10 @@ describe('MenuController', () => {
 
       mockMenuService.getAllMenus.mockResolvedValue(mockMenus);
 
-      const result = await controller.getAllMenus();
+      const result = await controller.getAllMenus(undefined, mockRequest);
 
       expect(result).toEqual(mockMenus);
-      expect(mockMenuService.getAllMenus).toHaveBeenCalled();
+      expect(mockMenuService.getAllMenus).toHaveBeenCalledWith(undefined, mockRequest.user);
     });
 
     it('should filter menus by branch', async () => {
@@ -86,10 +90,10 @@ describe('MenuController', () => {
 
       mockMenuService.getAllMenus.mockResolvedValue(mockMenus);
 
-      const result = await controller.getAllMenus(branchId);
+      const result = await controller.getAllMenus(branchId, mockRequest);
 
       expect(result).toEqual(mockMenus);
-      expect(mockMenuService.getAllMenus).toHaveBeenCalledWith(branchId);
+      expect(mockMenuService.getAllMenus).toHaveBeenCalledWith(branchId, mockRequest.user);
     });
   });
 
